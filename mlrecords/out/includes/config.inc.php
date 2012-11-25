@@ -23,7 +23,7 @@ class Configuration {
 	private $subtitle = "Das Musikportal für alternative Popkultur.";
 	private $author = "Music2Web.de e. V.";
 	private $keywords = "Musik, Konzertberichte, Konzertfotos, MP3, News, Musiknews, Music, Musicnews, Community";
-	private $fb_comments = "";
+	private $fb_comments = "123";
 	
 	/***
 	 * Administrative variables
@@ -35,7 +35,7 @@ class Configuration {
 	/***
 	 * Last.fm event importer
 	 */
-	private $lastfmKey = "";
+	private $lastfmKey = "123";
 	private $cities = "Arnsberg;Oeynhausen;Balve;Barsinghausen;Bestwig;Berlin;Bielefeld;Bochum;Bonn;Braunschweig;Bremen;Dieburg;Diepholz;Dortmund;Duisburg;Düren;Düsseldorf;Eschwege;Essen;Eupen;Frankfurt;Friedrichshafen;Gelsenkirchen;Gütersloh;Hamburg;Hannover;Haßfurt;Hemer;Herford;Hiddenhausen;Karlsruhe;Köln;Konstanz;Liedolsheim;Lüdinghausen;Lünen;Lüttich;Magdeburg;Mannheim;Münster;Nideggen;Nürnberg;Ochtrup;Osnabrück;Paderborn;Recklinghausen;Rodgau;Scheeßel;Stukenbrock;Soest;Stuttgart;Trier;Vlotho;Wien;Witten;Wuppertal;Würzburg";
 	
 	public function getLastFMKey() {
