@@ -19,18 +19,18 @@ class Configuration {
 	/***
 	 * Metatags 
 	 */
-	private $title = "MLRecords CMS Standard Title";
-	private $subtitle = "Standard Subtitle";
-	private $author = "MLRecords CMS";
-	private $keywords = "cms, content, management, system, blog, software, easy, to, use";
+	private $title = "Music2Web.de";
+	private $subtitle = "Das Musikportal für alternative Popkultur.";
+	private $author = "Music2Web.de e. V.";
+	private $keywords = "Musik, Konzertberichte, Konzertfotos, MP3, News, Musiknews, Music, Musicnews, Community";
 	private $fb_comments = "";
 	
 	/***
 	 * Administrative variables
 	 */
-	private $sysMail = "noreply@mustermail.de";
-	private $errMail = "bugs@mlrecords.de";
-	private $domain = "http://www.musterdomain.de";
+	private $sysMail = "noreply@music2web.de";
+	private $errMail = "webmaster@music2web.de";
+	private $domain = "http://www.music2web.de";
 	
 	/***
 	 * Last.fm event importer

@@ -57,7 +57,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <!-- /TinyMCE -->
 <h2>Neues Thema</h2>
 <form method="post" action="index.php?id=<?php echo $location; ?>&amp;action=newthread&amp;board=<?php echo $boardID; ?>">
-	Titel: <input type="text" name="title" style="width:93%" /><br /><br />
+	Titel: <input type="text" name="title" style="width:94%" /><br /><br />
 	<textarea name="content" rows="15" style="width:99%"></textarea>
 	<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 	<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />

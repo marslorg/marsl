@@ -36,7 +36,7 @@ $(document).ready(function(){
 		foreach($news as $article): $i++; ?>
 		<li class="ui-tabs-nav-item" id="nav-fragment-<?php echo $i; ?>">
 			<a href="#fragment-<?php echo $i; ?>">
-				<span><b><?php echo $article['title']; ?></b></span>
+				<span><b><?php echo $article['headline']; ?>: <?php echo $article['title']; ?></b><br /><?php echo $article['date']; ?></span>
 			</a>
 		</li>
 		<?php endforeach; ?>
@@ -44,10 +44,13 @@ $(document).ready(function(){
 	<?php $i= 0;
 	foreach ($news as $article): $i++; ?>
 	<div id="fragment-<?php echo $i; ?>" class="ui-tabs-panel" onmouseover="this.style.cursor = 'pointer'" onclick="window.location = 'index.php?id=<?php echo $article['location']; ?>&amp;show=<?php echo $article['news']; ?>&amp;action=read'">
-		<img src="news/<?php echo $article['picture']; ?>" width="500" height="250" />
+		<img src="news/<?php echo $article['picture']; ?>" />
 		<div class="info">
+			<h3>
+				<?php echo $article['headline']; ?>
+			</h3>
 			<h2>
-				<?php echo $article['headline']; ?>: <?php echo $article['title']; ?>
+				<?php echo $article['title']; ?>
 			</h2>
 			<p>
 				<?php echo $article['teaser']; ?>

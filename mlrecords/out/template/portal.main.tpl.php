@@ -6,8 +6,8 @@ $j = 0;
 	<h3 class="pagename"><?php echo $page['name']; ?></h3>
 	<?php foreach($news as $article): ?>
 	<?php if ($j==0): ?>
-	<h5><?php echo $article['headline']; ?></h5>
-	<h4><?php echo $article['title']; ?></h4>
+	<h5 class="portalheadline"><?php echo $article['headline']; ?></h5>
+	<h4 class="portaltitle"><?php echo $article['title']; ?></h4>
 	<span class="portaltext">
 		<?php if ($article['picture']!="empty"): ?>
 		<img src="news/<?php echo $article['picture']; ?>" width="<?php echo $article['width']; ?>" height="<?php echo $article['height']; ?>" class="portalimg" />

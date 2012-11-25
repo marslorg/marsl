@@ -8,7 +8,6 @@ function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 	$error .= "Meldung: ".$errmsg."\n";
 	$error .= "Datei: ".$filename."\n";
 	$error .= "Zeile: ".$linenum."\n";
-	$error .= "Domain: ".$config->getDomain()."\n";
 	if (isset($_SERVER['HTTP_REFERER'])) {
 		$error .= "Referer: ".$_SERVER['HTTP_REFERER']."\n";
 	}
@@ -24,9 +23,7 @@ function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 	$error .= "\n";
 	$error .= "POST-Werte:\n";
 	foreach($_POST as $key=>$value) {
-		if ($key!="password"&&$key!="password2") {
-			$error .= $key."->".$value."\n";
-		}
+		$error .= $key."->".$value."\n";
 	}
 	$error .= "\n";
 	$error .= "COOKIE-Werte:\n";
@@ -38,8 +35,8 @@ function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 	foreach($_FILES as $key=>$value) {
 		$error .= $key."->".$value."\n";
 	}
-	$title = md5($errno.$errmsg.$filename.$linenum);
-	mail($config->errMail(), "Fehler: ".$title, $error, "From: ".$config->getTitle()."<".$config->sysMail().">");
-	echo "<b>Ein Fehler ist aufgetreten. Wir arbeiten daran.</b>";
+	//mail($config->errMail(), "Fehler auf ".$config->getDomain(), $error, "From: ".$config->getTitle()."<".$config->sysMail().">");
+	//echo "<b>Ein Fehler ist aufgetreten. Wir arbeiten daran.</b>";
+	echo nl2br($error);
 }
 ?>
