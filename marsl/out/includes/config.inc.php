@@ -19,9 +19,9 @@ class Configuration {
 	/***
 	 * Metatags 
 	 */
-	private $title = "MLRecords CMS Standard Title";
+	private $title = "The marsl CMS";
 	private $subtitle = "Standard Subtitle";
-	private $author = "MLRecords CMS";
+	private $author = "marsl cms";
 	private $keywords = "cms, content, management, system, blog, software, easy, to, use";
 	private $fb_comments = "";
 	
