@@ -17,14 +17,31 @@ $(function() {
 
 		// Specify what files to browse for
 		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Image files", extensions : "jpg,gif,png"}
 		],
 
 		// Flash settings
 		flash_swf_url : '../includes/jscripts/plupload/js/Moxie.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../includes/jscripts/plupload/js/Moxie.xap'
+		silverlight_xap_url : '../includes/jscripts/plupload/js/Moxie.xap',
+
+		// Rename files by clicking on their titles
+		rename: true,
+		
+		// Sort files
+		sortable: true,
+
+		// Enable ability to drop files onto the widget (currently only HTML5 supports that)
+		dragdrop: true,
+
+		// Views to activate
+		views: {
+			list: true,
+			thumbs: true // Show thumbs
+		},
+		default_view: 'thumbs',
+		remember_view: true // requires jquery cookie plugin
 	});
 
 	// Client side form validation
