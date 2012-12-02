@@ -6,7 +6,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 $(function() {
 	$("#uploader").pluploadQueue({
 		// General settings
-		runtimes : 'silverlight,gears,flash,browserplus,html5',
+		runtimes : 'silverlight,flash,html5',
 		url : 'galleryuploader.php?id=<?php echo $album; ?>',
 		max_file_size : '30mb',
 		chunk_size : '1mb',
@@ -51,7 +51,7 @@ $(function() {
 </script>
 
 <div id="uploader">
-	Dein Browser unterst&uuml;tzt kein Flash, Silverlight, Gears, BrowserPlus oder HTML5.
+	Dein Browser unterst&uuml;tzt kein Silverlight, Flash oder HTML5.
 </div>
 
 <form method="post" action="index.php?var=module&amp;module=gallery&amp;action=details&amp;id=<?php echo $album; ?>">

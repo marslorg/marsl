@@ -6,7 +6,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 $(function() {
 	$("#uploader").pluploadQueue({
 		// General settings
-		runtimes : 'silverlight,gears,flash,browserplus,html5',
+		runtimes : 'silverlight,flash,html5',
 		url : 'galleryuploader.php?dir=<?php echo $tmpDir; ?>',
 		max_file_size : '30mb',
 		chunk_size : '1mb',
@@ -21,10 +21,10 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../includes/jscripts/plupload/js/plupload.flash.swf',
+		flash_swf_url : '../includes/jscripts/plupload/js/Moxie.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../includes/jscripts/plupload/js/plupload.silverlight.xap'
+		silverlight_xap_url : '../includes/jscripts/plupload/js/Moxie.xap'
 	});
 
 	// Client side form validation
@@ -53,7 +53,7 @@ $(function() {
 <div class="success">Die Galerie wurde erfolgreich eingestellt!</div>
 <?php endif; ?>
 <div id="uploader">
-	Dein Browser unterst&uuml;tzt kein Flash, Silverlight, Gears, BrowserPlus oder HTML5.
+	Dein Browser unterst&uuml;tzt kein Silverlight, Flash oder HTML5.
 </div>
 
 <form method="post" action="index.php?var=module&amp;module=gallery&amp;step=2&amp;dir=<?php echo $tmpDir; ?>">
