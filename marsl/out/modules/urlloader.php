@@ -5,8 +5,9 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
+include_once(dirname(__FILE__)."/module.php");
 
-class URLLoader {
+class URLLoader implements Module {
 	
 	/*
 	 * Shows the navigation in the admin backend.
@@ -167,11 +168,32 @@ class URLLoader {
 				while ($row2 = mysql_fetch_array($result2)) {
 					include_once(dirname(__FILE__)."/".$module.".php");
 					$content = new $row2['class'];
-					$content->display();
+					$content->search();
 				}
 				echo $foot;
 			}
 		}
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isSearchable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getSearchList() {
+		return null;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function search($query, $type) {
+		return null;
 	}
 }
 ?>

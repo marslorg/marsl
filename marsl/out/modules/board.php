@@ -8,8 +8,9 @@ include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/board/thread.php");
 include_once(dirname(__FILE__)."/board/post.php");
+include_once(dirname(__FILE__)."/module.php");
 
-class Board {
+class Board implements Module {
 	
 	/*
 	 * Displays the boards of a global location.
@@ -523,5 +524,26 @@ class Board {
 			}
 		}
 		return $location;
+	}
+	
+	/*
+	 * Interface method stub.
+	 */
+	public function isSearchable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	 */
+	public function getSearchList() {
+		return null;
+	}
+	
+	/*
+	 * Interface method stub.
+	 */
+	public function search($query, $type) {
+		return null;
 	}
 }

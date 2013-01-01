@@ -156,7 +156,11 @@ CREATE  TABLE IF NOT EXISTS `news` (
   INDEX `author_user` (`author` ASC) ,
   INDEX `admin_user` (`admin` ASC) ,
   INDEX `teaser_picture` (`picture1` ASC) ,
-  INDEX `news_picture` (`picture2` ASC) )
+  INDEX `news_picture` (`picture2` ASC) ,
+  FULLTEXT INDEX `title_search` (`title` ASC) ,
+  FULLTEXT INDEX `headline_search` (`headline` ASC) ,
+  FULLTEXT INDEX `teaser_search` (`teaser` ASC) ,
+  FULLTEXT INDEX `text_search` (`text` ASC) )
 ENGINE = MyISAM;
 
 

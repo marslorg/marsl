@@ -4,12 +4,13 @@ include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../user/user.php");
-include_once(dirname(__FILE__)."/../modules/navigation.php");
+include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../includes/mailer.php");
+include_once(dirname(__FILE__)."/module.php");
 
-class News {
+class News implements Module {
 	/*
 	 * Displays the admin interface of the news module.
 	 */
@@ -567,6 +568,42 @@ class News {
 		}
 		else {
 			return "empty";
+		}
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isSearchable() {
+		return true;
+	}
+	
+	/*
+	 * Returns the fulltext searchable types of this module.
+	*/
+	public function getSearchList() {
+		$types = array();
+		array_push($types, array('type'=>"all", 'text'=>"Alle Nachrichten"));
+		return $types;
+	}
+	
+	/*
+	 * Performs a fulltext search over the attributes of the news table.
+	*/
+	public function search($query, $type) {
+		$query = "omas +biffy";
+		$type = "all";
+		$query = mysql_real_escape_string($query);
+		$role = new Role();
+		$roleID = $role->getRole();
+		if ($type=="all") {
+			$db = new DB();
+			$result = $db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
+					JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC");
+			while ($row = mysql_fetch_array($result)) {
+				echo $row['title']."<br />";
+			}
 		}
 	}
 }
