@@ -25,7 +25,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<div id="header">
 		
 						<div id="logo">
-							<h1 id="site-title"><a href="http://www.mlrecords.de">MLRecords CMS</a></h1>
+							<h1 id="site-title"><a href="http://www.mlrecords.de">marsl CMS</a></h1>
 							<h2 id="site-slogan">Standard Theme</h2>
 						</div>
 		
@@ -53,6 +53,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<div id="sidebar-wrapper">
 		
 						<div id="sidebar">
+							<?php $this->displaySearchBox(); ?>
 							<?php $navigation->display(); ?>
 						</div>
 		

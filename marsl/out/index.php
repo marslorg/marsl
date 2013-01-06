@@ -27,6 +27,15 @@ class Main {
 		
 		$searchList = array();
 		
+		require_once("template/index.tpl.php");
+		
+		$db->close();
+		
+	}
+	
+	private function displaySearchBox() {
+		$basic = new Basic();
+		
 		$modules = $basic->getModules();
 		foreach ($modules as $module) {
 			$file = $module['file'];
@@ -36,10 +45,8 @@ class Main {
 			array_push($searchList, $searchClass->getSearchList());
 		}
 		
-		require_once("template/index.tpl.php");
-		
-		$db->close();
-		
+	
+		require_once("template/search.box.tpl.php");
 	}
 	
 }
