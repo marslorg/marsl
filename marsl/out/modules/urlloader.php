@@ -151,26 +151,48 @@ class URLLoader implements Module {
 				$id = $row['homepage'];
 			}
 		}
-		$id = mysql_real_escape_string($id);
-		$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
-		while ($row = mysql_fetch_array($result)) {
-			$id = mysql_real_escape_string($row['maps_to']);
-		}
-		
-		if ($auth->locationReadAllowed($id, $role->getRole())) {
-			$result = $db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
-			while ($row = mysql_fetch_array($result)) {
-				$head = $row['head'];
-				$foot = $row['foot'];
-				$module = mysql_real_escape_string($row['module']);
-				$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
-				echo $head;
-				while ($row2 = mysql_fetch_array($result2)) {
-					include_once(dirname(__FILE__)."/".$module.".php");
-					$content = new $row2['class'];
-					$content->search();
+		if (isset($_GET['search'])) {
+			$searchQuery = mysql_real_escape_string($_GET['search']);
+			$type = "standard";
+			if (isset($_GET['type'])) {
+				$type = $_GET['type'];
+			}
+			if (isset($_GET['context'])) {
+				$searchContext = $_GET['context'];
+				if ($auth->moduleReadAllowed($searchContext, $role->getRole())) {
+					include_once(dirname(__FILE__)."/".$searchContext.".php");
+					$module = new $searchContext;
+					if ($module->isSearchable()) {
+						$module->search($searchQuery, $type);
+					}
 				}
-				echo $foot;
+			}
+			else {
+				//Implement a standard search, if possible over the standard search methods of each module.
+			}
+		}
+		else {
+			$id = mysql_real_escape_string($id);
+			$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
+			while ($row = mysql_fetch_array($result)) {
+				$id = mysql_real_escape_string($row['maps_to']);
+			}
+			
+			if ($auth->locationReadAllowed($id, $role->getRole())) {
+				$result = $db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+				while ($row = mysql_fetch_array($result)) {
+					$head = $row['head'];
+					$foot = $row['foot'];
+					$module = mysql_real_escape_string($row['module']);
+					$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
+					echo $head;
+					while ($row2 = mysql_fetch_array($result2)) {
+						include_once(dirname(__FILE__)."/".$module.".php");
+						$content = new $row2['class'];
+						$content->display();
+					}
+					echo $foot;
+				}
 			}
 		}
 	}
