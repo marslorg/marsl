@@ -25,6 +25,17 @@ class Main {
 		$navigation = new Navigation();
 		$urlloader = new URLLoader();
 		
+		$searchList = array();
+		
+		$modules = $basic->getModules();
+		foreach ($modules as $module) {
+			$file = $module['file'];
+			$class = $module['class'];
+			include_once(dirname(__FILE__)."/modules/".$file.".php");
+			$searchClass = new $class;
+			array_push($searchList, $searchClass->getSearchList());
+		}
+		
 		require_once("template/index.tpl.php");
 		
 		$db->close();

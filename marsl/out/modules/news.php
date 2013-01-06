@@ -598,6 +598,8 @@ class News implements Module {
 			$query = mysql_real_escape_string($query);
 			$db = new DB();
 			if ($type=="standard") {
+			}
+			if ($type=="all") {
 				$result = $db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
 						JOIN `rights` ON (`rights`.`location`=`news`.`location`)
 						WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC");
