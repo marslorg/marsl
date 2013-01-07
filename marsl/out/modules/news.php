@@ -599,13 +599,40 @@ class News implements Module {
 			$db = new DB();
 			if ($type=="standard") {
 			}
-			if ($type=="all") {
-				$result = $db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
-						JOIN `rights` ON (`rights`.`location`=`news`.`location`)
-						WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC");
-				while ($row = mysql_fetch_array($result)) {
-					echo $row['title']."<br />";
+			else {
+			
+				$page = 1;
+				if (isset($_GET['page'])) {
+					$page = $_GET['page'];
 				}
+				$start = $page*10-10;
+				$end = 10;
+				$start = mysql_real_escape_string($start);
+				$startCounter = ($page-1)*10+1;
+				
+				$news = array();
+				$topic = "";
+				
+				if ($type=="all") {
+					$topic = "Alle Nachrichten";
+					$result = $db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
+							JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+							WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC");
+					$pages = mysql_num_rows($result)/10;
+					
+					$result = $db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
+							JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+							WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC LIMIT $start,$end");
+					while ($row = mysql_fetch_array($result)) {
+						$teaser = $row['teaser'];
+						$headline = htmlentities($row['headline']);
+						$title = htmlentities($row['title']);
+						$newsid = $row['news'];
+						$location = $row['location'];
+						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));
+					}
+				}
+				require_once("template/news.search.tpl.php");
 			}
 		}
 	}

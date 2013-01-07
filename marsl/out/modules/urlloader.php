@@ -154,11 +154,10 @@ class URLLoader implements Module {
 		if (isset($_GET['search'])) {
 			$searchQuery = mysql_real_escape_string($_GET['search']);
 			$type = "standard";
-			if (isset($_GET['type'])) {
-				$type = $_GET['type'];
-			}
-			if (isset($_GET['context'])) {
-				$searchContext = $_GET['context'];
+			if (isset($_GET['scope'])) {
+				$searchScope = explode("_",$_GET['scope']);
+				$searchContext = $searchScope[0];
+				$type = $searchScope[1];
 				if ($auth->moduleReadAllowed($searchContext, $role->getRole())) {
 					include_once(dirname(__FILE__)."/".$searchContext.".php");
 					$module = new $searchContext;
@@ -208,7 +207,7 @@ class URLLoader implements Module {
 	 * Interface method stub.
 	*/
 	public function getSearchList() {
-		return null;
+		return array();
 	}
 	
 	/*

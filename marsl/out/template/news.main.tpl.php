@@ -11,9 +11,9 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <?php foreach($news as $article): ?>
 <div class="post">
 			
-	<div class="post-title"><h1><?php echo $article['title']; ?></h1></div>
+	<div class="post-title"><h2><?php echo $article['title']; ?></h2></div>
 	
-	<div class="post-date"><?php echo $article['headline']; ?></div>
+	<div class="post-date"><h3><?php echo $article['headline']; ?></h3></div>
 
 	<div class="post-body">
 		<?php if ($article['picture1']!="empty"): ?>

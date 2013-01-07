@@ -39,7 +39,8 @@ function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 		$error .= $key."->".$value."\n";
 	}
 	$title = md5($errno.$errmsg.$filename.$linenum);
-	mail($config->errMail(), "Fehler: ".$title, $error, "From: ".$config->getTitle()."<".$config->sysMail().">");
-	echo "<b>Ein Fehler ist aufgetreten. Wir arbeiten daran.</b>";
+	//mail($config->errMail(), "Fehler: ".$title, $error, "From: ".$config->getTitle()."<".$config->sysMail().">");
+	//echo "<b>Ein Fehler ist aufgetreten. Wir arbeiten daran.</b>";
+	echo nl2br($error);
 }
 ?>

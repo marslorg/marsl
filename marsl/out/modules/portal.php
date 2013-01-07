@@ -171,7 +171,7 @@ class Portal implements Module {
 	 * Interface method stub.
 	*/
 	public function getSearchList() {
-		return null;
+		return array();
 	}
 	
 	/*
