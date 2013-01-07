@@ -31,6 +31,27 @@ class Main {
 		
 	}
 	
+	private function displaySearchBox() {
+		$basic = new Basic();
+		$searchList = array();
+		$modules = $basic->getModules();
+		foreach ($modules as $module) {
+			$file = $module['file'];
+			$class = $module['class'];
+			include_once(dirname(__FILE__)."/modules/".$file.".php");
+			$searchClass = new $class;
+			if ($searchClass->isSearchable()) {
+				$typeArray = $searchClass->getSearchList();
+				foreach ($typeArray as $type) {
+					array_push($searchList, array('class'=>$file, 'type'=>$type['type'], 'text'=>$type['text']));
+				}
+			}
+		}
+		
+	
+		require_once("template/search.box.tpl.php");
+	}
+	
 }
 
 $display = new Main();

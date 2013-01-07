@@ -53,6 +53,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<div id="sidebar-wrapper">
 		
 						<div id="sidebar">
+							<?php $this->displaySearchBox(); ?>
 							<?php $navigation->display(); ?>
 						</div>
 		
