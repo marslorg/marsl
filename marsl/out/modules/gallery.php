@@ -5,9 +5,10 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../modules/navigation.php");
+include_once(dirname(__FILE__)."/navigation.php");
+include_once(dirname(__FILE__)."/module.php");
 
-class Gallery {
+class Gallery implements Module {
 	
 	/*
 	 * Administrator interface for the gallery.
@@ -468,6 +469,27 @@ class Gallery {
 				}
 			}
 		}
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isSearchable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getSearchList() {
+		return array();
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function search($query, $type) {
+		return null;
 	}
 }
 ?>

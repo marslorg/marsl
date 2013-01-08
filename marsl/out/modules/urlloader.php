@@ -5,8 +5,9 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
+include_once(dirname(__FILE__)."/module.php");
 
-class URLLoader {
+class URLLoader implements Module {
 	
 	/*
 	 * Shows the navigation in the admin backend.
@@ -150,28 +151,70 @@ class URLLoader {
 				$id = $row['homepage'];
 			}
 		}
-		$id = mysql_real_escape_string($id);
-		$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
-		while ($row = mysql_fetch_array($result)) {
-			$id = mysql_real_escape_string($row['maps_to']);
-		}
-		
-		if ($auth->locationReadAllowed($id, $role->getRole())) {
-			$result = $db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
-			while ($row = mysql_fetch_array($result)) {
-				$head = $row['head'];
-				$foot = $row['foot'];
-				$module = mysql_real_escape_string($row['module']);
-				$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
-				echo $head;
-				while ($row2 = mysql_fetch_array($result2)) {
-					include_once(dirname(__FILE__)."/".$module.".php");
-					$content = new $row2['class'];
-					$content->display();
+		if (isset($_GET['search'])) {
+			$searchQuery = mysql_real_escape_string($_GET['search']);
+			$type = "standard";
+			if (isset($_GET['scope'])) {
+				$searchScope = explode("_",$_GET['scope']);
+				$searchContext = $searchScope[0];
+				$type = $searchScope[1];
+				if ($auth->moduleReadAllowed($searchContext, $role->getRole())) {
+					include_once(dirname(__FILE__)."/".$searchContext.".php");
+					$module = new $searchContext;
+					if ($module->isSearchable()) {
+						$module->search($searchQuery, $type);
+					}
 				}
-				echo $foot;
+			}
+			else {
+				//Implement a standard search, if possible over the standard search methods of each module.
 			}
 		}
+		else {
+			$id = mysql_real_escape_string($id);
+			$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
+			while ($row = mysql_fetch_array($result)) {
+				$id = mysql_real_escape_string($row['maps_to']);
+			}
+			
+			if ($auth->locationReadAllowed($id, $role->getRole())) {
+				$result = $db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+				while ($row = mysql_fetch_array($result)) {
+					$head = $row['head'];
+					$foot = $row['foot'];
+					$module = mysql_real_escape_string($row['module']);
+					$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
+					echo $head;
+					while ($row2 = mysql_fetch_array($result2)) {
+						include_once(dirname(__FILE__)."/".$module.".php");
+						$content = new $row2['class'];
+						$content->display();
+					}
+					echo $foot;
+				}
+			}
+		}
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isSearchable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getSearchList() {
+		return array();
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function search($query, $type) {
+		return null;
 	}
 }
 ?>

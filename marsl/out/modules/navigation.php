@@ -3,8 +3,9 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../user/role.php");
+include_once(dirname(__FILE__)."/module.php");
 
-class Navigation {
+class Navigation implements Module {
 	
 	/*
 	 * Displays the admin interface for the navigation.
@@ -206,6 +207,27 @@ class Navigation {
 			$name = $row['name'];
 		}
 		return $name;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isSearchable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getSearchList() {
+		return array();
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function search($query, $type) {
+		return null;
 	}
 	
 }
