@@ -11,21 +11,13 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <h2>Suche nach <i><?php echo $query; ?></i></h2>
 <h3>in &quot;<?php echo $topic; ?>&quot;</h3>
 <?php foreach($news as $article): ?>
-<div class="post">
-			
-	<div class="post-title">
-		<b>
-			<a href="index.php?id=<?php echo $article['location']; ?>&amp;show=<?php echo $article['news']; ?>&amp;action=read">
-				<?php echo $startCounter; ?>. <?php echo $article['headline']; ?>: <?php echo $article['title']; ?>
-			</a>
-		</b>
-	</div>
-	
-	<div class="post-body">
-		<?php echo $article['teaser']; ?>	
-	</div>			
-
-</div>
+<h3>
+	<a href="index.php?id=<?php echo $article['location']; ?>&amp;show=<?php echo $article['news']; ?>&amp;action=read">
+		<?php echo $startCounter; ?>. <?php echo $article['headline']; ?>: <?php echo $article['title']; ?>
+	</a>
+</h3>
+<?php echo $article['teaser']; ?>
+<hr class="newsseparator" />
 <?php $startCounter++; ?>
 <?php endforeach; ?>
 <h4 class="center">

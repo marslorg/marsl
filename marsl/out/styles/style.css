@@ -238,3 +238,15 @@ a:hover {
 	margin-right: auto;
 	text-align: center;
 }
+
+.searchbox {
+	float: right;
+	font-family: Verdana, Arial, Helvetica, Sans-Serif;
+	font-size: 13px;
+	margin-right: 2%;
+	margin-top: 15px;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #CCC;
+	padding: 10px;
+}

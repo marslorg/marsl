@@ -22,6 +22,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<a href="http://www.music2web.de">
 				<img src="includes/graphics/logo.png" alt="Home" />
 			</a>
+			<?php $this->displaySearchBox(); ?>
 		</div>
 		<div class="menu">
 			<ul>
