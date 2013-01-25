@@ -9,7 +9,7 @@ include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/../includes/config.php");
+include_once(dirname(__FILE__)."/../includes/config.inc.php");
 
 class Root {
 	
