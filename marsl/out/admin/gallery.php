@@ -14,6 +14,8 @@ class Gallery {
 	 * Expects a folder location via post request.
 	 */
 	public function newGal() {
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();
