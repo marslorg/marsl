@@ -21,6 +21,8 @@ class Main {
 	 * Loader for the configuration file and the right timezone.
 	*/
 	public function Main() {
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();

@@ -11,6 +11,8 @@ class RSS {
 	 * Initialize the RSS feed for the news articles.
 	 */
 	public function display() {
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
