@@ -12,6 +12,8 @@ class EditPicture {
 	 * Runs the edit picture dialog for changing the subtitles of a gallery picture.
 	 */
 	public function admin() {
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$db = new DB();
 		$db->connect();
 		$user = new User();
