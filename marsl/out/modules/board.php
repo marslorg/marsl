@@ -546,4 +546,31 @@ class Board implements Module {
 	public function search($query, $type) {
 		return null;
 	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isTaggable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getTagList() {
+		return null;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function addTags($tagString, $type, $news) {
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getTagString($type, $news) {
+	}
+	
 }

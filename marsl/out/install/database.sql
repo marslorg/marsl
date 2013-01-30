@@ -1,6 +1,6 @@
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
 -- Table `user_album`
@@ -15,7 +15,7 @@ CREATE  TABLE IF NOT EXISTS `user_album` (
   `deleted` TINYINT(1) NOT NULL ,
   `date` INT NOT NULL ,
   PRIMARY KEY (`album`) ,
-  INDEX `user_album` (`user` ASC) )
+  INDEX `user_album_idx` (`user` ASC) )
 ENGINE = MyISAM;
 
 
@@ -29,7 +29,7 @@ CREATE  TABLE IF NOT EXISTS `user_picture` (
   `filename` VARCHAR(100) NOT NULL ,
   `deleted` TINYINT(1) NOT NULL ,
   PRIMARY KEY (`picture`) ,
-  INDEX `user_picture_album` (`album` ASC) )
+  INDEX `user_picture_album_idx` (`album` ASC) )
 ENGINE = MyISAM;
 
 
@@ -75,8 +75,8 @@ CREATE  TABLE IF NOT EXISTS `user` (
   `acronym` VARCHAR(50) NULL ,
   PRIMARY KEY (`user`) ,
   UNIQUE INDEX `UNIQUE` (`nickname` ASC, `sessionid` ASC, `acronym` ASC) ,
-  INDEX `user_picture` (`picture` ASC) ,
-  INDEX `user_role` (`role` ASC) )
+  INDEX `user_picture_idx` (`picture` ASC) ,
+  INDEX `user_role_idx` (`role` ASC) )
 ENGINE = MyISAM;
 
 
@@ -90,7 +90,7 @@ CREATE  TABLE IF NOT EXISTS `email` (
   `time` INT NOT NULL ,
   `confirm_id` CHAR(32) NOT NULL ,
   PRIMARY KEY (`email`) ,
-  INDEX `user_email` (`user` ASC) )
+  INDEX `user_email_idx` (`user` ASC) )
 ENGINE = MyISAM;
 
 
@@ -112,8 +112,8 @@ CREATE  TABLE IF NOT EXISTS `contact` (
   `contact_form` VARCHAR(100) NOT NULL ,
   `user` INT NOT NULL ,
   PRIMARY KEY (`contact`, `contact_form`) ,
-  INDEX `user_contact` (`user` ASC) ,
-  INDEX `contact_form` (`contact_form` ASC) )
+  INDEX `user_contact_idx` (`user` ASC) ,
+  INDEX `contact_form_idx` (`contact_form` ASC) )
 ENGINE = MyISAM;
 
 
@@ -153,14 +153,10 @@ CREATE  TABLE IF NOT EXISTS `news` (
   `expire` INT NULL ,
   `featured` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`news`) ,
-  INDEX `author_user` (`author` ASC) ,
-  INDEX `admin_user` (`admin` ASC) ,
-  INDEX `teaser_picture` (`picture1` ASC) ,
-  INDEX `news_picture` (`picture2` ASC) ,
-  FULLTEXT INDEX `title_search` (`title` ASC) ,
-  FULLTEXT INDEX `headline_search` (`headline` ASC) ,
-  FULLTEXT INDEX `teaser_search` (`teaser` ASC) ,
-  FULLTEXT INDEX `text_search` (`text` ASC) )
+  INDEX `author_user_idx` (`author` ASC) ,
+  INDEX `admin_user_idx` (`admin` ASC) ,
+  INDEX `teaser_picture_idx` (`picture1` ASC) ,
+  INDEX `news_picture_idx` (`picture2` ASC) )
 ENGINE = MyISAM;
 
 
@@ -178,8 +174,8 @@ CREATE  TABLE IF NOT EXISTS `navigation` (
   `pos` INT NOT NULL DEFAULT 0 ,
   `maps_to` INT NULL ,
   PRIMARY KEY (`id`) ,
-  INDEX `link_category` (`category` ASC) ,
-  INDEX `link_map` (`maps_to` ASC) )
+  INDEX `link_category_idx` (`category` ASC) ,
+  INDEX `link_map_idx` (`maps_to` ASC) )
 ENGINE = MyISAM;
 
 
@@ -202,9 +198,9 @@ CREATE  TABLE IF NOT EXISTS `album` (
   `postdate` INT NOT NULL ,
   `location` INT NOT NULL ,
   PRIMARY KEY (`album`) ,
-  INDEX `album_author` (`author` ASC) ,
-  INDEX `album_admin` (`admin` ASC) ,
-  INDEX `album_location` (`location` ASC) )
+  INDEX `album_author_idx` (`author` ASC) ,
+  INDEX `album_admin_idx` (`admin` ASC) ,
+  INDEX `album_location_idx` (`location` ASC) )
 ENGINE = MyISAM;
 
 
@@ -219,7 +215,7 @@ CREATE  TABLE IF NOT EXISTS `picture` (
   `deleted` TINYINT(1) NOT NULL ,
   `visible` TINYINT(1) NOT NULL ,
   PRIMARY KEY (`picture`) ,
-  INDEX `picture_album` (`album` ASC) )
+  INDEX `picture_album_idx` (`album` ASC) )
 ENGINE = MyISAM;
 
 
@@ -234,8 +230,8 @@ CREATE  TABLE IF NOT EXISTS `rights` (
   `extended` TINYINT(1) NOT NULL DEFAULT false ,
   `admin` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`role`, `location`) ,
-  INDEX `rights_role` (`role` ASC) ,
-  INDEX `rights_navigation` (`location` ASC) )
+  INDEX `rights_role_idx` (`role` ASC) ,
+  INDEX `rights_navigation_idx` (`location` ASC) )
 ENGINE = MyISAM;
 
 
@@ -245,7 +241,7 @@ ENGINE = MyISAM;
 CREATE  TABLE IF NOT EXISTS `registration_tos` (
   `id` INT NULL ,
   PRIMARY KEY (`id`) ,
-  INDEX `tos_navigation` (`id` ASC) )
+  INDEX `tos_navigation_idx` (`id` ASC) )
 ENGINE = MyISAM;
 
 
@@ -271,8 +267,8 @@ CREATE  TABLE IF NOT EXISTS `rights_module` (
   `extended` TINYINT(1) NOT NULL DEFAULT false ,
   `admin` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`role`, `module`) ,
-  INDEX `rights_role` (`role` ASC) ,
-  INDEX `rights_module` (`module` ASC) )
+  INDEX `rights_role_idx` (`role` ASC) ,
+  INDEX `rights_module_idx` (`module` ASC) )
 ENGINE = MyISAM;
 
 
@@ -283,8 +279,8 @@ CREATE  TABLE IF NOT EXISTS `role_editor` (
   `master` INT NOT NULL ,
   `slave` INT NOT NULL ,
   PRIMARY KEY (`master`, `slave`) ,
-  INDEX `master.role` (`master` ASC) ,
-  INDEX `slave.role` (`slave` ASC) )
+  INDEX `master.role_idx` (`master` ASC) ,
+  INDEX `slave.role_idx` (`slave` ASC) )
 ENGINE = MyISAM;
 
 
@@ -294,8 +290,8 @@ ENGINE = MyISAM;
 CREATE  TABLE IF NOT EXISTS `stdroles` (
   `guest` INT NOT NULL ,
   `user` INT NOT NULL ,
-  INDEX `guest` (`guest` ASC) ,
-  INDEX `user` (`user` ASC) )
+  INDEX `guest_idx` (`guest` ASC) ,
+  INDEX `user_idx` (`user` ASC) )
 ENGINE = MyISAM;
 
 
@@ -305,7 +301,7 @@ ENGINE = MyISAM;
 CREATE  TABLE IF NOT EXISTS `homepage` (
   `homepage` INT NOT NULL ,
   PRIMARY KEY (`homepage`) ,
-  INDEX `standard_link` (`homepage` ASC) )
+  INDEX `standard_link_idx` (`homepage` ASC) )
 ENGINE = MyISAM;
 
 
@@ -322,7 +318,7 @@ CREATE  TABLE IF NOT EXISTS `board` (
   `threadcount` INT NOT NULL DEFAULT 0 ,
   `postcount` INT NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`board`) ,
-  INDEX `board_location` (`location` ASC) )
+  INDEX `board_location_idx` (`location` ASC) )
 ENGINE = MyISAM;
 
 
@@ -337,8 +333,8 @@ CREATE  TABLE IF NOT EXISTS `rights_board` (
   `extended` TINYINT(1) NOT NULL ,
   `admin` TINYINT(1) NOT NULL ,
   PRIMARY KEY (`role`, `board`) ,
-  INDEX `board_role` (`role` ASC) ,
-  INDEX `role_board` (`board` ASC) )
+  INDEX `board_role_idx` (`role` ASC) ,
+  INDEX `role_board_idx` (`board` ASC) )
 ENGINE = MyISAM;
 
 
@@ -349,8 +345,8 @@ CREATE  TABLE IF NOT EXISTS `board_operator` (
   `board` INT NOT NULL ,
   `user` INT NOT NULL ,
   PRIMARY KEY (`board`, `user`) ,
-  INDEX `operator_board` (`board` ASC) ,
-  INDEX `operator_user` (`user` ASC) )
+  INDEX `operator_board_idx` (`board` ASC) ,
+  INDEX `operator_user_idx` (`user` ASC) )
 ENGINE = MyISAM;
 
 
@@ -368,9 +364,9 @@ CREATE  TABLE IF NOT EXISTS `post` (
   `ip` VARCHAR(100) NOT NULL ,
   `deleted` TINYINT(1) NOT NULL ,
   PRIMARY KEY (`post`) ,
-  INDEX `post_author` (`author` ASC) ,
-  INDEX `post_thread` (`thread` ASC) ,
-  INDEX `post_operator` (`operator` ASC) )
+  INDEX `post_author_idx` (`author` ASC) ,
+  INDEX `post_thread_idx` (`thread` ASC) ,
+  INDEX `post_operator_idx` (`operator` ASC) )
 ENGINE = MyISAM;
 
 
@@ -387,11 +383,63 @@ CREATE  TABLE IF NOT EXISTS `thread` (
   `viewcount` INT NOT NULL DEFAULT 0 ,
   `lastpost` INT NOT NULL ,
   PRIMARY KEY (`thread`) ,
-  INDEX `thread_board` (`board` ASC) ,
-  INDEX `thread_author` (`author` ASC) ,
-  INDEX `thread_post` (`lastpost` ASC) )
+  INDEX `thread_board_idx` (`board` ASC) ,
+  INDEX `thread_author_idx` (`author` ASC) ,
+  INDEX `thread_post_idx` (`lastpost` ASC) )
 ENGINE = MyISAM;
 
+
+-- -----------------------------------------------------
+-- Table `news_tag`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `news_tag` (
+  `tag` INT NOT NULL ,
+  `news` INT NOT NULL ,
+  `type` VARCHAR(100) NOT NULL ,
+  PRIMARY KEY (`tag`, `news`, `type`) ,
+  INDEX `tag_news_idx` (`news` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `general`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `general` (
+  `tag` VARCHAR(100) NOT NULL ,
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  PRIMARY KEY (`id`) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `location`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `location` (
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `tag` VARCHAR(100) NOT NULL ,
+  `street` VARCHAR(100) NULL ,
+  `number` VARCHAR(100) NULL ,
+  `zip` VARCHAR(100) NULL ,
+  `city` VARCHAR(100) NULL ,
+  `country` VARCHAR(100) NULL ,
+  `capacity` VARCHAR(100) NULL ,
+  `info` LONGTEXT NULL ,
+  PRIMARY KEY (`id`) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `band`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `band` (
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `tag` VARCHAR(100) NOT NULL ,
+  `founded` VARCHAR(100) NULL ,
+  `ended` VARCHAR(100) NULL ,
+  `info` LONGTEXT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `band_tag_idx` (`id` ASC) )
+ENGINE = MyISAM;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

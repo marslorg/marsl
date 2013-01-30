@@ -20,10 +20,28 @@ class News implements Module {
 		$basic = new Basic();
 		$user = new User();
 		$role = new Role();
+		$modules = $basic->getModules();
+		$moduleTags = array();
+		array_push($moduleTags, array('type'=>'general_general', 'name'=>'Allgemein', 'tags'=>''));
+		foreach ($modules as $module) {
+			include_once(dirname(__FILE__)."/".$module['file'].".php");
+			$class = new $module['class'];
+			if ($class->isTaggable()) {
+				$tagList = $class->getTagList();
+				foreach($tagList as $tagType) {
+					$typeID = $module['file']."_".$tagType['type'];
+					$typeName = $tagType['text'];
+					array_push($moduleTags, array('type'=>$typeID, 'name'=>$typeName));
+				}
+			}	
+		}
 		if ($auth->moduleAdminAllowed("news", $role->getRole())) {
 			$db = new DB();
 			require_once("template/news.navigation.tpl.php");
 			if(!isset($_GET['action'])) {
+				/*
+				 * TODO Tag-Editing
+				 */
 				$headline = "";
 				$title = "";
 				$category = "";
@@ -38,6 +56,12 @@ class News implements Module {
 				$photograph1 = "";
 				$photograph2 = "";
 				$city = "";
+				$tmpModuleTags = array();
+				foreach ($moduleTags as $moduleTag) {
+					$moduleTag['tags'] = "";
+					array_push($tmpModuleTags, $moduleTag);
+				}
+				$moduleTags = $tmpModuleTags;
 				$new = true;
 				if (isset($_POST['action'])) {
 					$new = false;
@@ -64,6 +88,12 @@ class News implements Module {
 							$subtitle2 = htmlentities($_POST['subtitle2']);
 							$photograph1 = htmlentities($_POST['photograph1']);
 							$photograph2 = htmlentities($_POST['photograph2']);
+							$tmpModuleTags = array();
+							foreach ($moduleTags as $moduleTag) {
+								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']]);
+								array_push($tmpModuleTags, $moduleTag);
+							}
+							$moduleTags = $tmpModuleTags;
 						}
 						else {
 							$author = mysql_real_escape_string($user->getID());
@@ -74,6 +104,12 @@ class News implements Module {
 							$subtitle2 = mysql_real_escape_string($_POST['subtitle2']);
 							$photograph1 = mysql_real_escape_string($_POST['photograph1']);
 							$photograph2 = mysql_real_escape_string($_POST['photograph2']);
+							$tmpModuleTags = array();
+							foreach ($moduleTags as $moduleTag) {
+								$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
+								array_push($tmpModuleTags, $moduleTag);
+							}
+							$moduleTags = $tmpModuleTags;
 							$date = "";
 							$postdate = time();
 							$city = mysql_real_escape_string($_POST['city']);
@@ -104,6 +140,21 @@ class News implements Module {
 								}
 								$db->query("INSERT INTO `news`(`author`,`author_ip`,`headline`,`title`,`teaser`,`text`,`picture1`,`picture2`,`date`,`visible`,`deleted`,`location`,`city`,`postdate`) 
 								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate')");
+								$newsID = mysql_insert_id();
+								foreach ($moduleTags as $moduleTag) {
+									if ($moduleTag['type']=="general_general") {
+										$this->addTags($moduleTag['tags'], "general_general", $newsID);
+									}
+									else {
+										$type = explode("_", $moduleTag['type']);
+										$file = $type[0];
+										$scope = $type[1];
+										$module = $basic->getModule($file);
+										include_once(dirname(__FILE__)."/".$file.".php");
+										$class = new $module['class'];
+										$class->addTags($moduleTag['tags'], $scope, $newsID);
+									}
+								}
 								$administrators = $user->getAdminUsers();
 								foreach ($administrators as $administrator) {
 									$administratorRole = $role->getRolebyUser($administrator);
@@ -126,6 +177,12 @@ class News implements Module {
 								$subtitle2 = "";
 								$photograph1 = "";
 								$photograph2 = "";
+								$tmpModuleTags = array();
+								foreach ($moduleTags as $moduleTag) {
+									$moduleTag['tags'] = "";
+									array_push($tmpModuleTags, $moduleTag);
+								}
+								$moduleTags = $tmpModuleTags;
 							}
 						}
 					}
@@ -189,6 +246,9 @@ class News implements Module {
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
+				/*
+				 * TODO Tag-Editing
+				 */
 				$id = mysql_real_escape_string(htmlentities($_GET['id']));
 				if ($db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'")) {
 					$result = $db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
@@ -210,6 +270,23 @@ class News implements Module {
 							$photograph1 = "";
 							$photograph2 = "";
 							$city = htmlentities($row['city']);
+							$tmpModuleTags = array();
+							foreach ($moduleTags as $moduleTag) {
+								if ($moduleTag['type']=="general_general") {
+									$moduleTag['tags'] = $this->getTagString("general_general", $id);
+								}
+								else {
+									$type = explode("_", $moduleTag['type']);
+									$file = $type[0];
+									$scope = $type[1];
+									$module = $basic->getModule($file);
+									include_once(dirname(__FILE__)."/".$file.".php");
+									$class = new $module['class'];
+									$moduleTag['tags'] = $class->getTagString($scope, $id);
+								}
+								array_push($tmpModuleTags, $moduleTag);
+							}
+							$moduleTags = $tmpModuleTags;
 							$new = true;
 							$failed = false;
 							if (isset($_POST['action'])) {
@@ -234,6 +311,12 @@ class News implements Module {
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
+										$tmpModuleTags = array();
+										foreach ($moduleTags as $moduleTag) {
+											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']]);
+											array_push($tmpModuleTags, $moduleTag);
+										}
+										$moduleTags = $tmpModuleTags;
 									}
 									else {
 										$author = mysql_real_escape_string($user->getID());
@@ -265,9 +348,29 @@ class News implements Module {
 											$db->query("INSERT INTO `news_picture`(`url`, `subtitle`, `photograph`) VALUES('$picture2', '$subtitle2', '$photograph2')");
 											$pic2 = mysql_insert_id();
 										}
+										$tmpModuleTags = array();
+										foreach ($moduleTags as $moduleTag) {
+											$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
+											array_push($tmpModuleTags, $moduleTag);
+										}
+										$moduleTags = $tmpModuleTags;
 										$admin = mysql_real_escape_string($user->getID());
 										$adminIP = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
 										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$pic1', `picture2`='$pic2', `location`='$location', `city`='$city' WHERE `news`='$id'"); 
+										foreach ($moduleTags as $moduleTag) {
+											if ($moduleTag['type']=="general_general") {
+												$this->addTags($moduleTag['tags'], "general_general", $id);
+											}
+											else {
+												$type = explode("_", $moduleTag['type']);
+												$file = $type[0];
+												$scope = $type[1];
+												$module = $basic->getModule($file);
+												include_once(dirname(__FILE__)."/".$file.".php");
+												$class = new $module['class'];
+												$class->addTags($moduleTag['tags'], $scope, $id);
+											}
+										}
 										$headline = htmlentities($_POST['headline']);
 										$title = htmlentities($_POST['title']);
 										$category = $_POST['category'];
@@ -277,6 +380,12 @@ class News implements Module {
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
+										$tmpModuleTags = array();
+										foreach ($moduleTags as $moduleTag) {
+											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']]);
+											array_push($tmpModuleTags, $moduleTag);
+										}
+										$moduleTags = $tmpModuleTags;
 									}
 								}
 							}
@@ -375,7 +484,7 @@ class News implements Module {
 							$photograph2 = " Foto: ".htmlentities($row2['photograph']);
 						}
 					}
-					$city = htmlentities(strtoupper($row['city']));
+					$city = htmlentities($row['city']);
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("\a\m d\. M Y \u\m H\:i\:s", $row['postdate']);
 					$authTime = time();
@@ -635,6 +744,60 @@ class News implements Module {
 				require_once("template/news.search.tpl.php");
 			}
 		}
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isTaggable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getTagList() {
+		return null;
+	}
+	
+	/*
+	 * Adds the tags for the general scope.
+	*/
+	public function addTags($tagString, $type, $news) {
+		$db = new DB();
+		$tags = array_filter(explode(";", $tagString));
+		$news = mysql_real_escape_string($news);
+		$db->query("DELETE FROM `news_tag` WHERE `type`='general' AND `news`='$news'");
+		foreach ($tags as $tag) {
+			$tag = mysql_real_escape_string($tag);
+			$id = "";
+	
+			if (!$db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag'")) {
+				$db->query("INSERT INTO `general`(`tag`) VALUES('$tag')");
+			}
+	
+			$result = $db->query("SELECT `id` FROM `general` WHERE `tag`='$tag'");
+			while ($row = mysql_fetch_array($result)) {
+				$id = $row['id'];
+			}
+			$db->query("INSERT INTO `news_tag`(`tag`,`news`,`type`) VALUES('$id','$news','general')");
+		}
+	}
+	
+	/*
+	 * Returns the tags for the general scope.
+	*/
+	public function getTagString($type, $news) {
+		$db = new DB();
+		$retString = array();
+		$news = mysql_real_escape_string($news);
+		
+		$result = $db->query("SELECT `general`.`tag` AS tagname FROM `general` JOIN `news_tag` ON(`general`.`id`=`news_tag`.`tag`) WHERE `type`='general' AND `news`='$news' ORDER BY `general`.`tag`");
+		while ($row = mysql_fetch_array($result)) {
+			array_push($retString, $row['tagname']);
+		}
+		
+		return implode(";", $retString);
 	}
 }
 ?>

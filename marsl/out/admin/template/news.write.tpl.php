@@ -142,6 +142,16 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			<td><input type="text" name="photograph2" /></td>
 		</tr>
 		<tr>
+			<td><b>Tags:</b></td>
+			<td>Einzelne Tags k&ouml;nnen voneinander mit einem Semikolon getrennt werden. Nach dem letzten Tag darf kein Semikolon angegeben werden.</td>
+		</tr>
+		<?php foreach($moduleTags as $moduleTag): ?>
+		<tr>
+			<td><?php echo $moduleTag['name']; ?>: </td>
+			<td><input type="text" name="<?php echo $moduleTag['type']; ?>" class="newstitle" value="<?php echo $moduleTag['tags']; ?>" /></td>
+		</tr>
+		<?php endforeach; ?>
+		<tr>
 			<td colspan="2">
 				<input type="hidden" value="<?php echo $authTime; ?>" name="authTime" />
 				<input type="hidden" value="<?php echo $authToken; ?>" name="authToken" />
