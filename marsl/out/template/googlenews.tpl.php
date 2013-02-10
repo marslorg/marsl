@@ -8,7 +8,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		<loc><?php echo $item['link']; ?></loc>
 		<news:news>
 		<news:publication>
-			<news:name><?php echo $feedtitle; ?></news:name>
+			<news:name>Music2Web's Musikportal</news:name>
 			<news:language>de</news:language>
 		</news:publication>
 		<news:genres>PressRelease, Blog</news:genres>

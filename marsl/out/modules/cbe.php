@@ -58,6 +58,7 @@ class CBE implements Module {
 		}
 		foreach ($tags as $tag) {
 			$tag = mysql_real_escape_string($tag);
+			$tag = trim($tag);
 			if ($type=="band") {
 				$bandID = "";
 				

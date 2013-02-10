@@ -770,6 +770,7 @@ class News implements Module {
 		$db->query("DELETE FROM `news_tag` WHERE `type`='general' AND `news`='$news'");
 		foreach ($tags as $tag) {
 			$tag = mysql_real_escape_string($tag);
+			$tag = trim($tag);
 			$id = "";
 	
 			if (!$db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag'")) {
