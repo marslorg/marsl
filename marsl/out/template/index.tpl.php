@@ -47,7 +47,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="right_ads">
 				Anzeigen:<br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
-				<a href="http://musikbusiness.org" target="_blank">Musikbusiness-Hilfe</a><br />
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
 				<a href="http://www.infantologie.de/love/lovesongs.php" target="_blank">Songs über die Liebe</a><br />
 				<a href="http://www.gs-kosmetik.de" target="_blank">Jafra Kosmetik</a>
