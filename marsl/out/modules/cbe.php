@@ -3,6 +3,9 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/module.php");
 include_once(dirname(__FILE__)."/cbe/location.php");
 include_once(dirname(__FILE__)."/cbe/band.php");
+include_once(dirname(__FILE__)."/../user/auth.php");
+include_once(dirname(__FILE__)."/../user/user.php");
+include_once(dirname(__FILE__)."/../user/role.php");
 
 class CBE implements Module {
 	
@@ -11,7 +14,29 @@ class CBE implements Module {
 	}
 	
 	public function admin() {
-		
+		$auth = new Authentication();
+		$role = new Role();
+		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
+			require_once("template/cbe.main.tpl.php");
+			if (isset($_GET['action'])) {
+				$band = new Band();
+				$club = new Location();
+				if ($_GET['action']=="bands") {
+					$band->admin();
+				}
+				if ($_GET['action']=="clubs") {
+					$club->admin();
+				}
+				if ($_GET['action']=="editband") {
+					$id = mysql_real_escape_string($_GET['band']);
+					$band->edit($id);
+				}
+				if ($_GET['action']=="editclub") {
+					$id = mysql_real_escape_string($_GET['club']);
+					$club->edit($id);
+				}
+			}
+		}
 	}
 	
 	/*
