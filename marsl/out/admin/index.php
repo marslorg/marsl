@@ -9,6 +9,7 @@ include_once (dirname(__FILE__)."/roleadmin.php");
 include_once (dirname(__FILE__)."/standard.php");
 include_once (dirname(__FILE__)."/modulerights.php");
 include_once (dirname(__FILE__)."/register.php");
+include_once (dirname(__FILE__)."/tags.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/recover.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
@@ -87,8 +88,8 @@ class Main {
 			else if ($this->var =="register") {
 				$content = new Register();
 			}
-			else if ($this->var=="events") {
-				$content = new EventManagement();
+			else if ($this->var=="tags") {
+				$content = new Tags();
 			}
 			else {
 				include_once(dirname(__FILE__)."/admin.php");

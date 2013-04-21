@@ -63,6 +63,9 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				</li>
 				<?php if ($headAdmin): ?>
 				<li>
+					<a class="hide" href="index.php?var=tags&amp;search=%">Tags</a>
+				</li>
+				<li>
 					<a class="hide" href="#">Newsletter</a>
 				</li>
 				<?php endif; ?>
