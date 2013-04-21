@@ -772,8 +772,7 @@ class News implements Module {
 			$tag = mysql_real_escape_string($tag);
 			$tag = trim($tag);
 			$id = "";
-	
-			if (!$db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag'")) {
+			if ((strlen($tag)>0)&&(!$db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag'"))) {
 				$db->query("INSERT INTO `general`(`tag`) VALUES('$tag')");
 			}
 	

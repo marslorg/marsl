@@ -46,9 +46,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="250" data-show-faces="true" data-stream="true" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
+				<a href="http://www.amormoda.de/Brautkleider-c2/" target="_blank">Brautkleider</a><br />
+				<a href="http://se.dressfirst.com/Brollopsklanningar-c2/" target="_blank">br&ouml;llopskl&auml;nning</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
-				<a href="http://www.infantologie.de/love/lovesongs.php" target="_blank">Songs über die Liebe</a><br />
+				<a href="http://www.infantologie.de/love/lovesongs.php" target="_blank">Songs &uuml;ber die Liebe</a><br />
 				<a href="http://www.gs-kosmetik.de" target="_blank">Jafra Kosmetik</a>
 			</div>
 		</div>
