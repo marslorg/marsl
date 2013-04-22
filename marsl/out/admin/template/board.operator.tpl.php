@@ -20,7 +20,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <?php foreach($boardOperators as $boardOperator): ?>
 	<tr>
 		<td><?php echo $boardOperator['nickname']; ?></td>
-		<td><a href="index.php?var=module&amp;module=board&amp;page=operator&amp;action=delete&amp;board=<?php echo $board; ?>&amp;operator=<?php echo $boardOperator['user']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">L&ouml;schen</a></td>
+		<td><a href="index.php?var=module&amp;module=board&amp;page=operator&amp;action=delete&amp;board=<?php echo $board; ?>&amp;operator=<?php echo $boardOperator['user']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a></td>
 	</tr>
 <?php endforeach; ?>
 </table>

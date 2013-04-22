@@ -62,7 +62,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<td class="boardcontent">
 			<?php if($isAuthor): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=answer&amp;thread=<?php echo $threadID; ?>&amp;quote=<?php echo $post['post']; ?>&amp;page=<?php echo $page; ?>">Zitieren</a><?php endif; ?>
 			<?php if($post['editable']): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=edit&amp;post=<?php echo $post['post']; ?>&amp;page=<?php echo $page; ?>">Editieren</a><?php endif; ?>
-			<?php if ($isOperator): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;do=del&amp;post=<?php echo $post['post']; ?>&amp;thread=<?php echo $threadID; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">L&ouml;schen</a><?php endif; ?>
+			<?php if ($isOperator): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;do=del&amp;post=<?php echo $post['post']; ?>&amp;thread=<?php echo $threadID; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a><?php endif; ?>
 		</td>
 	</tr>
 	<?php endforeach; ?>

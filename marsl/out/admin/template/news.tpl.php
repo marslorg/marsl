@@ -19,7 +19,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			eingereicht am: <?php echo $article['postdate']; ?><br />
 			<?php if($article['editLink']): ?>
 			<a href="index.php?var=module&amp;module=news&amp;action=edit&amp;id=<?php echo $article['id']; ?>">Editieren</a> 
-			<a href="index.php?var=module&amp;module=news&amp;action=news&amp;page=<?php echo $page; ?>&amp;do=del&amp;id=<?php echo $article['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">L&ouml;schen</a>
+			<a href="index.php?var=module&amp;module=news&amp;action=news&amp;page=<?php echo $page; ?>&amp;do=del&amp;id=<?php echo $article['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a>
 			<?php endif; ?>
 		</td>
 		<td class="news">
