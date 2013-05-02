@@ -33,7 +33,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<div class="content">
 			<?php $urlloader->display(); ?>
 		</div>
-		<div class="right">
+		<div class="right_box">
 			<div id="fb-root"></div>
 			<script>(function(d, s, id) {
 			  var js, fjs = d.getElementsByTagName(s)[0];
@@ -46,7 +46,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="250" data-show-faces="true" data-stream="true" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
-				<a href="http://www.amormoda.de/Brautkleider-c2/" target="_blank">Brautkleider</a><br />
+				<a href="http://de.dressfirst.com/Brautkleider-c2/" target="_blank">Brautkleider</a><br />
 				<a href="http://se.dressfirst.com/Brollopsklanningar-c2/" target="_blank">br&ouml;llopskl&auml;nning</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />

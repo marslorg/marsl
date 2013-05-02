@@ -50,11 +50,6 @@ class News implements Module {
 				$year = "YYYY";
 				$teaser = "";
 				$text = "";
-				$picture1 = "";
-				$picture2 = "";
-				$subtitle2 = "";
-				$photograph1 = "";
-				$photograph2 = "";
 				$city = "";
 				$tmpModuleTags = array();
 				foreach ($moduleTags as $moduleTag) {
@@ -67,14 +62,7 @@ class News implements Module {
 					$new = false;
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$failed = false;
-						$picture1 = $this->savePicture($_FILES['picture1'], 200, 200, 0, 0);
-						if ($picture1==false) {
-							$failed = true;
-						}
-						$picture2 = $this->savePicture($_FILES['picture2'], 0, 320, 640, 0);
-						if ($picture2==false) {
-							$failed = true;
-						}
+
 						if ($failed) {
 							$headline = htmlentities($_POST['headline']);
 							$title = htmlentities($_POST['title']);
@@ -85,9 +73,6 @@ class News implements Module {
 							$teaser = $basic->cleanHTML($_POST['teaser']);
 							$text = $basic->cleanHTML($_POST['text']);
 							$city = $basic->cleanHTML($_POST['city']);
-							$subtitle2 = htmlentities($_POST['subtitle2']);
-							$photograph1 = htmlentities($_POST['photograph1']);
-							$photograph2 = htmlentities($_POST['photograph2']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
 								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']]);
@@ -101,9 +86,6 @@ class News implements Module {
 							$headline = mysql_real_escape_string($_POST['headline']);
 							$title = mysql_real_escape_string($_POST['title']);
 							$location = mysql_real_escape_string($_POST['category']);
-							$subtitle2 = mysql_real_escape_string($_POST['subtitle2']);
-							$photograph1 = mysql_real_escape_string($_POST['photograph1']);
-							$photograph2 = mysql_real_escape_string($_POST['photograph2']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
 								$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
@@ -122,22 +104,31 @@ class News implements Module {
 							$teaser = mysql_real_escape_string($basic->cleanHTML($_POST['teaser']));
 							$text = mysql_real_escape_string($basic->cleanHTML($_POST['text']));
 							if ($auth->locationAdminAllowed($location, $role->getRole())||$auth->locationExtendedAllowed($location, $role->getRole())) {
-								if ($picture1!="empty") {
-									$picture1 = mysql_real_escape_string($picture1);
-									$db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$picture1', '$photograph1')");
-									$picture1 = mysql_insert_id();
+
+								$picture1 = "";
+								if (isset($_POST['picture1'])) {
+									$picture1 = mysql_real_escape_string($_POST['picture1']);
 								}
-								else {
-									$picture1 = "";
+								
+								$picture2 = "";
+								if (isset($_POST['picture2'])) {
+									$picture2 = mysql_real_escape_string($_POST['picture2']);
+									$result = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
+									while ($row = mysql_fetch_array($result)) {
+										$fileName = $row['url'];
+										$fileLink = "../news/".$fileName;
+										$oldIMG = imagecreatefromjpeg($fileLink);
+										$newIMG = imagecreatetruecolor(640, 320);
+										$pic2X = $_POST['pic2X'];
+										$pic2Y = $_POST['pic2Y'];
+										$pic2W = $_POST['pic2W'];
+										$pic2H = $_POST['pic2H'];
+										imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
+										ImageDestroy($oldIMG);
+										imagejpeg($newIMG, $fileLink);
+									}
 								}
-								if ($picture2!="empty") {
-									$picture2 = mysql_real_escape_string($picture2);
-									$db->query("INSERT INTO `news_picture`(`url`, `subtitle`, `photograph`) VALUES('$picture2', '$subtitle2', '$photograph2')");
-									$picture2 = mysql_insert_id();
-								}
-								else {
-									$picture2 = "";
-								}
+
 								$db->query("INSERT INTO `news`(`author`,`author_ip`,`headline`,`title`,`teaser`,`text`,`picture1`,`picture2`,`date`,`visible`,`deleted`,`location`,`city`,`postdate`) 
 								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate')");
 								$newsID = mysql_insert_id();
@@ -174,9 +165,6 @@ class News implements Module {
 								$teaser = "";
 								$text = "";
 								$city = "";
-								$subtitle2 = "";
-								$photograph1 = "";
-								$photograph2 = "";
 								$tmpModuleTags = array();
 								foreach ($moduleTags as $moduleTag) {
 									$moduleTag['tags'] = "";
@@ -262,13 +250,8 @@ class News implements Module {
 							$year = date("Y", $row['date']);
 							$teaser = $row['teaser'];
 							$text = $row['text'];
-							$pic1 = $row['picture1'];
-							$pic2 = $row['picture2'];
-							$picture1 = "empty";
-							$picture2 = "empty";
-							$subtitle2 = "";
-							$photograph1 = "";
-							$photograph2 = "";
+							$picture1 = $row['picture1'];
+							$picture2 = $row['picture2'];
 							$city = htmlentities($row['city']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
@@ -293,14 +276,7 @@ class News implements Module {
 								$new = false;
 								if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 									$failed = false;
-									$picture1 = $this->savePicture($_FILES['picture1'], 200, 200, 0, 0);
-									if ($picture1==false) {
-										$failed = true;
-									}
-									$picture2 = $this->savePicture($_FILES['picture2'], 0, 320, 640, 0);
-									if ($picture2==false) {
-										$failed = true;
-									}
+
 									if ($failed) {
 										$headline = htmlentities($_POST['headline']);
 										$title = htmlentities($_POST['title']);
@@ -335,19 +311,29 @@ class News implements Module {
 										}
 										$teaser = mysql_real_escape_string($basic->cleanHTML($_POST['teaser']));
 										$text = mysql_real_escape_string($basic->cleanHTML($_POST['text']));
-										if ($picture1!="empty") {
-											$picture1 = mysql_real_escape_string($picture1);
-											$photograph1 = mysql_real_escape_string($_POST['photograph1']);
-											$db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$picture1', '$photograph1')");
-											$pic1 = mysql_insert_id();
+										
+										if (isset($_POST['picture1'])) {
+											$picture1 = mysql_real_escape_string($_POST['picture1']);
 										}
-										if ($picture2!="empty") {
-											$picture2 = mysql_real_escape_string($picture2);
-											$subtitle2 = mysql_real_escape_string($_POST['subtitle2']);
-											$photograph2 = mysql_real_escape_string($_POST['photograph2']);
-											$db->query("INSERT INTO `news_picture`(`url`, `subtitle`, `photograph`) VALUES('$picture2', '$subtitle2', '$photograph2')");
-											$pic2 = mysql_insert_id();
+										
+										if (isset($_POST['picture2'])) {
+											$picture2 = mysql_real_escape_string($_POST['picture2']);
+											$result = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
+											while ($row = mysql_fetch_array($result)) {
+												$fileName = $row['url'];
+												$fileLink = "../news/".$fileName;
+												$oldIMG = imagecreatefromjpeg($fileLink);
+												$newIMG = imagecreatetruecolor(640, 320);
+												$pic2X = $_POST['pic2X'];
+												$pic2Y = $_POST['pic2Y'];
+												$pic2W = $_POST['pic2W'];
+												$pic2H = $_POST['pic2H'];
+												imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
+												ImageDestroy($oldIMG);
+												imagejpeg($newIMG, $fileLink);
+											}
 										}
+										
 										$tmpModuleTags = array();
 										foreach ($moduleTags as $moduleTag) {
 											$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
@@ -356,7 +342,7 @@ class News implements Module {
 										$moduleTags = $tmpModuleTags;
 										$admin = mysql_real_escape_string($user->getID());
 										$adminIP = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
-										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$pic1', `picture2`='$pic2', `location`='$location', `city`='$city' WHERE `news`='$id'"); 
+										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city' WHERE `news`='$id'"); 
 										foreach ($moduleTags as $moduleTag) {
 											if ($moduleTag['type']=="general_general") {
 												$this->addTags($moduleTag['tags'], "general_general", $id);

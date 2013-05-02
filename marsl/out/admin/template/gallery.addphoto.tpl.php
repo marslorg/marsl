@@ -7,7 +7,7 @@ $(function() {
 	$("#uploader").pluploadQueue({
 		// General settings
 		runtimes : 'silverlight,gears,flash,browserplus,html5',
-		url : 'galleryuploader.php?id=<?php echo $album; ?>',
+		url : 'ajax/galleryuploader.php?id=<?php echo $album; ?>',
 		max_file_size : '30mb',
 		chunk_size : '1mb',
 		unique_names : true,

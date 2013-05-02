@@ -9,6 +9,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		<link rel="stylesheet" href="styles/style.css" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css" type="text/css" />
 		<link rel="stylesheet" href="styles/jquery.css" type="text/css" />
+		<link rel="stylesheet" href="styles/jquery.Jcrop.min.css" type="text/css" />
 		<link rel="stylesheet" href="../includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="../includes/jscripts/slimbox/css/slimbox2.css" type="text/css" media="screen" />
 		<script type="text/javascript" src="../includes/jscripts/jquery/jquery.js"></script>
@@ -18,6 +19,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		<script type="text/javascript" src="../includes/jscripts/plupload/js/plupload.full.js"></script>
 		<script type="text/javascript" src="../includes/jscripts/plupload/js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 		<script type="text/javascript" src="../includes/jscripts/plupload/js/i18n/de.js"></script>
+		<script type="text/javascript" src="../includes/jscripts/jcrop/jquery.Jcrop.min.js"></script>
 	</head>
 	<body>
 		<div class="menu">

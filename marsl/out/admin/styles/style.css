@@ -277,3 +277,8 @@ th {
 .cbenews {
 	color: #FF0000;
 }
+
+.news_photo {
+	margin-left: auto;
+	margin-right: auto;
+}
