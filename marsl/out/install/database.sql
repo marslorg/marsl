@@ -152,6 +152,7 @@ CREATE  TABLE IF NOT EXISTS `news` (
   `postdate` INT NOT NULL ,
   `expire` INT NULL ,
   `featured` TINYINT(1) NOT NULL DEFAULT false ,
+  `corrected` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`news`) ,
   INDEX `author_user_idx` (`author` ASC) ,
   INDEX `admin_user_idx` (`admin` ASC) ,
@@ -440,7 +441,6 @@ CREATE  TABLE IF NOT EXISTS `band` (
   PRIMARY KEY (`id`) ,
   INDEX `band_tag_idx` (`id` ASC) )
 ENGINE = MyISAM;
-
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

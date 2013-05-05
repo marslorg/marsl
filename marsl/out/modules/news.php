@@ -73,6 +73,7 @@ class News implements Module {
 							$teaser = $basic->cleanHTML($_POST['teaser']);
 							$text = $basic->cleanHTML($_POST['text']);
 							$city = $basic->cleanHTML($_POST['city']);
+							$corrected = isset($_POST['corrected']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
 								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']]);
@@ -86,6 +87,7 @@ class News implements Module {
 							$headline = mysql_real_escape_string($_POST['headline']);
 							$title = mysql_real_escape_string($_POST['title']);
 							$location = mysql_real_escape_string($_POST['category']);
+							$corrected = isset($_POST['corrected']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
 								$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
@@ -129,8 +131,8 @@ class News implements Module {
 									}
 								}
 
-								$db->query("INSERT INTO `news`(`author`,`author_ip`,`headline`,`title`,`teaser`,`text`,`picture1`,`picture2`,`date`,`visible`,`deleted`,`location`,`city`,`postdate`) 
-								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate')");
+								$db->query("INSERT INTO `news`(`author`,`author_ip`,`headline`,`title`,`teaser`,`text`,`picture1`,`picture2`,`date`,`visible`,`deleted`,`location`,`city`,`postdate`,`corrected`) 
+								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate','$corrected')");
 								$newsID = mysql_insert_id();
 								foreach ($moduleTags as $moduleTag) {
 									if ($moduleTag['type']=="general_general") {
@@ -165,6 +167,7 @@ class News implements Module {
 								$teaser = "";
 								$text = "";
 								$city = "";
+								$corrected = false;
 								$tmpModuleTags = array();
 								foreach ($moduleTags as $moduleTag) {
 									$moduleTag['tags'] = "";
@@ -194,6 +197,7 @@ class News implements Module {
 					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 						$id = htmlentities($row['news']);
 						$author = $row['author'];
+						$corrected = $row['corrected'];
 						$authorName = htmlentities($user->getAcronymbyID($author));
 						$authorIP = htmlentities($row['author_ip']);
 						$location = htmlentities($navigation->getNamebyID($row['location']));
@@ -226,7 +230,7 @@ class News implements Module {
 						$city = htmlentities($row['city']);
 						$date = date("d\.m\.Y", $row['date']);
 						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
-						array_push($news,array('author'=>$authorName,'authorIP'=>$authorIP,'news'=>$id, 'location'=>$location, 'headline'=>$headline, 'title'=>$title, 'teaser'=>$teaser, 'picture1'=>$picture1, 'photograph1'=>$photograph1, 'city'=>$city, 'date'=>$date, 'postdate'=>$postdate, 'text'=>$text));
+						array_push($news,array('author'=>$authorName,'authorIP'=>$authorIP,'news'=>$id, 'location'=>$location, 'headline'=>$headline, 'title'=>$title, 'teaser'=>$teaser, 'picture1'=>$picture1, 'photograph1'=>$photograph1, 'city'=>$city, 'date'=>$date, 'postdate'=>$postdate, 'text'=>$text, 'corrected'=>$corrected));
 					}
 				}
 				$authTime = time();
@@ -234,14 +238,12 @@ class News implements Module {
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
-				/*
-				 * TODO Tag-Editing
-				 */
 				$id = mysql_real_escape_string(htmlentities($_GET['id']));
 				if ($db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'")) {
 					$result = $db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 					while ($row = mysql_fetch_array($result)) {
 						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+							$corrected = $row['corrected'];
 							$headline = htmlentities($row['headline']);
 							$title = htmlentities($row['title']);
 							$category = htmlentities($row['location']);
@@ -287,6 +289,7 @@ class News implements Module {
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
+										$corrected = isset($_POST['corrected']);
 										$tmpModuleTags = array();
 										foreach ($moduleTags as $moduleTag) {
 											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']]);
@@ -300,6 +303,7 @@ class News implements Module {
 										$headline = mysql_real_escape_string($_POST['headline']);
 										$title = mysql_real_escape_string($_POST['title']);
 										$location = mysql_real_escape_string($_POST['category']);
+										$corrected = isset($_POST['corrected']);
 										$date = "";
 										$postdate = time();
 										$city = mysql_real_escape_string($_POST['city']);
@@ -342,7 +346,7 @@ class News implements Module {
 										$moduleTags = $tmpModuleTags;
 										$admin = mysql_real_escape_string($user->getID());
 										$adminIP = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
-										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city' WHERE `news`='$id'"); 
+										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city', `corrected`='$corrected' WHERE `news`='$id'"); 
 										foreach ($moduleTags as $moduleTag) {
 											if ($moduleTag['type']=="general_general") {
 												$this->addTags($moduleTag['tags'], "general_general", $id);
@@ -404,6 +408,7 @@ class News implements Module {
 				$result = $db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row = mysql_fetch_array($result)) {
 					$id = htmlentities($row['news']);
+					$corrected = $row['corrected'];
 					$author = htmlentities($user->getAcronymbyID($row['author']));
 					$authorIP = htmlentities($row['author_ip']);
 					$category = $row['location'];
@@ -426,7 +431,7 @@ class News implements Module {
 							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph']);
 						}
 					}
-					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP));
+					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP, 'corrected'=>$corrected));
 				}
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
@@ -440,6 +445,7 @@ class News implements Module {
 					$submitLink = (($row['visible']==0)&&($auth->locationAdminAllowed($row['location'], $role->getRole())));
 					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$author = $row['author'];
+					$corrected = $row['corrected'];
 					$authorName = htmlentities($user->getAcronymbyID($author));
 					$id = htmlentities($id);
 					$authorIP = htmlentities($row['author_ip']);

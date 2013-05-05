@@ -155,6 +155,7 @@ CREATE  TABLE IF NOT EXISTS `mydb`.`news` (
   `postdate` INT NOT NULL ,
   `expire` INT NULL ,
   `featured` TINYINT(1) NOT NULL DEFAULT false ,
+  `corrected` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`news`) ,
   INDEX `author_user_idx` (`author` ASC) ,
   INDEX `admin_user_idx` (`admin` ASC) ,

@@ -212,6 +212,10 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			<td><textarea name="text" rows="30"><?php echo $text; ?></textarea></td>
 		</tr>
 		<tr>
+			<td class="top">Korrigiert: </td>
+			<td><input type="checkbox" name="corrected" value="1" <?php if ($corrected): ?>checked<?php endif; ?> /></td>
+		</tr>
+		<tr>
 			<td colspan="2">
 				<table class="news_photo" id="teaser_photo_form">
 					<tr><td colspan="2" class="center"><h3>Teaser Foto</h3></td></tr>
