@@ -43,6 +43,7 @@ class News implements Module {
 				 * TODO Tag-Editing
 				 */
 				$headline = "";
+				$corrected = false;
 				$title = "";
 				$category = "";
 				$day = "DD";
