@@ -43,7 +43,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			  fjs.parentNode.insertBefore(js, fjs);
 			}(document, 'script', 'facebook-jssdk'));</script>
 			
-			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="250" data-show-faces="true" data-stream="true" data-header="true"></div>
+			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="230" data-show-faces="true" data-stream="true" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
 				<a href="http://de.dressfirst.com/Brautkleider-c2/" target="_blank">Brautkleider</a><br />

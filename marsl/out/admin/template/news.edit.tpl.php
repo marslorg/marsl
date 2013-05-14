@@ -78,7 +78,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 
 	function uploadTeaser() {
 		var reader = new FileReader();
-		reader.onload = function () {
+		reader.onloadend = function () {
 			var photograph = $('#teaser_photo_photograph').val();
 			var fileName = $('#teaser_photo').val();
 			document.getElementById('teaser_photo_form').innerHTML = '<tr><td class="center"><br />Je nach Gr&ouml;&szlig;e des Fotos kann dieser Vorgang etwas dauern.<br /><img src="../includes/graphics/big_loader.gif" /></td></tr>';
