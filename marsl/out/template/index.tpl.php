@@ -26,7 +26,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		</div>
 		<div class="menu">
 			<ul>
-			<?php $navigation->display(); ?>
+				<?php $navigation->display(); ?>
 			</ul>
 		</div>
 		<hr class="naviseparator" />
