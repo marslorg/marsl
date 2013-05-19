@@ -63,7 +63,7 @@ class Register {
 					$possibleRole = mysql_real_escape_string($possibleRole);
 					$result = $db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = mysql_fetch_array($result)) {
-						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'])));
+						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'], ENT_HTML5, "ISO-8859-1")));
 					}
 				}
 			}

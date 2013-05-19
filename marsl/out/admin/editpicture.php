@@ -38,8 +38,8 @@ class EditPicture {
 			while ($row = mysql_fetch_array($result)) {
 				if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 					$subtitle = $row['subtitle'];
-					$path = "../albums/".htmlentities($row['folder']).htmlentities($row['filename']);
-					$picture = htmlentities($row['picture']);
+					$path = "../albums/".htmlentities($row['folder'], ENT_HTML5, "ISO-8859-1").htmlentities($row['filename'], ENT_HTML5, "ISO-8859-1");
+					$picture = htmlentities($row['picture'], ENT_HTML5, "ISO-8859-1");
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
 					require_once("template/gallery.editpicture.tpl.php");

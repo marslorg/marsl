@@ -49,7 +49,7 @@ class Location {
 			$result = $db->query("SELECT `id`, `tag` FROM `location` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
 			while ($row = mysql_fetch_array($result)) {
 				$id = $row['id'];
-				$tag = htmlentities($row['tag']);
+				$tag = htmlentities($row['tag'], ENT_HTML5, "ISO-8859-1");
 				array_push($clubs, array('id'=>$id, 'tag'=>$tag));
 			}
 			require_once("template/cbe.clubs.tpl.php");
@@ -92,7 +92,7 @@ class Location {
 									$duplicateID = $row['id'];
 									$result2 = $db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
 									while ($row2 = mysql_fetch_array($result2)) {
-										$oldTag = htmlentities($row2['tag']);
+										$oldTag = htmlentities($row2['tag'], ENT_HTML5, "ISO-8859-1");
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
 										while ($db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
@@ -145,7 +145,7 @@ class Location {
 								$duplicateID = $row['id'];
 								$result2 = $db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
 								while ($row2 = mysql_fetch_array($result2)) {
-									$oldTag = htmlentities($row2['tag']);
+									$oldTag = htmlentities($row2['tag'], ENT_HTML5, "ISO-8859-1");
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
 									while ($db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
@@ -194,19 +194,19 @@ class Location {
 		$result = $db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_location' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
 		while ($row = mysql_fetch_array($result)) {
 			$newsID = $row['news'];
-			$headline = htmlentities($row['headline']);
-			$title = htmlentities($row['title']);
+			$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
+			$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
 		$result = $db->query("SELECT `tag`, `street`, `number`, `zip`, `city`, `country`, `capacity`, `info` FROM `location` WHERE `id`='$id'");
 		while ($row = mysql_fetch_array($result)) {
-			$tag = htmlentities($row['tag']);
-			$street = htmlentities($row['street']);
-			$number = htmlentities($row['number']);
-			$zip = htmlentities($row['zip']);
-			$city = htmlentities($row['city']);
-			$country = htmlentities($row['country']);
-			$capacity = htmlentities($row['capacity']);
+			$tag = htmlentities($row['tag'], ENT_HTML5, "ISO-8859-1");
+			$street = htmlentities($row['street'], ENT_HTML5, "ISO-8859-1");
+			$number = htmlentities($row['number'], ENT_HTML5, "ISO-8859-1");
+			$zip = htmlentities($row['zip'], ENT_HTML5, "ISO-8859-1");
+			$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
+			$country = htmlentities($row['country'], ENT_HTML5, "ISO-8859-1");
+			$capacity = htmlentities($row['capacity'], ENT_HTML5, "ISO-8859-1");
 			$info = $row['info'];
 			require_once("template/cbe.clubs.edit.tpl.php");
 		}

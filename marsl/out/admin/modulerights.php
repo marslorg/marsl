@@ -34,7 +34,7 @@ class ModuleRights {
 			else if ($_GET['action']=="role") {
 				$module = $basic->getModule($_GET['module']);
 				$moduleID = mysql_real_escape_string($module['file']);
-				$name = htmlentities($module['name']);
+				$name = htmlentities($module['name'], ENT_HTML5, "ISO-8859-1");
 				if ($auth->moduleAdminAllowed($moduleID, $role->getRole())&&$auth->moduleExtendedAllowed($moduleID, $role->getRole())
 				&&$auth->moduleWriteAllowed($moduleID, $role->getRole())&&$auth->moduleReadAllowed($moduleID, $role->getRole())) {
 					$roles = $role->getPossibleRoles($role->getRole());
@@ -58,13 +58,13 @@ class ModuleRights {
 							if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'")) {
 								$result = $db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = mysql_fetch_array($result)) {
-									$roleName = htmlentities($role->getNamebyID($row['role']));
-									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role']),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
+									$roleName = htmlentities($role->getNamebyID($row['role']), ENT_HTML5, "ISO-8859-1");
+									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], ENT_HTML5, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}
 							}
 							else {
-								$roleName = htmlentities($role->getNamebyID($roleID));
-								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
+								$roleName = htmlentities($role->getNamebyID($roleID), ENT_HTML5, "ISO-8859-1");
+								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, ENT_HTML5, "ISO-8859-1"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 							}
 						}
 					}

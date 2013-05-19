@@ -91,12 +91,12 @@ class Gallery implements Module {
 				$start = mysql_real_escape_string($start);
 				$result = $db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' ORDER BY `album` DESC LIMIT $start,$end");
 				while ($row = mysql_fetch_array($result)) {
-					$id = htmlentities($row['album']);
+					$id = htmlentities($row['album'], ENT_HTML5, "ISO-8859-1");
 					$author = $row['author'];
-					$authorName = htmlentities($user->getAcronymbyID($author));
-					$photograph = htmlentities($row['photograph']);
-					$authorIP = htmlentities($row['author_ip']);
-					$location = htmlentities($navigation->getNamebyID($row['location']));
+					$authorName = htmlentities($user->getAcronymbyID($author), ENT_HTML5, "ISO-8859-1");
+					$photograph = htmlentities($row['photograph'], ENT_HTML5, "ISO-8859-1");
+					$authorIP = htmlentities($row['author_ip'], ENT_HTML5, "ISO-8859-1");
+					$location = htmlentities($navigation->getNamebyID($row['location']), ENT_HTML5, "ISO-8859-1");
 					$locationAdmin = $auth->locationAdminAllowed($row['location'], $role->getRole());
 					$editLink = ($moduleExtended&&$locationAdmin);
 					$description = $row['description'];
@@ -151,12 +151,12 @@ class Gallery implements Module {
 			$pictures = array();
 			$result = $db->query("SELECT `picture`.`visible` AS `visibility`, `folder`, `picture`, `subtitle`, `filename` FROM `picture` JOIN `album` USING(`album`) WHERE `album`='$album' AND `picture`.`deleted`='0' ORDER BY `filename`");
 			while ($row = mysql_fetch_array($result)) {
-				$picture = htmlentities($row['picture']);
-				$subtitle = htmlentities($row['subtitle']);
-				$filename = htmlentities($row['filename']);
+				$picture = htmlentities($row['picture'], ENT_HTML5, "ISO-8859-1");
+				$subtitle = htmlentities($row['subtitle'], ENT_HTML5, "ISO-8859-1");
+				$filename = htmlentities($row['filename'], ENT_HTML5, "ISO-8859-1");
 				$visible = $row['visibility'];
 				$administrator = ($moduleExtended&&$moduleAdmin&&$locationAdmin);
-				$folder = htmlentities($row['folder']);
+				$folder = htmlentities($row['folder'], ENT_HTML5, "ISO-8859-1");
 				
 				$thumbPath = "../albums/".$folder."thumb_".$filename;
 				$picPath = "../albums/".$folder.$filename;
@@ -182,7 +182,7 @@ class Gallery implements Module {
 			while ($row = mysql_fetch_array($result)) {
 				$location = $row['location'];
 				if ($auth->locationAdminAllowed($location, $role->getRole())) {
-					$album = htmlentities($row['album']);
+					$album = htmlentities($row['album'], ENT_HTML5, "ISO-8859-1");
 					require_once("template/gallery.addphoto.tpl.php");
 				}
 			}
@@ -226,20 +226,20 @@ class Gallery implements Module {
 			$result = $db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = mysql_fetch_array($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					array_push($locations,array('location'=>htmlentities($row['id']),'name'=>htmlentities($row['name'])));
+					array_push($locations,array('location'=>htmlentities($row['id'], ENT_HTML5, "ISO-8859-1"),'name'=>htmlentities($row['name'], ENT_HTML5, "ISO-8859-1")));
 				}
 			}
 			$result = $db->query("SELECT * FROM `album` WHERE `album`='$album'");
 			while ($row = mysql_fetch_array($result)) {
 				$category = $row['location'];
 				if ($auth->locationAdminAllowed($category, $role->getRole())) {
-					$photograph = htmlentities($row['photograph']);
-					$category = htmlentities($category);
+					$photograph = htmlentities($row['photograph'], ENT_HTML5, "ISO-8859-1");
+					$category = htmlentities($category, ENT_HTML5, "ISO-8859-1");
 					$day = date("d", $row['date']);
 					$month = date("m", $row['date']);
 					$year = date("Y", $row['date']);
 					$description = $row['description'];
-					$album = htmlentities($_GET['id']);
+					$album = htmlentities($_GET['id'], ENT_HTML5, "ISO-8859-1");
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
 					require_once("template/gallery.edit.tpl.php");
@@ -312,12 +312,12 @@ class Gallery implements Module {
 				$result = $db->query("SELECT * FROM `album` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = mysql_fetch_array($result)) {
 					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-						$id = htmlentities($row['album']);
+						$id = htmlentities($row['album'], ENT_HTML5, "ISO-8859-1");
 						$author = $row['author'];
-						$authorName = htmlentities($user->getAcronymbyID($author));
-						$authorIP = htmlentities($row['author_ip']);
-						$photograph = htmlentities($row['photograph']);
-						$location = htmlentities($navigation->getNamebyID($row['location']));
+						$authorName = htmlentities($user->getAcronymbyID($author), ENT_HTML5, "ISO-8859-1");
+						$authorIP = htmlentities($row['author_ip'], ENT_HTML5, "ISO-8859-1");
+						$photograph = htmlentities($row['photograph'], ENT_HTML5, "ISO-8859-1");
+						$location = htmlentities($navigation->getNamebyID($row['location']), ENT_HTML5, "ISO-8859-1");
 						$description = $row['description'];
 						$date = date("d\.m\.Y", $row['date']);
 						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
@@ -349,7 +349,7 @@ class Gallery implements Module {
 			$result = $db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = mysql_fetch_array($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
-					array_push($locations,array('location'=>htmlentities($row['id']), 'name'=>htmlentities($row['name'])));
+					array_push($locations,array('location'=>htmlentities($row['id'], ENT_HTML5, "ISO-8859-1"), 'name'=>htmlentities($row['name'], ENT_HTML5, "ISO-8859-1")));
 				}
 			}
 			$authTime = time();
@@ -383,7 +383,7 @@ class Gallery implements Module {
 			$result = $db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = mysql_fetch_array($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					array_push($locations,array('location'=>htmlentities($row['id']),'name'=>htmlentities($row['name'])));
+					array_push($locations,array('location'=>htmlentities($row['id'], ENT_HTML5, "ISO-8859-1"),'name'=>htmlentities($row['name'], ENT_HTML5, "ISO-8859-1")));
 				}
 			}
 			$authTime = time();
@@ -427,13 +427,13 @@ class Gallery implements Module {
 				$result = $db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `album` DESC LIMIT $start,$end");
 				while ($row = mysql_fetch_array($result)) {
 					$album = mysql_real_escape_string($row['album']);
-					$folder = htmlentities($row['folder']);
+					$folder = htmlentities($row['folder'], ENT_HTML5, "ISO-8859-1");
 					$photograph = $row['photograph'];
 					$date = date("d\.m\.Y", $row['date']);
 					$description = $row['description'];
 					$result2 = $db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY RAND() LIMIT 1");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$file = htmlentities($row2['filename']);
+						$file = htmlentities($row2['filename'], ENT_HTML5, "ISO-8859-1");
 						$picture = "albums/".$folder."thumb_".$file;
 						$picSize = getimagesize($picture);
 						array_push($galleries,array('album'=>$album,'photograph'=>$photograph,'date'=>$date,'description'=>$description,'picture'=>$picture,'picSize'=>$picSize));
@@ -452,16 +452,16 @@ class Gallery implements Module {
 					$pictures = array();
 					$result = $db->query("SELECT * FROM `album` WHERE `album`='$album' AND `location`='$location' AND `visible`='1' AND `deleted`='0'");
 					while ($row = mysql_fetch_array($result)) {
-						$folder = htmlentities($row['folder']);
-						$photograph = htmlentities($row['photograph']);
+						$folder = htmlentities($row['folder'], ENT_HTML5, "ISO-8859-1");
+						$photograph = htmlentities($row['photograph'], ENT_HTML5, "ISO-8859-1");
 						$result2 = $db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY `filename`");
 						while ($row2 = mysql_fetch_array($result2)) {
-							$file = htmlentities($row2['filename']);
-							$id = htmlentities($row2['picture']);
+							$file = htmlentities($row2['filename'], ENT_HTML5, "ISO-8859-1");
+							$id = htmlentities($row2['picture'], ENT_HTML5, "ISO-8859-1");
 							$thumb = "albums/".$folder."thumb_".$file;
 							$picture = "albums/".$folder.$file;
 							$picSize = getimagesize($picture);
-							$subtitle = htmlentities($row2['subtitle']);
+							$subtitle = htmlentities($row2['subtitle'], ENT_HTML5, "ISO-8859-1");
 							array_push($pictures,array('subtitle'=>$subtitle, 'id'=>$id,'thumb'=>$thumb,'picture'=>$picture,'picSize'=>$picSize));
 						}
 						require_once("template/gallery.thumbs.tpl.php");

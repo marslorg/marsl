@@ -173,7 +173,7 @@ class User {
 		$db = new DB();
 		$result = $db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1'");
 		while ($row = mysql_fetch_array($result)) {
-			$mail = htmlentities($row['email']);
+			$mail = htmlentities($row['email'], ENT_HTML5, "ISO-8859-1");
 		}
 		return $mail;
 	}
@@ -187,7 +187,7 @@ class User {
 		$db = new DB();
 		$result = $db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
 		while ($row = mysql_fetch_array($result)) {
-			$name = htmlentities($row['nickname']);
+			$name = htmlentities($row['nickname'], ENT_HTML5, "ISO-8859-1");
 		}
 		return $name;
 	}
@@ -201,7 +201,7 @@ class User {
 		$db = new DB();
 		$result = $db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
 		while ($row = mysql_fetch_array($result)) {
-			$name = htmlentities($row['acronym']);
+			$name = htmlentities($row['acronym'], ENT_HTML5, "ISO-8859-1");
 			if (empty($name)) {
 				$name = $this->getNickbyID($user);
 			}
@@ -218,7 +218,7 @@ class User {
 		$db = new DB();
 		$result = $db->query("SELECT `nickname` FROM `email` NATURAL JOIN `user` WHERE `email`='$mail' AND `confirmed`='1'");
 		while ($row = mysql_fetch_array($result)) {
-			$name = htmlentities($row['nickname']);
+			$name = htmlentities($row['nickname'], ENT_HTML5, "ISO-8859-1");
 		}
 		return $name;
 	}

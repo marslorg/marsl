@@ -28,7 +28,7 @@ class Navigation implements Module {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 						if (empty($row['maps_to'])) {
 							$roleEditor = $auth->locationAdminAllowed($row['id'], $role->getRole())&&$auth->locationExtendedAllowed($row['id'], $role->getRole())&&$auth->locationWriteAllowed($row['id'], $role->getRole())&&$auth->locationReadAllowed($row['id'], $role->getRole());
-							$name = htmlentities($row['name']);
+							$name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
 							array_push($categories, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
 						}
 					}
@@ -40,7 +40,7 @@ class Navigation implements Module {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 						if (empty($row['maps_to'])) {
 							$roleEditor = $auth->locationAdminAllowed($row['id'], $role->getRole())&&$auth->locationExtendedAllowed($row['id'], $role->getRole())&&$auth->locationWriteAllowed($row['id'], $role->getRole())&&$auth->locationReadAllowed($row['id'], $role->getRole());
-							$name = htmlentities($row['name']);
+							$name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
 							array_push($catcontents, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
 						}
 					}
@@ -52,7 +52,7 @@ class Navigation implements Module {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 						if (empty($row['maps_to'])) {
 							$roleEditor = $auth->locationAdminAllowed($row['id'], $role->getRole())&&$auth->locationExtendedAllowed($row['id'], $role->getRole())&&$auth->locationWriteAllowed($row['id'], $role->getRole())&&$auth->locationReadAllowed($row['id'], $role->getRole());
-							$name = htmlentities($row['name']);
+							$name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
 							array_push($links, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'category' => $row['category'], 'role' => $roleEditor));
 						}
 					}
@@ -77,15 +77,15 @@ class Navigation implements Module {
 			while ($row = mysql_fetch_array($result)) {
 				
 				if ($auth->locationReadAllowed($row['id'], $role->getRole())) {
-					$cat_id = htmlentities($row['id']);
-					$cat_name = htmlentities($row['name']);
-					$cat_type = htmlentities($row['type']);
+					$cat_id = htmlentities($row['id'], ENT_HTML5, "ISO-8859-1");
+					$cat_name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
+					$cat_type = htmlentities($row['type'], ENT_HTML5, "ISO-8859-1");
 					
 					$result_links = $db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='2' AND `category`='$cat_id' ORDER BY `pos`");
 					$links = array();
 					while ($row_links = mysql_fetch_array($result_links)) {
 						if ($auth->locationReadAllowed($row_links['id'], $role->getRole())) {
-							array_push($links, array('id' => htmlentities($row_links['id']), 'name' => htmlentities($row_links['name'])));
+							array_push($links, array('id' => htmlentities($row_links['id'], ENT_HTML5, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], ENT_HTML5, "ISO-8859-1")));
 						}
 					}
 					
@@ -155,7 +155,7 @@ class Navigation implements Module {
 			else if ($action=="role") {
 				$id = mysql_real_escape_string($_GET['id']);
 				if ($auth->locationAdminAllowed($id, $role->getRole())&&$auth->locationExtendedAllowed($id, $role->getRole())&&$auth->locationWriteAllowed($id, $role->getRole())&&$auth->locationReadAllowed($id, $role->getRole())) {
-					$name = htmlentities($this->getNamebyID($id));
+					$name = htmlentities($this->getNamebyID($id), ENT_HTML5, "ISO-8859-1");
 					$roles = $role->getPossibleRoles($role->getRole());
 					if (isset($_POST['change'])) {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -177,13 +177,13 @@ class Navigation implements Module {
 							if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id'")) {
 								$result = $db->query("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
 								while ($row = mysql_fetch_array($result)) {
-									$roleName = htmlentities($role->getNamebyID($row['role']));
-									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role']),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
+									$roleName = htmlentities($role->getNamebyID($row['role']), ENT_HTML5, "ISO-8859-1");
+									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], ENT_HTML5, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}
 							}
 							else {
-								$roleName = htmlentities($role->getNamebyID($roleID));
-								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
+								$roleName = htmlentities($role->getNamebyID($roleID), ENT_HTML5, "ISO-8859-1");
+								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, ENT_HTML5, "ISO-8859-1"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 							}
 						}
 					}

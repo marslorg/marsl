@@ -46,11 +46,11 @@ class Thread {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
-				$title = htmlentities($row['title']);
+				$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
 				$postAuthor = $row['postauthor'];
 				$threadAuthor = $row['threadauthor'];
-				$postNickname = htmlentities($user->getNickbyID($postAuthor));
-				$threadNickname = htmlentities($user->getNickbyID($threadAuthor));
+				$postNickname = htmlentities($user->getNickbyID($postAuthor), ENT_HTML5, "ISO-8859-1");
+				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), ENT_HTML5, "ISO-8859-1");
 				$viewcount = $row['viewcount'];
 				$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
 				$type = "closed";
@@ -103,7 +103,7 @@ class Thread {
 		$title = "";
 		$result = $db->query("SELECT `title` FROM `thread` WHERE `thread`='$thread' AND NOT (`type`='4')");
 		while ($row = mysql_fetch_array($result)) {
-			$title = htmlentities($row['title']);
+			$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
 		}
 		return $title;
 	}
@@ -124,11 +124,11 @@ class Thread {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
-				$title = htmlentities($row['title']);
+				$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
 				$postAuthor = $row['postauthor'];
 				$threadAuthor = $row['threadauthor'];
-				$postNickname = htmlentities($user->getNickbyID($postAuthor));
-				$threadNickname = htmlentities($user->getNickbyID($threadAuthor));
+				$postNickname = htmlentities($user->getNickbyID($postAuthor), ENT_HTML5, "ISO-8859-1");
+				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), ENT_HTML5, "ISO-8859-1");
 				$viewcount = $row['viewcount'];
 				$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
 				$page = $this->getPageNumber($thread);
@@ -151,11 +151,11 @@ class Thread {
 			$thread = $row['thread'];
 			$post = $row['post'];
 			$postcount = $row['postcount']-1;
-			$title = htmlentities($row['title']);
+			$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
 			$postAuthor = $row['postauthor'];
 			$threadAuthor = $row['threadauthor'];
-			$postNickname = htmlentities($user->getNickbyID($postAuthor));
-			$threadNickname = htmlentities($user->getNickbyID($threadAuthor));
+			$postNickname = htmlentities($user->getNickbyID($postAuthor), ENT_HTML5, "ISO-8859-1");
+			$threadNickname = htmlentities($user->getNickbyID($threadAuthor), ENT_HTML5, "ISO-8859-1");
 			$viewcount = $row['viewcount'];
 			$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
 			$page = $this->getPageNumber($thread);
@@ -229,7 +229,7 @@ class Thread {
 				$result = $db->query("SELECT `board`, `title` FROM `board` WHERE `type`='1'");
 				while ($row = mysql_fetch_array($result)) {
 					$destinationID = $row['board'];
-					$destinationTitle = htmlentities($row['title']);
+					$destinationTitle = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
 					if ($board->readAllowed($destinationID, $role->getRole())&&$board->writeAllowed($destinationID, $role->getRole())&&$auth->locationReadAllowed($board->getLocation($destinationID), $role->getRole())&&$auth->locationWriteAllowed($board->getLocation($destinationID), $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())) {
 						array_push($boards, array('board'=>$destinationID, 'title'=>$destinationTitle));
 					}

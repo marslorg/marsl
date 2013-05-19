@@ -21,7 +21,7 @@ class Main {
 		$db->connect();
 		
 		$basic = new Basic();
-		$title = htmlentities($basic->getTitle());
+		$title = htmlentities($basic->getTitle(), ENT_HTML5, "ISO-8859-1");
 		$domain = $config->getDomain();
 		$navigation = new Navigation();
 		$urlloader = new URLLoader();
