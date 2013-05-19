@@ -55,12 +55,12 @@ class Post {
 						$post = $row['post'];
 						$date = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['date']);
 						$operator = $row['operator'];
-						$operatorNickname = htmlentities($user->getNickbyID($operator), ENT_HTML5, "ISO-8859-1");
+						$operatorNickname = htmlentities($user->getNickbyID($operator), null, "ISO-8859-1");
 						$lastedit = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['lastedit']);
 						$content = $row['content'];
-						$ip = htmlentities($row['ip'], ENT_HTML5, "ISO-8859-1");
+						$ip = htmlentities($row['ip'], null, "ISO-8859-1");
 						$author = $row['author'];
-						$authorNickname = htmlentities($user->getNickbyID($author), ENT_HTML5, "ISO-8859-1");
+						$authorNickname = htmlentities($user->getNickbyID($author), null, "ISO-8859-1");
 						$editable = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole())))));
 						array_push($posts, array('post'=>$post, 'date'=>$date, 'operator'=>$operator, 'operatorNickname'=>$operatorNickname, 'lastedit'=>$lastedit, 'content'=>$content, 'ip'=>$ip, 'author'=>$author, 'authorNickname'=>$authorNickname, 'editable'=>$editable));
 					}

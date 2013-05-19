@@ -18,7 +18,7 @@ class Recover {
 			$success = true;
 			$recover = true;
 			$basic = new Basic();
-			$title = htmlentities($basic->getTitle(), ENT_HTML5, "ISO-8859-1");
+			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 			require_once("template/recover.tpl.php");
 		}
 		else {
@@ -66,7 +66,7 @@ class Recover {
 	 */
 	private function recoverBox() {
 		$basic = new Basic();
-		$title = htmlentities($basic->getTitle(), ENT_HTML5, "ISO-8859-1");
+		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$time = $_GET['time'];
 		$recover = false;
 		$uid = "";

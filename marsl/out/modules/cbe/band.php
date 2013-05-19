@@ -49,7 +49,7 @@ class Band {
 			$result = $db->query("SELECT `id`, `tag` FROM `band` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
 			while ($row = mysql_fetch_array($result)) {
 				$id = $row['id'];
-				$tag = htmlentities($row['tag'], ENT_HTML5, "ISO-8859-1");
+				$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 				array_push($bands, array('id'=>$id, 'tag'=>$tag));
 			}
 			require_once("template/cbe.bands.tpl.php");
@@ -92,7 +92,7 @@ class Band {
 									$duplicateID = $row['id'];
 									$result2 = $db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
 									while ($row2 = mysql_fetch_array($result2)) {
-										$oldTag = htmlentities($row2['tag'], ENT_HTML5, "ISO-8859-1");
+										$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
 										while ($db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
@@ -145,7 +145,7 @@ class Band {
 								$duplicateID = $row['id'];
 								$result2 = $db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
 								while ($row2 = mysql_fetch_array($result2)) {
-									$oldTag = htmlentities($row2['tag'], ENT_HTML5, "ISO-8859-1");
+									$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
 									while ($db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
@@ -190,15 +190,15 @@ class Band {
 		$result = $db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_band' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
 		while ($row = mysql_fetch_array($result)) {
 			$newsID = $row['news'];
-			$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-			$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
+			$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+			$title = htmlentities($row['title'], null, "ISO-8859-1");
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
 		$result = $db->query("SELECT `tag`, `founded`, `ended`, `info` FROM `band` WHERE `id`='$id'");
 		while ($row = mysql_fetch_array($result)) {
-			$tag = htmlentities($row['tag'], ENT_HTML5, "ISO-8859-1");
-			$founded = htmlentities($row['founded'], ENT_HTML5, "ISO-8859-1");
-			$ended = htmlentities($row['ended'], ENT_HTML5, "ISO-8859-1");
+			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
+			$founded = htmlentities($row['founded'], null, "ISO-8859-1");
+			$ended = htmlentities($row['ended'], null, "ISO-8859-1");
 			$info = $row['info'];
 			require_once("template/cbe.bands.edit.tpl.php");
 		}

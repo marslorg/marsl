@@ -65,19 +65,19 @@ class News implements Module {
 						$failed = false;
 
 						if ($failed) {
-							$headline = htmlentities($_POST['headline'], ENT_HTML5, "ISO-8859-1");
-							$title = htmlentities($_POST['title'], ENT_HTML5, "ISO-8859-1");
+							$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+							$title = htmlentities($_POST['title'], null, "ISO-8859-1");
 							$category = $_POST['category'];
-							$day = htmlentities($_POST['day'], ENT_HTML5, "ISO-8859-1");
-							$month = htmlentities($_POST['month'], ENT_HTML5, "ISO-8859-1");
-							$year = htmlentities($_POST['year'], ENT_HTML5, "ISO-8859-1");
+							$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+							$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+							$year = htmlentities($_POST['year'], null, "ISO-8859-1");
 							$teaser = $basic->cleanHTML($_POST['teaser']);
 							$text = $basic->cleanHTML($_POST['text']);
 							$city = $basic->cleanHTML($_POST['city']);
 							$corrected = isset($_POST['corrected']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
-								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], ENT_HTML5, "ISO-8859-1");
+								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
 								array_push($tmpModuleTags, $moduleTag);
 							}
 							$moduleTags = $tmpModuleTags;
@@ -183,7 +183,7 @@ class News implements Module {
 				$result = $db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 				while ($row = mysql_fetch_array($result)) {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
-						array_push($locations,array('location'=>htmlentities($row['id'], ENT_HTML5, "ISO-8859-1"),'name'=>htmlentities($row['name'], ENT_HTML5, "ISO-8859-1")));
+						array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 					}
 				}
 				$authTime = time();
@@ -196,14 +196,14 @@ class News implements Module {
 				$result = $db->query("SELECT * FROM `news` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = mysql_fetch_array($result)) {
 					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-						$id = htmlentities($row['news'], ENT_HTML5, "ISO-8859-1");
+						$id = htmlentities($row['news'], null, "ISO-8859-1");
 						$author = $row['author'];
 						$corrected = $row['corrected'];
-						$authorName = htmlentities($user->getAcronymbyID($author), ENT_HTML5, "ISO-8859-1");
-						$authorIP = htmlentities($row['author_ip'], ENT_HTML5, "ISO-8859-1");
-						$location = htmlentities($navigation->getNamebyID($row['location']), ENT_HTML5, "ISO-8859-1");
-						$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-						$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
+						$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
+						$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
+						$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
+						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$teaser = $row['teaser'];
 						$text = $row['text'];
 						$picID1 = mysql_real_escape_string($row['picture1']);
@@ -217,7 +217,7 @@ class News implements Module {
 						while ($row2 = mysql_fetch_array($result2)) {
 							$picture1 = $row2['url'];
 							if (!empty($row2['photograph'])) {
-								$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+								$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 							}
 						}
 						$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
@@ -225,10 +225,10 @@ class News implements Module {
 							$picture2 = $row2['url'];
 							$subtitle2 = $row2['subtitle'];
 							if (!empty($row2['photograph'])) {
-								$photograph2 = " Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+								$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 							}
 						}
-						$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
+						$city = htmlentities($row['city'], null, "ISO-8859-1");
 						$date = date("d\.m\.Y", $row['date']);
 						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
 						array_push($news,array('author'=>$authorName,'authorIP'=>$authorIP,'news'=>$id, 'location'=>$location, 'headline'=>$headline, 'title'=>$title, 'teaser'=>$teaser, 'picture1'=>$picture1, 'photograph1'=>$photograph1, 'city'=>$city, 'date'=>$date, 'postdate'=>$postdate, 'text'=>$text, 'corrected'=>$corrected));
@@ -239,15 +239,15 @@ class News implements Module {
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
-				$id = mysql_real_escape_string(htmlentities($_GET['id']), ENT_HTML5, "ISO-8859-1");
+				$id = mysql_real_escape_string(htmlentities($_GET['id']), null, "ISO-8859-1");
 				if ($db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'")) {
 					$result = $db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 					while ($row = mysql_fetch_array($result)) {
 						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 							$corrected = $row['corrected'];
-							$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-							$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
-							$category = htmlentities($row['location'], ENT_HTML5, "ISO-8859-1");
+							$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+							$title = htmlentities($row['title'], null, "ISO-8859-1");
+							$category = htmlentities($row['location'], null, "ISO-8859-1");
 							$day = date("d", $row['date']);
 							$month = date("m", $row['date']);
 							$year = date("Y", $row['date']);
@@ -255,7 +255,7 @@ class News implements Module {
 							$text = $row['text'];
 							$picture1 = $row['picture1'];
 							$picture2 = $row['picture2'];
-							$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
+							$city = htmlentities($row['city'], null, "ISO-8859-1");
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
 								if ($moduleTag['type']=="general_general") {
@@ -281,19 +281,19 @@ class News implements Module {
 									$failed = false;
 
 									if ($failed) {
-										$headline = htmlentities($_POST['headline'], ENT_HTML5, "ISO-8859-1");
-										$title = htmlentities($_POST['title'], ENT_HTML5, "ISO-8859-1");
+										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
 										$category = $_POST['category'];
-										$day = htmlentities($_POST['day'], ENT_HTML5, "ISO-8859-1");
-										$month = htmlentities($_POST['month'], ENT_HTML5, "ISO-8859-1");
-										$year = htmlentities($_POST['year'], ENT_HTML5, "ISO-8859-1");
+										$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+										$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+										$year = htmlentities($_POST['year'], null, "ISO-8859-1");
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
 										$corrected = isset($_POST['corrected']);
 										$tmpModuleTags = array();
 										foreach ($moduleTags as $moduleTag) {
-											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], ENT_HTML5, "ISO-8859-1");
+											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
 											array_push($tmpModuleTags, $moduleTag);
 										}
 										$moduleTags = $tmpModuleTags;
@@ -362,18 +362,18 @@ class News implements Module {
 												$class->addTags($moduleTag['tags'], $scope, $id);
 											}
 										}
-										$headline = htmlentities($_POST['headline'], ENT_HTML5, "ISO-8859-1");
-										$title = htmlentities($_POST['title'], ENT_HTML5, "ISO-8859-1");
+										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
 										$category = $_POST['category'];
-										$day = htmlentities($_POST['day'], ENT_HTML5, "ISO-8859-1");
-										$month = htmlentities($_POST['month'], ENT_HTML5, "ISO-8859-1");
-										$year = htmlentities($_POST['year'], ENT_HTML5, "ISO-8859-1");
+										$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+										$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+										$year = htmlentities($_POST['year'], null, "ISO-8859-1");
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
 										$tmpModuleTags = array();
 										foreach ($moduleTags as $moduleTag) {
-											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], ENT_HTML5, "ISO-8859-1");
+											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
 											array_push($tmpModuleTags, $moduleTag);
 										}
 										$moduleTags = $tmpModuleTags;
@@ -384,7 +384,7 @@ class News implements Module {
 							$result = $db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 							while ($row = mysql_fetch_array($result)) {
 								if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
-									array_push($locations,array('location'=>htmlentities($row['id'], ENT_HTML5, "ISO-8859-1"),'name'=>htmlentities($row['name'], ENT_HTML5, "ISO-8859-1")));
+									array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 								}
 							}
 							$authTime = time();
@@ -408,28 +408,28 @@ class News implements Module {
 				$start = mysql_real_escape_string($start);
 				$result = $db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row = mysql_fetch_array($result)) {
-					$id = htmlentities($row['news'], ENT_HTML5, "ISO-8859-1");
+					$id = htmlentities($row['news'], null, "ISO-8859-1");
 					$corrected = $row['corrected'];
-					$author = htmlentities($user->getAcronymbyID($row['author']), ENT_HTML5, "ISO-8859-1");
-					$authorIP = htmlentities($row['author_ip'], ENT_HTML5, "ISO-8859-1");
+					$author = htmlentities($user->getAcronymbyID($row['author']), null, "ISO-8859-1");
+					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
 					$category = $row['location'];
 					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$location = $navigation->getNamebyID($category);
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
-					$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-					$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$picture1 = "empty";
 					$photograph1 = "";
 					$picID1 = mysql_real_escape_string($row['picture1']);
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
-					$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$teaser = $row['teaser'];
 					$text = $row['text'];
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url'], ENT_HTML5, "ISO-8859-1");
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP, 'corrected'=>$corrected));
@@ -447,12 +447,12 @@ class News implements Module {
 					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$author = $row['author'];
 					$corrected = $row['corrected'];
-					$authorName = htmlentities($user->getAcronymbyID($author), ENT_HTML5, "ISO-8859-1");
-					$id = htmlentities($id, ENT_HTML5, "ISO-8859-1");
-					$authorIP = htmlentities($row['author_ip'], ENT_HTML5, "ISO-8859-1");
-					$location = htmlentities($navigation->getNamebyID($row['location']), ENT_HTML5, "ISO-8859-1");
-					$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-					$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
+					$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
+					$id = htmlentities($id, null, "ISO-8859-1");
+					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
+					$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$teaser = $row['teaser'];
 					$text = $row['text'];
 					$picID1 = mysql_real_escape_string($row['picture1']);
@@ -464,20 +464,20 @@ class News implements Module {
 					$photograph2 = "";
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url'], ENT_HTML5, "ISO-8859-1");
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture2 = htmlentities($row2['url'], ENT_HTML5, "ISO-8859-1");
-						$subtitle2 = htmlentities($row2['subtitle'], ENT_HTML5, "ISO-8859-1");
+						$picture2 = htmlentities($row2['url'], null, "ISO-8859-1");
+						$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph2 = " Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
-					$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("\a\m d\. M Y \u\m H\:i\:s", $row['postdate']);
 					$authTime = time();
@@ -526,23 +526,23 @@ class News implements Module {
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("d\.m\.Y", $row['postdate']);
 					$author = $row['author'];
-					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), ENT_HTML5, "ISO-8859-1"));
+					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
 					$picID1 = mysql_real_escape_string($row['picture1']);
 					$picture1 = "empty";
 					$photograph1 = "";
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url'], ENT_HTML5, "ISO-8859-1");
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
-					$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-					$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
-					$id = htmlentities($row['news'], ENT_HTML5, "ISO-8859-1");
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$id = htmlentities($row['news'], null, "ISO-8859-1");
 					array_push($news,array('city'=>$city,'headline'=>$headline,'title'=>$title,'id'=>$id,'date'=>$date,'postdate'=>$postdate,'author'=>$authorName,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'teaser'=>$teaser,'text'=>$text));
 				}
 				require_once("template/news.main.tpl.php");
@@ -558,7 +558,7 @@ class News implements Module {
 				while ($row = mysql_fetch_array($result)) {
 					$date = date("d\.m\.Y", $row['date']);
 					$author = $row['author'];
-					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), ENT_HTML5, "ISO-8859-1"));
+					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
 					$picID1 = mysql_real_escape_string($row['picture1']);
 					$picID2 = mysql_real_escape_string($row['picture2']);
 					$picture1 = "empty";
@@ -568,24 +568,24 @@ class News implements Module {
 					$photograph2 = "";
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url'], ENT_HTML5, "ISO-8859-1");
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture2 = htmlentities($row2['url'], ENT_HTML5, "ISO-8859-1");
-						$subtitle2 = htmlentities($row2['subtitle'], ENT_HTML5, "ISO-8859-1");
+						$picture2 = htmlentities($row2['url'], null, "ISO-8859-1");
+						$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph2 = " Foto: ".htmlentities($row2['photograph'], ENT_HTML5, "ISO-8859-1");
+							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
-					$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-					$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$config = new Configuration();
 					$url = $config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
 					require_once("template/news.tpl.php");
@@ -727,8 +727,8 @@ class News implements Module {
 							WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC LIMIT $start,$end");
 					while ($row = mysql_fetch_array($result)) {
 						$teaser = $row['teaser'];
-						$headline = htmlentities($row['headline'], ENT_HTML5, "ISO-8859-1");
-						$title = htmlentities($row['title'], ENT_HTML5, "ISO-8859-1");
+						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$newsid = $row['news'];
 						$location = $row['location'];
 						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));

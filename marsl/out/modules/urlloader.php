@@ -21,15 +21,15 @@ class URLLoader implements Module {
 			while ($row = mysql_fetch_array($result)) {
 				
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					$cat_id = htmlentities($row['id'], ENT_HTML5, "ISO-8859-1");
-					$cat_name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
-					$cat_type = htmlentities($row['type'], ENT_HTML5, "ISO-8859-1");
+					$cat_id = htmlentities($row['id'], null, "ISO-8859-1");
+					$cat_name = htmlentities($row['name'], null, "ISO-8859-1");
+					$cat_type = htmlentities($row['type'], null, "ISO-8859-1");
 					$cat_id = mysql_real_escape_string($cat_id);
 					$result_links = $db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='2' AND `category`='$cat_id'");
 					$links = array();
 					while ($row_links = mysql_fetch_array($result_links)) {
 						if ($auth->locationReadAllowed($row_links['id'], $role->getRole())) {
-							array_push($links, array('id' => htmlentities($row_links['id'], ENT_HTML5, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], ENT_HTML5, "ISO-8859-1")));
+							array_push($links, array('id' => htmlentities($row_links['id'], null, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], null, "ISO-8859-1")));
 						}
 					}
 					
@@ -72,7 +72,7 @@ class URLLoader implements Module {
 				$locations = array();
 				$result = $db->query("SELECT * FROM `navigation` WHERE `type`='1' OR `type`='2'");
 				while ($row = mysql_fetch_array($result)) {
-					$name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
+					$name = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));
 				}
 				$authTime = time();
@@ -125,8 +125,8 @@ class URLLoader implements Module {
 					$foot = $row['foot'];
 				}
 				$navi = new Navigation();
-				$name = htmlentities($navi->getNamebyID($_GET['id']), ENT_HTML5, "ISO-8859-1");
-				$id = htmlentities($_GET['id'], ENT_HTML5, "ISO-8859-1");
+				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "ISO-8859-1");
+				$id = htmlentities($_GET['id'], null, "ISO-8859-1");
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
 				require_once("template/urlloader.content.tpl.php");

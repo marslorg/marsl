@@ -29,16 +29,16 @@ class UserData implements Module {
 					$possibleRoles = $role->getPossibleRoles($ownRole);
 					$result = $db->query("SELECT `user`, `user`.`role` AS `roleid`, `nickname`, `prename`, `acronym`, `regdate`, `email`, `postcount`, `user`.`name` AS `username`, `role`.`name` AS `rolename` FROM `user` JOIN `role` USING(`role`) LEFT OUTER JOIN `email` USING(`user`) WHERE `nickname` LIKE '$search%' ORDER BY `nickname`");
 					while ($row = mysql_fetch_array($result)) {
-						$userid = htmlentities($row['user'], ENT_HTML5, "ISO-8859-1");
-						$nickname = htmlentities($row['nickname'], ENT_HTML5, "ISO-8859-1");
-						$prename = htmlentities($row['prename'], ENT_HTML5, "ISO-8859-1");
-						$acronym = htmlentities($row['acronym'], ENT_HTML5, "ISO-8859-1");
+						$userid = htmlentities($row['user'], null, "ISO-8859-1");
+						$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
+						$prename = htmlentities($row['prename'], null, "ISO-8859-1");
+						$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
 						$regdate = date("d\. M Y\; H\:i\:s", $row['regdate']);
-						$email = htmlentities($row['email'], ENT_HTML5, "ISO-8859-1");
-						$postcount = htmlentities($row['postcount'], ENT_HTML5, "ISO-8859-1");
-						$name = htmlentities($row['username'], ENT_HTML5, "ISO-8859-1");
-						$rolename = htmlentities($row['rolename'], ENT_HTML5, "ISO-8859-1");
-						$roleid = htmlentities($row['roleid'], ENT_HTML5, "ISO-8859-1");
+						$email = htmlentities($row['email'], null, "ISO-8859-1");
+						$postcount = htmlentities($row['postcount'], null, "ISO-8859-1");
+						$name = htmlentities($row['username'], null, "ISO-8859-1");
+						$rolename = htmlentities($row['rolename'], null, "ISO-8859-1");
+						$roleid = htmlentities($row['roleid'], null, "ISO-8859-1");
 						$isMaster = $role->isMaster($ownRole, $roleid, $possibleRoles);
 						if ($user->getID()==$userid) {
 							$isMaster = true;
@@ -55,15 +55,15 @@ class UserData implements Module {
 						$possibleRoles = $role->getPossibleRoles($ownRole);
 						$result = $db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `email`, `name` FROM `user` LEFT OUTER JOIN `email` USING(`user`) WHERE `user`='$userID'");
 						while ($row = mysql_fetch_array($result)) {
-							$userRole = htmlentities($row['role'], ENT_HTML5, "ISO-8859-1");
+							$userRole = htmlentities($row['role'], null, "ISO-8859-1");
 							$isMaster = $role->isMaster($ownRole, $userRole, $possibleRoles);
 							if ($isMaster||($user->getID()==$userID)) {
-								$userID = htmlentities($row['user'], ENT_HTML5, "ISO-8859-1");
-								$nickname = htmlentities($row['nickname'], ENT_HTML5, "ISO-8859-1");
-								$prename = htmlentities($row['prename'], ENT_HTML5, "ISO-8859-1");
-								$acronym = htmlentities($row['acronym'], ENT_HTML5, "ISO-8859-1");
-								$email = htmlentities($row['email'], ENT_HTML5, "ISO-8859-1");
-								$name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
+								$userID = htmlentities($row['user'], null, "ISO-8859-1");
+								$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
+								$prename = htmlentities($row['prename'], null, "ISO-8859-1");
+								$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
+								$email = htmlentities($row['email'], null, "ISO-8859-1");
+								$name = htmlentities($row['name'], null, "ISO-8859-1");
 								$regdate = $row['regdate'];
 								$updateNickname = true;
 								$updateMail = true;
@@ -76,25 +76,25 @@ class UserData implements Module {
 										if (isset($_POST['change'])) {
 											$updateNickname = $user->updateNickname($userID, $_POST['nickname']);
 											if ($updateNickname) {
-												$nickname = htmlentities($_POST['nickname'], ENT_HTML5, "ISO-8859-1");
+												$nickname = htmlentities($_POST['nickname'], null, "ISO-8859-1");
 											}
 											$user->updatePrename($userID, $_POST['prename']);
-											$prename = htmlentities($_POST['prename'], ENT_HTML5, "ISO-8859-1");
+											$prename = htmlentities($_POST['prename'], null, "ISO-8859-1");
 											$user->updateName($userID, $_POST['name']);
-											$name = htmlentities($_POST['name'], ENT_HTML5, "ISO-8859-1");
+											$name = htmlentities($_POST['name'], null, "ISO-8859-1");
 											$updateMail = $user->updateMail($userID, $_POST['email']);
 											if ($updateMail) {
 												$email = mysql_real_escape_string($_POST['email']);
 												$db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
-												$email = htmlentities($_POST['email'], ENT_HTML5, "ISO-8859-1");
+												$email = htmlentities($_POST['email'], null, "ISO-8859-1");
 											}
 											if ($isMaster) {
 												$updateAcronym = $user->updateAcronym($userID, $_POST['acronym']);
 												if ($updateAcronym) {
-													$acronym = htmlentities($_POST['acronym'], ENT_HTML5, "ISO-8859-1");
+													$acronym = htmlentities($_POST['acronym'], null, "ISO-8859-1");
 												}
 												$user->updateRole($userID, $_POST['role']);
-												$userRole = htmlentities($_POST['role'], ENT_HTML5, "ISO-8859-1");
+												$userRole = htmlentities($_POST['role'], null, "ISO-8859-1");
 											}
 										}
 										if (isset($_POST['passwordChange'])) {
@@ -172,19 +172,19 @@ class UserData implements Module {
 			while ($row = mysql_fetch_array($result)) {
 				
 				$userID = $row['user'];
-				$nickname = htmlentities($row['nickname'], ENT_HTML5, "ISO-8859-1");
-				$prename = htmlentities($row['prename'], ENT_HTML5, "ISO-8859-1");
-				$name = htmlentities($row['name'], ENT_HTML5, "ISO-8859-1");
+				$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
+				$prename = htmlentities($row['prename'], null, "ISO-8859-1");
+				$name = htmlentities($row['name'], null, "ISO-8859-1");
 				$info = $row['info'];
 				$signature = $row['signature'];
 				$birthdate = $row['birthdate'];
 				$gender = $row['gender'];
-				$interests = htmlentities($row['interests'], ENT_HTML5, "ISO-8859-1");
-				$job = htmlentities($row['job'], ENT_HTML5, "ISO-8859-1");
-				$zip = htmlentities($row['zip'], ENT_HTML5, "ISO-8859-1");
-				$street = htmlentities($row['street'], ENT_HTML5, "ISO-8859-1");
-				$house = htmlentities($row['house'], ENT_HTML5, "ISO-8859-1");
-				$city = htmlentities($row['city'], ENT_HTML5, "ISO-8859-1");
+				$interests = htmlentities($row['interests'], null, "ISO-8859-1");
+				$job = htmlentities($row['job'], null, "ISO-8859-1");
+				$zip = htmlentities($row['zip'], null, "ISO-8859-1");
+				$street = htmlentities($row['street'], null, "ISO-8859-1");
+				$house = htmlentities($row['house'], null, "ISO-8859-1");
+				$city = htmlentities($row['city'], null, "ISO-8859-1");
 			
 			}
 			
