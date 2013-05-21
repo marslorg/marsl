@@ -239,7 +239,7 @@ class News implements Module {
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
-				$id = mysql_real_escape_string(htmlentities($_GET['id']), null, "ISO-8859-1");
+				$id = mysql_real_escape_string(htmlentities($_GET['id'], null, "ISO-8859-1"));
 				if ($db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'")) {
 					$result = $db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 					while ($row = mysql_fetch_array($result)) {
