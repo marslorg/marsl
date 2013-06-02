@@ -250,3 +250,35 @@ a:hover {
 	border-color: #CCC;
 	padding: 10px;
 }
+
+.formTable {
+	width: 100%;
+}
+
+.formzip {
+	width: 40px;
+}
+
+.formday, .formmonth {
+	width: 15px;
+}
+
+.formyear {
+	width: 30px;
+}
+
+.formhouse {
+	width: 25px;
+}
+
+.formcity {
+	width: 105px;
+}
+
+.formstreet {
+	width: 120px;
+}
+
+.formnickname, .formprename, .formname, .formpassword {
+	width: 155px;
+}

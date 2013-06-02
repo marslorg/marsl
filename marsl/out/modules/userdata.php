@@ -5,6 +5,7 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
+include_once(dirname(__FILE__)."/../includes/mailer.php");
 include_once(dirname(__FILE__)."/module.php");
 
 class UserData implements Module {
@@ -17,6 +18,7 @@ class UserData implements Module {
 		$db = new DB();
 		$auth = new Authentication();
 		$role = new Role();
+		$mailer = new Mailer();
 		if ($auth->moduleAdminAllowed("userdata", $role->getRole())||$auth->moduleExtendedAllowed("userdata", $role->getRole())) {
 			if ($auth->moduleAdminAllowed("userdata", $role->getRole())) {
 				require_once("template/userdata.alphabet.tpl.php");
@@ -53,7 +55,24 @@ class UserData implements Module {
 						$ownID = $user->getID();
 						$ownRole = $role->getRole();
 						$possibleRoles = $role->getPossibleRoles($ownRole);
-						$result = $db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `email`, `name` FROM `user` LEFT OUTER JOIN `email` USING(`user`) WHERE `user`='$userID'");
+						
+						if (isset($_GET['delmail'])) {
+							$email = mysql_real_escape_string(urldecode($_GET['delmail']));
+							$db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
+						}
+						if (isset($_GET['primemail'])) {
+							$email = mysql_real_escape_string(urldecode($_GET['primemail']));
+							if (!$db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
+								$db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
+								$db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
+							}
+						}
+						if (isset($_GET['confmail'])) {
+							$email = mysql_real_escape_string(urldecode($_GET['confmail']));
+							$mailer->sendConfirmationMail($userID, $email);
+						}
+							
+						$result = $db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `name` FROM `user` WHERE `user`='$userID'");
 						while ($row = mysql_fetch_array($result)) {
 							$userRole = htmlentities($row['role'], null, "ISO-8859-1");
 							$isMaster = $role->isMaster($ownRole, $userRole, $possibleRoles);
@@ -62,11 +81,19 @@ class UserData implements Module {
 								$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
 								$prename = htmlentities($row['prename'], null, "ISO-8859-1");
 								$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
-								$email = htmlentities($row['email'], null, "ISO-8859-1");
+								//$email = htmlentities($row['email'], null, "ISO-8859-1");
+								$emails = array();
+								$result2 = $db->query("SELECT * FROM `email` WHERE `user`='$userID' ORDER BY `confirmed` DESC, `primary` DESC");
+								while ($row2 = mysql_fetch_array($result2)) {
+									$email = htmlentities($row2['email'], null, "ISO-8859-1");
+									$confirmed = $row2['confirmed'];
+									$primary = $row2['primary'];
+									array_push($emails, array('email'=>$email, 'confirmed'=>$confirmed, 'primary'=>$primary));
+								}
 								$name = htmlentities($row['name'], null, "ISO-8859-1");
 								$regdate = $row['regdate'];
 								$updateNickname = true;
-								$updateMail = true;
+								//$updateMail = true;
 								$updateAcronym = true;
 								$samePasswords = true;
 								$rightPassword = true;
@@ -82,12 +109,12 @@ class UserData implements Module {
 											$prename = htmlentities($_POST['prename'], null, "ISO-8859-1");
 											$user->updateName($userID, $_POST['name']);
 											$name = htmlentities($_POST['name'], null, "ISO-8859-1");
-											$updateMail = $user->updateMail($userID, $_POST['email']);
+											/*$updateMail = $user->updateMail($userID, $_POST['email']);
 											if ($updateMail) {
 												$email = mysql_real_escape_string($_POST['email']);
 												$db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 												$email = htmlentities($_POST['email'], null, "ISO-8859-1");
-											}
+											}*/
 											if ($isMaster) {
 												$updateAcronym = $user->updateAcronym($userID, $_POST['acronym']);
 												if ($updateAcronym) {
@@ -152,14 +179,70 @@ class UserData implements Module {
 		
 		$auth = new Authentication();
 		$role = new Role();
+		$samePasswords = true;
+		$rightPassword = true;
+		$passwordChange = false;
 		
 		if ($auth->locationReadAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("userdata", $role->getRole())&&$auth->moduleWriteAllowed("userdata", $role->getRole())) {
+			
+			if (isset($_POST['action'])) {
+				if (($userID == $_POST['userID'])&&($auth->checkToken($_POST['authTime'], $_POST['authToken']))) {
+					
+					if ($_POST['action']=="password") {
+						$passwordChange = true;
+						$regdate = $user->getRegisterDate($userID);
+						$hash = $user->hashPassword($regdate, $_POST['oldPassword']);
+						$proofPass = $user->getPassbyID($user->getID());
+						if ($hash == $proofPass) {
+							if ($_POST['newPassword']==$_POST['proofPassword']) {
+								$safePassword = $user->setPassword($user->getID(), $_POST['newPassword']);
+							}
+							else {
+								$samePasswords = false;
+							}
+						}
+						else {
+							$rightPassword = false;
+						}
+					}
+					
+					if ($_POST['action']=="edit") {
+						$prename = mysql_real_escape_string($_POST['prename']);
+						$name = mysql_real_escape_string($_POST['name']);
+						$info = mysql_real_escape_string($basic->cleanStrict($_POST['info']));
+						$signature = mysql_real_escape_string($basic->cleanStrict($_POST['signature']));
+						$birthdate = 0;
+						if (checkdate($_POST['month'], $_POST['day'], $_POST['year'])) {
+							$birthdate = mktime(0,0,0,$_POST['month'],$_POST['day'],$_POST['year']);
+						}
+						$gender = "";
+						if ($_POST['gender']=="female") {
+							$gender = "female";
+						}
+						if ($_POST['gender']=="male") {
+							$gender = "male";
+						}
+						$interests = mysql_real_escape_string($_POST['interests']);
+						$job = mysql_real_escape_string($_POST['job']);
+						$zip = mysql_real_escape_string($_POST['zip']);
+						$street = mysql_real_escape_string($_POST['street']);
+						$house = mysql_real_escape_string($_POST['house']);
+						$city = mysql_real_escape_string($_POST['city']);
+						$db->query("UPDATE `user` SET `prename`='$prename', `name`='$name', `info`='$info', `signature`='$signature', `birthdate`='$birthdate', `gender`='$gender', `interests`='$interests', `job`='$job', `zip`='$zip', `street`='$street', `house`='$house', `city`='$city' WHERE `user`='$userID'");
+					}
+				}
+			}
+			
+			$authTime = time();
+			$authToken = $auth->getToken($authTime);
 			$nickname = "";
 			$prename = "";
 			$name = "";
 			$info = "";
 			$signature = "";
-			$birthdate = "";
+			$day = "DD";
+			$month = "MM";
+			$year = "YYYY";
 			$gender = "";
 			$interests = "";
 			$job = "";
@@ -172,12 +255,13 @@ class UserData implements Module {
 			while ($row = mysql_fetch_array($result)) {
 				
 				$userID = $row['user'];
-				$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
 				$prename = htmlentities($row['prename'], null, "ISO-8859-1");
 				$name = htmlentities($row['name'], null, "ISO-8859-1");
 				$info = $row['info'];
 				$signature = $row['signature'];
-				$birthdate = $row['birthdate'];
+				$day = date("d", $row['birthdate']);
+				$month = date("m", $row['birthdate']);
+				$year = date("Y", $row['birthdate']);
 				$gender = $row['gender'];
 				$interests = htmlentities($row['interests'], null, "ISO-8859-1");
 				$job = htmlentities($row['job'], null, "ISO-8859-1");

@@ -126,6 +126,10 @@ class News implements Module {
 										$pic2Y = $_POST['pic2Y'];
 										$pic2W = $_POST['pic2W'];
 										$pic2H = $_POST['pic2H'];
+										unlink($fileLink);
+										$fileName = "r".$fileName;
+										$fileLink = "../news/".$fileName;
+										$db->query("UPDATE `news_picture` SET `url`='$fileName' WHERE `picture`='$picture2'");
 										imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
 										ImageDestroy($oldIMG);
 										imagejpeg($newIMG, $fileLink);
@@ -223,7 +227,7 @@ class News implements Module {
 						$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
 						while ($row2 = mysql_fetch_array($result2)) {
 							$picture2 = $row2['url'];
-							$subtitle2 = $row2['subtitle'];
+							$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
 							if (!empty($row2['photograph'])) {
 								$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 							}
@@ -333,6 +337,10 @@ class News implements Module {
 												$pic2Y = $_POST['pic2Y'];
 												$pic2W = $_POST['pic2W'];
 												$pic2H = $_POST['pic2H'];
+												unlink($fileLink);
+												$fileName = "r".$fileName;
+												$fileLink = "../news/".$fileName;
+												$db->query("UPDATE `news_picture` SET `url`='$fileName' WHERE `picture`='$picture2'");
 												imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
 												ImageDestroy($oldIMG);
 												imagejpeg($newIMG, $fileLink);

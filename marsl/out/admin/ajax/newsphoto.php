@@ -39,7 +39,7 @@ class NewsPhoto {
 						$width = $picinfo[0];
 						$height = $picinfo[1];
 						$fileName = mysql_real_escape_string($fileName);
-						$photograph = mysql_real_escape_string($_POST['photograph']);
+						$photograph = mysql_real_escape_string(urldecode($_POST['photograph']));
 						if ($_POST['type']=="teaser") {
 							if (($width>200)||($height>200)) {
 								$this->thumb($fileLink, $fileLink, 200, 200, TRUE);
@@ -51,7 +51,7 @@ class NewsPhoto {
 						}
 						
 						if ($_POST['type']=="text") {
-							$subtitle = mysql_real_escape_string($_POST['subtitle']);
+							$subtitle = mysql_real_escape_string(urldecode($_POST['subtitle']));
 							if (($width>1280)||($height>1280)) {
 								$this->thumb($fileLink, $fileLink, 1280, 1280, TRUE);
 							}

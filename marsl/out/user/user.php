@@ -165,13 +165,13 @@ class User {
 	}
 	
 	/*
-	 * Get the e-mail of a user.
+	 * Get the primary e-mail of a user.
 	 */
 	public function getMailbyID($id) {
 		$mail = "";
 		$user = mysql_real_escape_string($id);
 		$db = new DB();
-		$result = $db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1'");
+		$result = $db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1' AND `primary`='1'");
 		while ($row = mysql_fetch_array($result)) {
 			$mail = htmlentities($row['email'], null, "ISO-8859-1");
 		}
@@ -342,8 +342,8 @@ class User {
 	}
 	
 	/*
+	 * DEPRECATED
 	 * Update the e-mail-adress of the user.
-	 */
 	public function updateMail($user, $email) {
 		$db = new DB();
 		$basic = new Basic();
@@ -373,7 +373,7 @@ class User {
 		else {
 			return false;
 		}
-	}
+	}*/
 	
 	/*
 	 * Update the prename of the user.
@@ -416,10 +416,10 @@ class User {
 				$result = $db->query("SELECT `user` FROM `stdroles`");
 				while ($row = mysql_fetch_array($result)) {
 					$role = mysql_real_escape_string($row['user']);
-					$db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`) VALUES('$mail','$user','0','$regdate','$confirmID')");
+					$db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`,`primary`) VALUES('$mail','$user','0','$regdate','$confirmID','1')");
 				}
 				$mailer = new Mailer();
-				$mailer->sendConfirmationMail($confirmID);
+				$mailer->sendConfirmationMail($user, $mail);
 				return true;
 			}
 			else {

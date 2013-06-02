@@ -5,9 +5,9 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <?php if(!$updateNickname): ?>
 <span class="content">Der Benutzername existiert schon oder ist k&uuml;rzer als vier Buchstaben.</span><br /><br />
 <?php endif;
-if(!$updateMail): ?>
-<span class="content">Die E-Mail-Adresse ist ung&uuml;ltig oder schon vergeben.</span><br /><br />
-<?php endif;
+//if(!$updateMail): ?>
+<!-- <span class="content">Die E-Mail-Adresse ist ung&uuml;ltig oder schon vergeben.</span><br /><br />-->
+<?php //endif;
 if(!$updateAcronym): ?>
 <span class="content">Das K&uuml;rzel ist bereits vergeben.</span><br /><br />
 <?php endif;
@@ -35,10 +35,10 @@ if(!$safePassword): ?>
 				<td>Nachname: </td>
 				<td><input type="text" name="name" value="<?php echo $name; ?>" /></td>
 			</tr>
-			<tr class="standardfont">
+			<!-- <tr class="standardfont">
 				<td>E-Mail: </td>
-				<td><input type="text" name="email" value="<?php echo $email; ?>" /></td>
-			</tr>
+				<td><input type="text" name="email" value="<?php //echo $email; ?>" /></td>
+			</tr>-->
 			<?php if($isMaster): ?>
 			<tr class="standardfont">
 				<td>K&uuml;rzel: </td>
@@ -93,4 +93,22 @@ if(!$safePassword): ?>
 		</table>
 	</form>
 	<?php endif; ?>
+	<table class="userdatatable">
+		<?php foreach($emails as $email): ?>
+		<tr <?php if ($email['confirmed']): ?>class="success"<?php endif; if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
+			<td><?php echo $email['email']; ?></td>
+			<td>
+				<?php if ((!$email['primary'])&&($email['confirmed'])): ?>
+				<a href="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>&amp;primemail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="../includes/graphics/ok22.png" alt="Als Hauptadresse festlegen" /></a>
+				<?php endif; ?>
+				<?php if (!$email['primary']): ?>
+				<a href="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>&amp;delmail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="../includes/graphics/delete22.png" alt="L&ouml;schen" /></a>
+				<?php endif; ?>
+				<?php if (!$email['confirmed']): ?>
+				<a href="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>&amp;confmail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="../includes/graphics/mail22.png" alt="Best&auml;tigungsmail erneut senden" /></a>
+				<?php endif; ?>
+			</td>
+		</tr>
+		<?php endforeach; ?>
+	</table>
 </fieldset>

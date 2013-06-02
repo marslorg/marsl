@@ -92,6 +92,7 @@ CREATE  TABLE IF NOT EXISTS `mydb`.`email` (
   `confirmed` TINYINT(1) NOT NULL DEFAULT FALSE ,
   `time` INT NOT NULL ,
   `confirm_id` CHAR(32) NOT NULL ,
+  `primary` TINYINT(1) NOT NULL DEFAULT FALSE ,
   PRIMARY KEY (`email`) ,
   INDEX `user_email_idx` (`user` ASC) )
 ENGINE = MyISAM;

@@ -190,7 +190,7 @@ th {
 	width: 86%;
 }
 
-.caution {
+.caution, .cautionMail {
 	color: #FF0000;
 	font-weight: bold;
 }

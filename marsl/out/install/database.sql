@@ -89,6 +89,7 @@ CREATE  TABLE IF NOT EXISTS `email` (
   `confirmed` TINYINT(1) NOT NULL DEFAULT FALSE ,
   `time` INT NOT NULL ,
   `confirm_id` CHAR(32) NOT NULL ,
+  `primary` TINYINT(1) NOT NULL DEFAULT FALSE ,
   PRIMARY KEY (`email`) ,
   INDEX `user_email_idx` (`user` ASC) )
 ENGINE = MyISAM;
@@ -441,6 +442,7 @@ CREATE  TABLE IF NOT EXISTS `band` (
   PRIMARY KEY (`id`) ,
   INDEX `band_tag_idx` (`id` ASC) )
 ENGINE = MyISAM;
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

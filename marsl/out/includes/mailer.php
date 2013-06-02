@@ -4,7 +4,7 @@ include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/config.inc.php");
 
 class Mailer {
-	public function sendConfirmationMail($confirmID) {
+	public function sendConfirmationMail($userID, $mail) {
 		
 	}
 	
