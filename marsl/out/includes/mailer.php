@@ -2,10 +2,33 @@
 include_once(dirname(__FILE__)."/errorHandler.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/config.inc.php");
+include_once(dirname(__FILE__)."/dbsocket.php");
 
 class Mailer {
 	public function sendConfirmationMail($userID, $mail) {
-		
+		$db = new DB();
+		$config = new Configuration();
+		$user = new User();
+		$nickname = $user->getNickbyId($userID);
+		$userID = mysql_real_escape_string($userID);
+		$mail = mysql_real_escape_string($mail);
+		$result = $db->query("SELECT `confirm_id` FROM `email` WHERE `confirmed`='0' AND `user`='$userID' AND `email`='$mail'");
+		while ($row = mysql_fetch_array($result)) {
+			$confirm_id = $row['confirm_id'];
+			$link = $config->getDomain()."/confirm.php?mail=".$mail."&code=".$confirm_id;
+			$msg = "Hallo ".$nickname.",\n";
+			$msg .= "\n";
+			$msg .= "du hast auf Music2Web.de eine neue E-Mail-Adresse eingetragen.\n";
+			$msg .= "Es ist jetzt noch ein Schritt, damit diese verwendet werden kann.\n";
+			$msg .= "Bitte klicke auf den Link unten, um zu zeigen, dass die E-Mail-Adresse wirklich dir gehört.\n";
+			$msg .= "\n";
+			$msg .= $link."\n";
+			$msg .= "\n";
+			$msg .= "Falls du mit dieser E-Mail nichts anfangen kannst, lösch sie einfach. Du wirst keine weitere Post mehr von uns bekommen.\n";
+			$msg .= "\n";
+			$msg .= "Dein ".$config->getTitle()."-Team";
+			mail($mail, "Bestätige deine E-Mail-Adresse", $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
+		}
 	}
 	
 	/*

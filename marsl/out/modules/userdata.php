@@ -19,6 +19,7 @@ class UserData implements Module {
 		$auth = new Authentication();
 		$role = new Role();
 		$mailer = new Mailer();
+		$basic = new Basic();
 		if ($auth->moduleAdminAllowed("userdata", $role->getRole())||$auth->moduleExtendedAllowed("userdata", $role->getRole())) {
 			if ($auth->moduleAdminAllowed("userdata", $role->getRole())) {
 				require_once("template/userdata.alphabet.tpl.php");
@@ -56,20 +57,35 @@ class UserData implements Module {
 						$ownRole = $role->getRole();
 						$possibleRoles = $role->getPossibleRoles($ownRole);
 						
+						if (isset($_POST['entermail'])) {
+							if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+								$email = mysql_real_escape_string($_POST['email']);
+								$curTime = time();
+								$confirmID = $basic->confirmID();
+								$db->query("INSERT INTO `email`(`email`,`user`, `confirmed`, `time`, `confirm_id`) VALUES('$email', '$userID', '1', '$curTime', '$confirmID')");
+							}
+						}
+						
 						if (isset($_GET['delmail'])) {
-							$email = mysql_real_escape_string(urldecode($_GET['delmail']));
-							$db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
+							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+								$email = mysql_real_escape_string(urldecode($_GET['delmail']));
+								$db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
+							}
 						}
 						if (isset($_GET['primemail'])) {
-							$email = mysql_real_escape_string(urldecode($_GET['primemail']));
-							if (!$db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
-								$db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
-								$db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
+							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+								$email = mysql_real_escape_string(urldecode($_GET['primemail']));
+								if (!$db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
+									$db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
+									$db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
+								}
 							}
 						}
 						if (isset($_GET['confmail'])) {
-							$email = mysql_real_escape_string(urldecode($_GET['confmail']));
-							$mailer->sendConfirmationMail($userID, $email);
+							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+								$email = mysql_real_escape_string(urldecode($_GET['confmail']));
+								$mailer->sendConfirmationMail($userID, $email);
+							}
 						}
 							
 						$result = $db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `name` FROM `user` WHERE `user`='$userID'");
@@ -81,7 +97,6 @@ class UserData implements Module {
 								$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
 								$prename = htmlentities($row['prename'], null, "ISO-8859-1");
 								$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
-								//$email = htmlentities($row['email'], null, "ISO-8859-1");
 								$emails = array();
 								$result2 = $db->query("SELECT * FROM `email` WHERE `user`='$userID' ORDER BY `confirmed` DESC, `primary` DESC");
 								while ($row2 = mysql_fetch_array($result2)) {
@@ -93,7 +108,6 @@ class UserData implements Module {
 								$name = htmlentities($row['name'], null, "ISO-8859-1");
 								$regdate = $row['regdate'];
 								$updateNickname = true;
-								//$updateMail = true;
 								$updateAcronym = true;
 								$samePasswords = true;
 								$rightPassword = true;
@@ -109,12 +123,7 @@ class UserData implements Module {
 											$prename = htmlentities($_POST['prename'], null, "ISO-8859-1");
 											$user->updateName($userID, $_POST['name']);
 											$name = htmlentities($_POST['name'], null, "ISO-8859-1");
-											/*$updateMail = $user->updateMail($userID, $_POST['email']);
-											if ($updateMail) {
-												$email = mysql_real_escape_string($_POST['email']);
-												$db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
-												$email = htmlentities($_POST['email'], null, "ISO-8859-1");
-											}*/
+
 											if ($isMaster) {
 												$updateAcronym = $user->updateAcronym($userID, $_POST['acronym']);
 												if ($updateAcronym) {
@@ -161,9 +170,6 @@ class UserData implements Module {
 	}
 	
 	public function display() {
-		/*
-		 * Change own data!!!
-		 */
 		$db = new DB();
 		$user = new User();
 		$userID = $user->getID();
@@ -184,6 +190,40 @@ class UserData implements Module {
 		$passwordChange = false;
 		
 		if ($auth->locationReadAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("userdata", $role->getRole())&&$auth->moduleWriteAllowed("userdata", $role->getRole())) {
+			
+			$mailer = new Mailer();
+			if (isset($_POST['entermail'])) {
+				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					$email = mysql_real_escape_string($_POST['email']);
+					$curTime = time();
+					$confirmID = $basic->confirmID();
+					$db->query("INSERT INTO `email`(`email`,`user`, `confirmed`, `time`, `confirm_id`) VALUES('$email', '$userID', '0', '$curTime', '$confirmID')");
+					$mailer->sendConfirmationMail($userID, $email);
+				}
+			}
+			
+			if (isset($_GET['delmail'])) {
+				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					$email = mysql_real_escape_string(urldecode($_GET['delmail']));
+					$db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
+				}
+			}
+			if (isset($_GET['primemail'])) {
+				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					$email = mysql_real_escape_string(urldecode($_GET['primemail']));
+					if (!$db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
+						$db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
+						$db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
+					}
+				}
+			}
+			if (isset($_GET['confmail'])) {
+				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					$email = mysql_real_escape_string(urldecode($_GET['confmail']));
+					$mailer->sendConfirmationMail($userID, $email);
+				}
+			}
+			
 			
 			if (isset($_POST['action'])) {
 				if (($userID == $_POST['userID'])&&($auth->checkToken($_POST['authTime'], $_POST['authToken']))) {
@@ -274,12 +314,13 @@ class UserData implements Module {
 			
 			$emails = array();
 			
-			$result = $db->query("SELECT * FROM `email` WHERE `user` = '$userID'");
+			$result = $db->query("SELECT * FROM `email` WHERE `user` = '$userID' ORDER BY `confirmed` DESC, `primary` DESC");
 			while ($row = mysql_fetch_array($result)) {
 				
+				$email = htmlentities($row['email'], null, "ISO-8859-1");
 				$confirmed = $row['confirmed'];
-				$email = $row['email'];
-				array_push($emails, array('confirmed'=>$confirmed, 'email'=>$email));
+				$primary = $row['primary'];
+				array_push($emails, array('email'=>$email, 'confirmed'=>$confirmed, 'primary'=>$primary));
 			}
 			
 			require_once("template/userdata.tpl.php");

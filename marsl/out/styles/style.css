@@ -279,6 +279,6 @@ a:hover {
 	width: 120px;
 }
 
-.formnickname, .formprename, .formname, .formpassword {
+.formnickname, .formprename, .formname, .formpassword, .formmail {
 	width: 155px;
 }

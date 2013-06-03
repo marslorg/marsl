@@ -129,3 +129,35 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		</tr>
 	</table>
 </form>
+<h2>E-Mail-Adressen:</h2>
+<form method="post" action="index.php?id=<?php echo $location; ?>">
+	<table class="userdatatable">
+		<tr>
+			<td>E-Mail-Adresse eintragen: </td>
+			<td>
+				<input type="text" name="email" class="formmail" />
+				<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
+				<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
+				<button type="submit" name="entermail"> Absenden </button>
+			</td>
+		</tr>
+	</table>
+</form>
+<table class="userdatatable">
+	<?php foreach($emails as $email): ?>
+	<tr <?php if ($email['confirmed']): ?>class="success"<?php endif; if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
+		<td><?php echo $email['email']; ?></td>
+		<td>
+			<?php if ((!$email['primary'])&&($email['confirmed'])): ?>
+			<a href="index.php?id=<?php echo $location; ?>&amp;primemail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="includes/graphics/ok22.png" alt="Als Hauptadresse festlegen" /></a>
+			<?php endif; ?>
+			<?php if (!$email['primary']): ?>
+			<a href="index.php?id=<?php echo $location; ?>&amp;delmail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="includes/graphics/delete22.png" alt="L&ouml;schen" /></a>
+			<?php endif; ?>
+			<?php if (!$email['confirmed']): ?>
+			<a href="index.php?id=<?php echo $location; ?>&amp;confmail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="includes/graphics/mail22.png" alt="Best&auml;tigungsmail erneut senden" /></a>
+			<?php endif; ?>
+		</td>
+	</tr>
+	<?php endforeach; ?>
+</table>

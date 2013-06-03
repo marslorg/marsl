@@ -93,6 +93,19 @@ if(!$safePassword): ?>
 		</table>
 	</form>
 	<?php endif; ?>
+	<form method="post" action="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>">
+		<table class="userdatatable">
+			<tr>
+				<td>E-Mail-Adresse eintragen: </td>
+				<td>
+					<input type="text" name="email" />
+					<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
+					<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
+					<button type="submit" name="entermail"> Absenden </button>
+				</td>
+			</tr>
+		</table>
+	</form>
 	<table class="userdatatable">
 		<?php foreach($emails as $email): ?>
 		<tr <?php if ($email['confirmed']): ?>class="success"<?php endif; if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
