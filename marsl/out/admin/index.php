@@ -86,7 +86,7 @@ class Main {
 				$content = new RoleAdmin();
 			}
 			else if ($this->var =="register") {
-				$content = new Register();
+				$content = new RegisterUser();
 			}
 			else if ($this->var=="tags") {
 				$content = new Tags();

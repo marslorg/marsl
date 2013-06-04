@@ -2,6 +2,7 @@
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
+include_once(dirname(__FILE__)."/../user/role.php");
 
 class Install {
 	public function startInstall() {
@@ -17,6 +18,12 @@ class Install {
 		
 		}
 		$db->query("UPDATE `email` SET `primary`='1'");
+		
+		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('Registrierung','register','Register')");
+		$role = new Role();
+		
+		$roleID = $role->getIDbyName("root");
+		$role->setModuleRights($roleID, "register", "1", "1", "1", "1");
 		$db->close();
 	}
 }

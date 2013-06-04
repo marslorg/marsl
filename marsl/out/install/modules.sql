@@ -6,3 +6,4 @@ INSERT INTO `module`(`name`,`file`,`class`) VALUES('Portal','portal','Portal');
 INSERT INTO `module`(`name`,`file`,`class`) VALUES('Benutzerverwaltung','userdata','UserData');
 INSERT INTO `module`(`name`,`file`,`class`) VALUES('Forum','board','Board');
 INSERT INTO `module`(`name`,`file`,`class`) VALUES('C/B/V-Verzeichnis','cbe','CBE');
+INSERT INTO `module`(`name`,`file`,`class`) VALUES('Registrierung','register','Register');

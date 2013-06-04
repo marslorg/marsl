@@ -6,7 +6,7 @@ include_once (dirname(__FILE__)."/../includes/dbsocket.php");
 include_once (dirname(__FILE__)."/../includes/basic.php");
 include_once (dirname(__FILE__)."/../user/auth.php");
 
-class Register {
+class RegisterUser {
 	
 	/*
 	 * Dialog for administrators to register a new user.
