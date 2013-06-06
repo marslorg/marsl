@@ -68,7 +68,7 @@ class Mailer {
 				$link = $config->getDomain()."/admin/index.php?var=forgot&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			else {
-				$link = $config->getDomain()."/index.php?id=".$page."&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
+				$link = $config->getDomain()."/index.php?id=".$page."&action2=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";

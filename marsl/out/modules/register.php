@@ -18,7 +18,13 @@ class Register implements Module {
 		$user = new User();
 		$recaptcha = new Recaptcha();
 		$basic = new Basic();
-		$location = mysql_real_escape_string($_GET['id']);
+		$location = "";
+		if (isset($_GET['id'])) {
+			$location = $_GET['id'];
+		}
+		else {
+			$location = $basic->getHomeLocation();
+		}
 		$nickname = "";
 		$mail = "";
 		$mail2 = "";

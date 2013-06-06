@@ -20,10 +20,12 @@ class Install {
 		$db->query("UPDATE `email` SET `primary`='1'");
 		
 		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('Registrierung','register','Register')");
+		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('Login','login','Login');");
 		$role = new Role();
 		
 		$roleID = $role->getIDbyName("root");
 		$role->setModuleRights($roleID, "register", "1", "1", "1", "1");
+		$role->setModuleRights($roleID, "login", "1", "1", "1", "1");
 		$db->close();
 	}
 }
