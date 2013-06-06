@@ -444,6 +444,49 @@ CREATE  TABLE IF NOT EXISTS `band` (
 ENGINE = MyISAM;
 
 
+-- -----------------------------------------------------
+-- Table `event`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `event` (
+  `event` INT NOT NULL AUTO_INCREMENT ,
+  `title` LONGTEXT NULL ,
+  `visible` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `deleted` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `start` INT NOT NULL ,
+  `end` INT NULL ,
+  `doors` INT NULL ,
+  `date` INT NOT NULL ,
+  `author` INT NOT NULL ,
+  `foreign_id` VARCHAR(255) NULL ,
+  PRIMARY KEY (`event`) ,
+  INDEX `event_author_idx` (`author` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `event_location`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `event_location` (
+  `location` INT NOT NULL ,
+  `event` INT NOT NULL ,
+  PRIMARY KEY (`location`, `event`) ,
+  INDEX `el_location_idx` (`location` ASC) ,
+  INDEX `el_event_idx` (`event` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `event_band`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `event_band` (
+  `band` INT NOT NULL ,
+  `event` INT NOT NULL ,
+  PRIMARY KEY (`band`, `event`) ,
+  INDEX `eb_band_idx` (`band` ASC) ,
+  INDEX `eb_event_idx` (`event` ASC) )
+ENGINE = MyISAM;
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

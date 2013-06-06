@@ -60,9 +60,11 @@ class UserData implements Module {
 						if (isset($_POST['entermail'])) {
 							if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 								$email = mysql_real_escape_string($_POST['email']);
-								$curTime = time();
-								$confirmID = $basic->confirmID();
-								$db->query("INSERT INTO `email`(`email`,`user`, `confirmed`, `time`, `confirm_id`) VALUES('$email', '$userID', '1', '$curTime', '$confirmID')");
+								if ($basic->checkMail($email)) {
+									$curTime = time();
+									$confirmID = $basic->confirmID();
+									$db->query("INSERT INTO `email`(`email`,`user`, `confirmed`, `time`, `confirm_id`) VALUES('$email', '$userID', '1', '$curTime', '$confirmID')");
+								}
 							}
 						}
 						
@@ -195,10 +197,12 @@ class UserData implements Module {
 			if (isset($_POST['entermail'])) {
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$email = mysql_real_escape_string($_POST['email']);
-					$curTime = time();
-					$confirmID = $basic->confirmID();
-					$db->query("INSERT INTO `email`(`email`,`user`, `confirmed`, `time`, `confirm_id`) VALUES('$email', '$userID', '0', '$curTime', '$confirmID')");
-					$mailer->sendConfirmationMail($userID, $email);
+					if ($basic->checkMail($email)) {
+						$curTime = time();
+						$confirmID = $basic->confirmID();
+						$db->query("INSERT INTO `email`(`email`,`user`, `confirmed`, `time`, `confirm_id`) VALUES('$email', '$userID', '0', '$curTime', '$confirmID')");
+						$mailer->sendConfirmationMail($userID, $email);
+					}
 				}
 			}
 			

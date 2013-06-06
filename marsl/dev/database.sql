@@ -446,6 +446,49 @@ CREATE  TABLE IF NOT EXISTS `mydb`.`band` (
   INDEX `band_tag_idx` (`id` ASC) )
 ENGINE = MyISAM;
 
+
+-- -----------------------------------------------------
+-- Table `mydb`.`event`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `mydb`.`event` (
+  `event` INT NOT NULL AUTO_INCREMENT ,
+  `title` LONGTEXT NULL ,
+  `visible` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `deleted` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `start` INT NOT NULL ,
+  `end` INT NULL ,
+  `doors` INT NULL ,
+  `date` INT NOT NULL ,
+  `author` INT NOT NULL ,
+  `foreign_id` VARCHAR(255) NULL ,
+  PRIMARY KEY (`event`) ,
+  INDEX `event_author_idx` (`author` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`event_location`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `mydb`.`event_location` (
+  `location` INT NOT NULL ,
+  `event` INT NOT NULL ,
+  PRIMARY KEY (`location`, `event`) ,
+  INDEX `el_location_idx` (`location` ASC) ,
+  INDEX `el_event_idx` (`event` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`event_band`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `mydb`.`event_band` (
+  `band` INT NOT NULL ,
+  `event` INT NOT NULL ,
+  PRIMARY KEY (`band`, `event`) ,
+  INDEX `eb_band_idx` (`band` ASC) ,
+  INDEX `eb_event_idx` (`event` ASC) )
+ENGINE = MyISAM;
+
 USE `mydb` ;
 
 
