@@ -160,6 +160,21 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		$('#pic2H').val(c.h);
 
 	}
+
+	function checkForm() {
+		if (document.getElementById('teaser_photo')) {
+			if (document.getElementById('teaser_photo').value != "") {
+				alert("Bitte lade zu erst das Foto für den Teaser hoch!");
+				return false;
+			}
+		}
+		if (document.getElementById('text_photo')) {
+			if (document.getElementById('text_photo').value != "") {
+				alert("Bitte lade zu erst das Foto für den Text hoch!");
+				return false;
+			}
+		}
+	}
 </script>
 <?php if (!$new): ?>
 <?php if ($failed): ?>
@@ -169,7 +184,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <div class="success">Der Text wurde erfolgreich ge&auml;ndert!</div>
 <?php endif; ?>
 <?php endif; ?>
-<form method="post" action="index.php?var=module&amp;module=news&amp;action=edit&amp;id=<?php echo $id; ?>" enctype="multipart/form-data">
+<form method="post" action="index.php?var=module&amp;module=news&amp;action=edit&amp;id=<?php echo $id; ?>" enctype="multipart/form-data" onsubmit="return checkForm()">
 	<table class="newstable">
 		<tr>
 			<td>Dachzeile: </td>
