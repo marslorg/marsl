@@ -10,7 +10,7 @@ class Install {
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();
 		$db->connect();
-		$content = file_get_contents("update.13.07.13.05.sql");
+		$content = file_get_contents("update.13.07.13.06.sql");
 		$statement = strtok($content, ";");
 		while ($statement) {
 			$db->query($statement);

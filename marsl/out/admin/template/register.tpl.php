@@ -12,8 +12,15 @@ if (!$registered&&isset($_POST['action'])): ?>
 if ($registered): ?>
 <span class="content">Der Benutzer wurde erfolgreich registriert.</span><br /><br />
 <?php endif; ?>
+<script type="text/javascript">
+	function checkForm() {
+		if (document.getElementById('roleSelector').value == "") {
+			return confirm('Du hast keine Rolle für den Benutzer ausgewählt. Der Benutzer wird mit der Standard-Rolle für neu angemeldete Benutzer angelegt. Da du hierfür nicht die erforderlichen Berechtigungen hast, kannst du den Benutzer hinterher nicht mehr bearbeiten. Möchtest du das wirklich?');
+		}
+	}
+</script>
 <fieldset class="registerform">
-	<form method="post" action="index.php?var=register">
+	<form method="post" action="index.php?var=register" <?php if (!$userRole): ?>onsubmit="return checkForm()"<?php endif; ?>>
 		<table class="registertable">
 			<tr class="standardfont">
 				<td>Benutzername: </td>
@@ -34,7 +41,7 @@ if ($registered): ?>
 			<tr class="standardfont">
 				<td>Rolle: </td>
 				<td>
-					<select name="role">
+					<select name="role" id="roleSelector">
 						<option></option>
 						<?php foreach($roles as $roleID): ?>
 						<option value="<?php echo $roleID['role']; ?>">

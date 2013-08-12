@@ -20,6 +20,10 @@ class RegisterUser {
 			$db = new DB();
 			$role = new Role();
 			$possibleRoles = $role->getPossibleRoles($role->getRole());
+			$userRole = true;
+			if (!in_array($role->getUserRole(), $possibleRoles)) {
+				$userRole = false;
+			}
 			$passwordProof = true;
 			$emailProof = true;
 			$registered = false;
