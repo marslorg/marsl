@@ -22,7 +22,6 @@ class News implements Module {
 		$role = new Role();
 		$modules = $basic->getModules();
 		$moduleTags = array();
-		array_push($moduleTags, array('type'=>'general_general', 'name'=>'Allgemein', 'tags'=>''));
 		foreach ($modules as $module) {
 			include_once(dirname(__FILE__)."/".$module['file'].".php");
 			$class = new $module['class'];
@@ -140,18 +139,15 @@ class News implements Module {
 								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate','$corrected')");
 								$newsID = mysql_insert_id();
 								foreach ($moduleTags as $moduleTag) {
-									if ($moduleTag['type']=="general_general") {
-										$this->addTags($moduleTag['tags'], "general_general", $newsID);
-									}
-									else {
-										$type = explode("_", $moduleTag['type']);
-										$file = $type[0];
-										$scope = $type[1];
-										$module = $basic->getModule($file);
-										include_once(dirname(__FILE__)."/".$file.".php");
-										$class = new $module['class'];
-										$class->addTags($moduleTag['tags'], $scope, $newsID);
-									}
+									
+									$type = explode("_", $moduleTag['type']);
+									$file = $type[0];
+									$scope = $type[1];
+									$module = $basic->getModule($file);
+									include_once(dirname(__FILE__)."/".$file.".php");
+									$class = new $module['class'];
+									$class->addTags($moduleTag['tags'], $scope, $newsID);
+
 								}
 								$administrators = $user->getAdminUsers();
 								foreach ($administrators as $administrator) {
@@ -262,18 +258,15 @@ class News implements Module {
 							$city = htmlentities($row['city'], null, "ISO-8859-1");
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
-								if ($moduleTag['type']=="general_general") {
-									$moduleTag['tags'] = $this->getTagString("general_general", $id);
-								}
-								else {
-									$type = explode("_", $moduleTag['type']);
-									$file = $type[0];
-									$scope = $type[1];
-									$module = $basic->getModule($file);
-									include_once(dirname(__FILE__)."/".$file.".php");
-									$class = new $module['class'];
-									$moduleTag['tags'] = $class->getTagString($scope, $id);
-								}
+
+								$type = explode("_", $moduleTag['type']);
+								$file = $type[0];
+								$scope = $type[1];
+								$module = $basic->getModule($file);
+								include_once(dirname(__FILE__)."/".$file.".php");
+								$class = new $module['class'];
+								$moduleTag['tags'] = $class->getTagString($scope, $id);
+
 								array_push($tmpModuleTags, $moduleTag);
 							}
 							$moduleTags = $tmpModuleTags;
@@ -357,18 +350,15 @@ class News implements Module {
 										$adminIP = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
 										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city', `corrected`='$corrected' WHERE `news`='$id'"); 
 										foreach ($moduleTags as $moduleTag) {
-											if ($moduleTag['type']=="general_general") {
-												$this->addTags($moduleTag['tags'], "general_general", $id);
-											}
-											else {
-												$type = explode("_", $moduleTag['type']);
-												$file = $type[0];
-												$scope = $type[1];
-												$module = $basic->getModule($file);
-												include_once(dirname(__FILE__)."/".$file.".php");
-												$class = new $module['class'];
-												$class->addTags($moduleTag['tags'], $scope, $id);
-											}
+
+											$type = explode("_", $moduleTag['type']);
+											$file = $type[0];
+											$scope = $type[1];
+											$module = $basic->getModule($file);
+											include_once(dirname(__FILE__)."/".$file.".php");
+											$class = new $module['class'];
+											$class->addTags($moduleTag['tags'], $scope, $id);
+
 										}
 										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
 										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
@@ -505,6 +495,7 @@ class News implements Module {
 		$basic = new Basic();
 		$user = new User();
 		$role = new Role();
+		
 		if ($auth->moduleReadAllowed("news", $role->getRole())) {
 			if (!isset($_GET['action'])) {
 				$location = "";
@@ -596,6 +587,22 @@ class News implements Module {
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$config = new Configuration();
 					$url = $config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
+					
+					$modules = $basic->getModules();
+					$moduleTags = array();
+					foreach ($modules as $module) {
+						include_once(dirname(__FILE__)."/".$module['file'].".php");
+						$class = new $module['class'];
+						if ($class->isTaggable()) {
+							$tagList = $class->getTagList();
+							foreach($tagList as $tagType) {
+								$typeID = $module['file']."_".$tagType['type'];
+								$typeName = $tagType['text'];
+								array_push($moduleTags, array('type'=>$typeID, 'name'=>$typeName, 'tags'=>$class->getTags($tagType['type'], $news)));
+							}
+						}
+					}
+					
 					require_once("template/news.tpl.php");
 				}
 			}
@@ -751,14 +758,16 @@ class News implements Module {
 	 * Interface method stub.
 	*/
 	public function isTaggable() {
-		return false;
+		return true;
 	}
 	
 	/*
 	 * Interface method stub.
 	*/
 	public function getTagList() {
-		return null;
+		$types = array();
+		array_push($types, array('type'=>"general", 'text'=>"Allgemein"));
+		return $types;
 	}
 	
 	/*
@@ -799,6 +808,44 @@ class News implements Module {
 		}
 		
 		return implode(";", $retString);
+	}
+	
+	public function getTags($type, $news) {
+		$db = new DB();
+		$ret = array();
+		$news = mysql_real_escape_string($news);
+		$result = $db->query("SELECT `id`, `general`.`tag` AS tagname FROM `general` JOIN `news_tag` ON(`general`.`id`=`news_tag`.`tag`) WHERE `type`='general' AND `news`='$news' ORDER BY `general`.`tag`");
+		while ($row = mysql_fetch_array($result)) {
+			array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+		}
+		
+		return $ret;
+	}
+	
+	public function displayTag($tagID, $type) {
+		$db = new DB();
+		$role = new Role();
+		$auth = new Authentication();
+		$tagID = mysql_real_escape_string($tagID);
+		$articles = array();
+		$tagName = "";
+		$result = $db->query("SELECT `tag` FROM `general` WHERE `id`='$tagID'");
+		while ($row = mysql_fetch_array($result)) {
+			$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+		}
+		$result = $db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='general' ORDER BY `date` DESC");
+		while ($row = mysql_fetch_array($result)) {
+			if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
+				$news = $row['news'];
+				$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+				$title = htmlentities($row['title'], null, "ISO-8859-1");
+				$date = date("d\.m\.Y", $row['date']);
+				$location = $row['location'];
+				$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+				array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+			}
+		}
+		require_once("template/news.tag.tpl.php");
 	}
 }
 ?>

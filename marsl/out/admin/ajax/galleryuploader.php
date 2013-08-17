@@ -246,14 +246,14 @@ class GalleryUploader {
 			imagecopyresampled($imgB, $imgA, 0, 0, 0, 0, $iNewW,
 					$iNewH, $infos[0], $infos[1]);
 			ImageDestroy($imgA);
-			imagejpeg($imgB, $save);
+			imagejpeg($imgB, $save, 100);
 		}
 		else if($infos[2] == 3) {
 			$imgA = imagecreatefrompng($file);
 			$imgB = imagecreatetruecolor($iNewW, $iNewH);
 			imagecopyresampled($imgB, $imgA, 0, 0, 0, 0, $iNewW, $iNewH, $infos[0], $infos[1]);
 			ImageDestroy($imgA);
-			imagepng($imgB, $save);
+			imagepng($imgB, $save, 0);
 		}
 		else {
 			return FALSE;

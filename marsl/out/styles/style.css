@@ -86,10 +86,20 @@ a:hover {
 	width: 100%;
 }
 
-.albuminformation, .newsinformation {
+.newsinformation, .albuminformation {
 	width: 30%;
-	vertical-align: bottom;
+	vertical-align: top;
+	padding-top: 70px;
 	text-align: justify;
+}
+
+.albuminformation {
+	vertical-align: bottom;
+}
+
+.newsbottom {
+	position: absolute;
+	bottom: 15px;
 }
 
 .albumdescription, .newscontent {
@@ -281,4 +291,8 @@ a:hover {
 
 .formnickname, .formprename, .formname, .formpassword, .formmail {
 	width: 155px;
+}
+
+.cbenews {
+	color: #FF0000;
 }

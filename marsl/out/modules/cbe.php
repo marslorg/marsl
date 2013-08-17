@@ -67,7 +67,7 @@ class CBE implements Module {
 	public function getTagList() {
 		$types = array();
 		array_push($types, array('type'=>"band", 'text'=>"Bands"));
-		array_push($types, array('type'=>"location", 'text'=>"Location"));
+		array_push($types, array('type'=>"location", 'text'=>"Locations"));
 		return $types;
 	}
 	
@@ -136,6 +136,78 @@ class CBE implements Module {
 		
 		return implode(";", $retString);
 		
+	}
+	
+	public function getTags($type, $news) {
+		$db = new DB();
+		$ret = array();
+		$news = mysql_real_escape_string($news);
+		
+		if ($type=="band") {
+			$result = $db->query("SELECT `id`, `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
+			while ($row = mysql_fetch_array($result)) {
+				array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+			}
+		}
+		
+		if ($type=="location") {
+			$result = $db->query("SELECT `id`, `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
+			while ($row = mysql_fetch_array($result)) {
+				array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+			}
+		}
+		
+		return $ret;
+	}
+	
+	public function displayTag($tagID, $type) {
+		$db = new DB();
+		$role = new Role();
+		$auth = new Authentication();
+		$tagID = mysql_real_escape_string($tagID);
+		if ($type=="location") {
+			$articles = array();
+			$tagName = "";
+			$result = $db->query("SELECT `tag` FROM `location` WHERE `id`='$tagID'");
+			while ($row = mysql_fetch_array($result)) {
+				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+			}
+			$result = $db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_location' ORDER BY `date` DESC");
+			while ($row = mysql_fetch_array($result)) {
+				if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
+					$news = $row['news'];
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$date = date("d\.m\.Y", $row['date']);
+					$location = $row['location'];
+					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+				}
+			}
+			require_once("template/cbe.location.tpl.php");
+		}
+		
+		if ($type=="band") {
+			$articles = array();
+			$tagName = "";
+			$result = $db->query("SELECT `tag` FROM `band` WHERE `id`='$tagID'");
+			while ($row = mysql_fetch_array($result)) {
+				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+			}
+			$result = $db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_band' ORDER BY `date` DESC");
+			while ($row = mysql_fetch_array($result)) {
+				if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
+					$news = $row['news'];
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$date = date("d\.m\.Y", $row['date']);
+					$location = $row['location'];
+					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+				}
+			}
+			require_once("template/cbe.band.tpl.php");
+		}
 	}
 }
 ?>

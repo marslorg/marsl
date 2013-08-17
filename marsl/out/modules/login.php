@@ -113,6 +113,10 @@ class Login implements Module {
 	public function getTagString($type, $news) {
 		return null;
 	}
+	
+	public function getTags($type, $news) {
+		return null;
+	}
 
 	private function recover() {
 		
@@ -207,6 +211,9 @@ class Login implements Module {
 			}
 		}
 		require_once("template/recover.tpl.php");
+	}
+	
+	public function displayTag($tagID, $type) {
 	}
 }
 ?>

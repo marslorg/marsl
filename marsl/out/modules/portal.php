@@ -206,6 +206,13 @@ class Portal implements Module {
 	*/
 	public function getTagString($type, $news) {
 	}
+	
+	public function getTags($type, $news) {
+		return null;
+	}
+	
+	public function displayTag($tagID, $type) {
+	}
 }
 
 ?>

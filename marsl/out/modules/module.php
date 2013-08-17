@@ -49,5 +49,15 @@ interface Module {
 	 * Returns the tag string of the module.
 	*/
 	public function getTagString($type, $news);
+	
+	/*
+	 * Returns an array of the tags.
+	 */
+	public function getTags($type, $news);
+	
+	/*
+	 * Displays the information of a tag.
+	 */
+	public function displayTag($tagID, $type);
 }
 ?>

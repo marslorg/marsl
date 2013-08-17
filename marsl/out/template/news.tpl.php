@@ -5,7 +5,19 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	<table>
 		<tr>
 			<td class="newsinformation">
-				<img src="includes/graphics/square.gif" /> Datum: <?php echo $date; ?>
+				<h3>Taglist:</h3>
+				<?php foreach($moduleTags as $moduleTag):
+				$tags = $moduleTag['tags'];
+				?>
+				<br /><b><?php echo $moduleTag['name']; ?></b><br />
+				<?php foreach($tags as $tag): ?>
+				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo $tag['tag']; ?></a><br />
+				<?php endforeach; ?>
+				<?php endforeach; ?>
+				<br />
+				<div class="newsbottom">
+					<img src="includes/graphics/square.gif" /> Datum: <?php echo $date; ?>
+				</div>
 			</td>
 			<td class="newscontent">
 				<h3 class="headline"><?php echo $headline; ?></h3>

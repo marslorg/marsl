@@ -142,6 +142,7 @@ class URLLoader implements Module {
 		$db = new DB();
 		$id = -1;
 		$role = new Role();
+		$basic = new Basic();
 		if (isset($_GET['id'])) {
 			$id = $_GET['id'];
 		}
@@ -151,7 +152,7 @@ class URLLoader implements Module {
 				$id = $row['homepage'];
 			}
 		}
-		if (isset($_GET['search'])) {
+		if ((isset($_GET['search']))&&(!isset($_GET['id']))) {
 			$searchQuery = mysql_real_escape_string($_GET['search']);
 			$type = "standard";
 			if (isset($_GET['scope'])) {
@@ -160,7 +161,8 @@ class URLLoader implements Module {
 				$type = $searchScope[1];
 				if ($auth->moduleReadAllowed($searchContext, $role->getRole())) {
 					include_once(dirname(__FILE__)."/".$searchContext.".php");
-					$module = new $searchContext;
+					$moduleInfo = $basic->getModule($searchContext);
+					$module = new $moduleInfo['class'];
 					if ($module->isSearchable()) {
 						$module->search($searchQuery, $type);
 					}
@@ -168,6 +170,25 @@ class URLLoader implements Module {
 			}
 			else {
 				//Implement a standard search, if possible over the standard search methods of each module.
+			}
+		}
+		else if ((isset($_GET['tag']))&&(!isset($_GET['id']))) {
+			$tagID = mysql_real_escape_string($_GET['tag']);
+			if (isset($_GET['scope'])) {
+				$tagScope = explode("_", $_GET['scope']);
+				$tagContext = $tagScope[0];
+				if ($tagContext == "general") {
+					$tagContext = "news";
+				}
+				$type = $tagScope[1];
+				if ($auth->moduleReadAllowed($tagContext, $role->getRole())) {
+					include_once(dirname(__FILE__)."/".$tagContext.".php");
+					$moduleInfo = $basic->getModule($tagContext);
+					$module = new $moduleInfo['class'];
+					if ($module->isTaggable()) {
+						$module->displayTag($tagID, $type);
+					}
+				}
 			}
 		}
 		else {
@@ -241,6 +262,13 @@ class URLLoader implements Module {
 	 * Interface method stub.
 	*/
 	public function getTagString($type, $news) {
+	}
+	
+	public function getTags($type, $news) {
+		return null;
+	}
+	
+	public function displayTag($tagID, $type) {
 	}
 }
 ?>
