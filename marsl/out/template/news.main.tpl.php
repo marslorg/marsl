@@ -12,7 +12,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	<?php foreach($news as $article): ?>
 	<table class="newstable">
 		<tr>
-			<td class="newsinformation">
+			<td class="albuminformation">
 				<img src="includes/graphics/square.gif" /> Datum: <?php echo $article['date']; ?>
 			</td>
 			<td class="newscontent">
