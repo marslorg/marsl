@@ -90,7 +90,7 @@ class News implements Module {
 							$corrected = isset($_POST['corrected']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
-								$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
+								$moduleTag['tags'] = $_POST[$moduleTag['type']];
 								array_push($tmpModuleTags, $moduleTag);
 							}
 							$moduleTags = $tmpModuleTags;
@@ -265,7 +265,7 @@ class News implements Module {
 								$module = $basic->getModule($file);
 								include_once(dirname(__FILE__)."/".$file.".php");
 								$class = new $module['class'];
-								$moduleTag['tags'] = $class->getTagString($scope, $id);
+								$moduleTag['tags'] = htmlentities($class->getTagString($scope, $id), null, "ISO-8859-1");
 
 								array_push($tmpModuleTags, $moduleTag);
 							}
@@ -342,7 +342,7 @@ class News implements Module {
 										
 										$tmpModuleTags = array();
 										foreach ($moduleTags as $moduleTag) {
-											$moduleTag['tags'] = mysql_real_escape_string($_POST[$moduleTag['type']]);
+											$moduleTag['tags'] = $_POST[$moduleTag['type']];
 											array_push($tmpModuleTags, $moduleTag);
 										}
 										$moduleTags = $tmpModuleTags;
