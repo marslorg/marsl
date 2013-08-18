@@ -72,7 +72,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 </script>
 <!-- /TinyMCE -->
 <br />
-<h2>Location: <?php echo $tag; ?></h2>
+<h2>Band: <?php echo $tag; ?></h2>
 <form method="post" action="index.php?var=module&amp;module=cbe&amp;action=editband&amp;band=<?php echo $id; ?>">
 	<table class="newstable">
 		<tr>
