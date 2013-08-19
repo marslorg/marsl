@@ -159,5 +159,9 @@ class Register implements Module {
 	public function getImage() {
 		return null;
 	}
+	
+	public function getTitle() {
+		return null;
+	}
 }
 ?>

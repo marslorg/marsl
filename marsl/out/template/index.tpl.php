@@ -9,6 +9,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<meta property="fb:app_id" content="<?php echo $fbcomments; ?>" />
 		<?php if ($image!=null): ?>
 		<meta property="og:image" content="<?php echo $domain; ?>/<?php echo $image; ?>" />
+		<meta property="og:title" content="<?php echo $title; ?> />
 		<?php endif; ?>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery.js"></script>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery-ui.js"></script>

@@ -584,4 +584,8 @@ class Board implements Module {
 		return null;
 	}
 	
+	public function getTitle() {
+		return null;
+	}
+	
 }

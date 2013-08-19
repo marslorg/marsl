@@ -57,7 +57,14 @@ class Basic {
 	 */
 	public function getTitle() {
 		$config = new Configuration();
-		return $config->getTitle()." - ".$config->getSubTitle();
+		$urlloader = new URLLoader();
+		$title = $urlloader->getTitle();
+		if ($title!=null) {
+			return $urlloader->getTitle().$config->getTitle();
+		}
+		else {
+			return $config->getTitle()." - ".$config->getSubTitle();
+		}
 	}
 	
 	/*

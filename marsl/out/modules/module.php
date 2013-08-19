@@ -64,5 +64,10 @@ interface Module {
 	 * Returns a page specific image.
 	 */
 	public function getImage();
+	
+	/*
+	 * 
+	 */
+	public function getTitle();
 }
 ?>

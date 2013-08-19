@@ -894,5 +894,50 @@ class News implements Module {
 			return null;
 		}
 	}
+	
+	public function getTitle() {
+			if (isset($_GET['action'])) {
+			if ($_GET['action']=="read") {
+				$auth = new Authentication();
+				$role = new Role();
+				if ($auth->moduleReadAllowed("news", $role->getRole())) {
+					$db = new DB();
+					$newsID = mysql_real_escape_string($_GET['show']);
+					$location = mysql_real_escape_string($_GET['id']);
+					$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
+					while ($row = mysql_fetch_array($result)) {
+						$location = mysql_real_escape_string($row['maps_to']);
+					}
+					if ($auth->locationReadAllowed($location, $role->getRole())) {
+						$picture = "empty";
+						$result = $db->query("SELECT `headline`, `title` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
+						while ($row = mysql_fetch_array($result)) {
+							$headline = $row['headline'];
+							$title = $row['title'];
+							$newsTitle = $headline.": ".$title;
+						}
+						if ((strlen($headline)==0)&&(strlen($title)==0)) {
+							return null;
+						}
+						else {
+							return $newsTitle;
+						}
+					}
+					else {
+						return null;
+					}
+				}
+				else {
+					return null;
+				}
+			}
+			else {
+				return null;
+			}
+		}
+		else {
+			return null;
+		}
+	}
 }
 ?>

@@ -305,5 +305,51 @@ class URLLoader implements Module {
 		}
 		return null;
 	}
+	
+	public function getTitle() {
+		$db = new DB();
+		$auth = new Authentication();
+		$id = -1;
+		$role = new Role();
+		$basic = new Basic();
+		$title = "";
+		if (isset($_GET['id'])) {
+			$id = $_GET['id'];
+		}
+		else {
+			$result = $db->query("SELECT `homepage` FROM homepage");
+			while ($row = mysql_fetch_array($result)) {
+				$id = $row['homepage'];
+			}
+		}
+		$id = mysql_real_escape_string($id);
+		if ($id==$basic->getHomeLocation()) {
+			return null;
+		}
+		else {
+			$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
+			while ($row = mysql_fetch_array($result)) {
+				$id = mysql_real_escape_string($row['maps_to']);
+			}
+				
+			if ($auth->locationReadAllowed($id, $role->getRole())) {
+				$result = $db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+				while ($row = mysql_fetch_array($result)) {
+					$title = $row['name']." - ";
+					$module = mysql_real_escape_string($row['module']);
+					$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
+					while ($row2 = mysql_fetch_array($result2)) {
+						include_once(dirname(__FILE__)."/".$module.".php");
+						$content = new $row2['class'];
+						$newTitle = $content->getTitle();
+						if ($newTitle!=null) {
+							$title = $newTitle." - ";
+						}
+					}
+				}
+			}
+			return $title;
+		}
+	}
 }
 ?>
