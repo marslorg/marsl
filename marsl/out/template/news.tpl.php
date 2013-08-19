@@ -9,10 +9,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<?php foreach($moduleTags as $moduleTag):
 				$tags = $moduleTag['tags'];
 				?>
-				<br /><b><?php echo $moduleTag['name']; ?></b><br />
+				<b><?php echo $moduleTag['name']; ?></b><br />
 				<?php foreach($tags as $tag): ?>
 				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo htmlentities($tag['tag']); ?></a><br />
 				<?php endforeach; ?>
+				<br />
 				<?php endforeach; ?>
 				<br />
 				<div class="newsbottom">
