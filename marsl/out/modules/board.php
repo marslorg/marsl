@@ -580,4 +580,8 @@ class Board implements Module {
 	public function displayTag($tagID, $type) {
 	}
 	
+	public function getImage() {
+		return null;
+	}
+	
 }

@@ -2,6 +2,7 @@
 include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
 include_once(dirname(__FILE__)."/htmlpurifier/library/HTMLPurifier.auto.php");
+include_once(dirname(__FILE__)."/../modules/urlloader.php");
 
 class Basic {
 	
@@ -57,6 +58,14 @@ class Basic {
 	public function getTitle() {
 		$config = new Configuration();
 		return $config->getTitle()." - ".$config->getSubTitle();
+	}
+	
+	/*
+	 * Gets the page corresponding thumbnail.
+	 */
+	public function getImage() {
+		$urlloader = new URLLoader();
+		return $urlloader->getImage();
 	}
 	
 	/*

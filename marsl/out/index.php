@@ -22,6 +22,7 @@ class Main {
 		
 		$basic = new Basic();
 		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
+		$image = htmlentities($basic->getImage(), null, "ISO-8859-1");
 		$domain = $config->getDomain();
 		$navigation = new Navigation();
 		$urlloader = new URLLoader();

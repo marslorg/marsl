@@ -209,5 +209,9 @@ class CBE implements Module {
 			require_once("template/cbe.band.tpl.php");
 		}
 	}
+	
+	public function getImage() {
+		return null;
+	}
 }
 ?>

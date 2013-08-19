@@ -847,5 +847,52 @@ class News implements Module {
 		}
 		require_once("template/news.tag.tpl.php");
 	}
+	
+	public function getImage() {
+		if (isset($_GET['action'])) {
+			if ($_GET['action']=="read") {
+				$auth = new Authentication();
+				$role = new Role();
+				if ($auth->moduleReadAllowed("news", $role->getRole())) {
+					$db = new DB();
+					$newsID = mysql_real_escape_string($_GET['show']);
+					$location = mysql_real_escape_string($_GET['id']);
+					$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
+					while ($row = mysql_fetch_array($result)) {
+						$location = mysql_real_escape_string($row['maps_to']);
+					}
+					if ($auth->locationReadAllowed($location, $role->getRole())) {
+						$picture = "empty";
+						$result = $db->query("SELECT `picture2` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
+						while ($row = mysql_fetch_array($result)) {
+							$picID = $row['picture2'];
+							$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID'");
+							while ($row2 = mysql_fetch_array($result2)) {
+								$picture = "news/".htmlentities($row2['url'], null, "ISO-8859-1");
+							}
+						}
+						if ($picture=="empty") {
+							return null;
+						}
+						else {
+							return $picture;
+						}
+					}
+					else {
+						return null;
+					}
+				}
+				else {
+					return null;
+				}
+			}
+			else {
+				return null;
+			}
+		}
+		else {
+			return null;
+		}
+	}
 }
 ?>

@@ -59,5 +59,10 @@ interface Module {
 	 * Displays the information of a tag.
 	 */
 	public function displayTag($tagID, $type);
+	
+	/*
+	 * Returns a page specific image.
+	 */
+	public function getImage();
 }
 ?>
