@@ -2,7 +2,7 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 echo "<?xml version=\"1.0\" encoding=\"windows-1252\"?>";
 ?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
 	<channel>
 		<title><?php echo $feedtitle; ?></title>
 		<link><?php echo $feedlink; ?></link>
@@ -15,6 +15,11 @@ echo "<?xml version=\"1.0\" encoding=\"windows-1252\"?>";
 			<link><?php echo $item['link']; ?></link>
 			<guid isPermaLink="true"><?php echo $item['link']; ?></guid>
 			<pubDate><?php echo $item['date']; ?></pubDate>
+			<?php if ($item['newsPicture']!="empty"||$item['teaserPicture']!="empty"): ?>
+			<media:content url="<?php if ($item['newsPicture']!="empty"): ?><?php echo $item['newsPicture']; ?><?php endif; ?><?php if ($item['newsPicture']=="empty"): ?><?php echo $item['teaserPicture']; ?><?php endif; ?>">
+				<media:thumbnail url="<?php if ($item['teaserPicture']!="empty"): ?><?php echo $item['teaserPicture']; ?><?php endif; ?><?php if ($item['teaserPicture']=="empty"): ?><?php echo $item['newsPicture']; ?><?php endif; ?>" />
+			</media:content>
+			<?php endif; ?>
 		</item>
 		<?php endforeach; ?>
 	</channel>
