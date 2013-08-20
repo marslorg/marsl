@@ -2,6 +2,7 @@
 include_once(dirname(__FILE__)."/includes/errorHandler.php");
 include_once(dirname(__FILE__)."/includes/dbsocket.php");
 include_once(dirname(__FILE__)."/includes/config.inc.php");
+include_once(dirname(__FILE__)."/includes/basic.php");
 include_once(dirname(__FILE__)."/user/auth.php");
 include_once(dirname(__FILE__)."/user/role.php");
 
@@ -50,7 +51,26 @@ class RSS {
 					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				
-				array_push($items, array('link'=>$link, 'teaser'=>$teaser, 'title'=>$title, 'date'=>$date, 'teaserPicture'=>$teaserPicture, 'newsPicture'=>$newsPicture));
+				$basic = new Basic();
+				$modules = $basic->getModules();
+				$moduleTags = array();
+				foreach ($modules as $module) {
+					include_once(dirname(__FILE__)."/modules/".$module['file'].".php");
+					$class = new $module['class'];
+					if ($class->isTaggable()) {
+						$tagList = $class->getTagList();
+						foreach($tagList as $tagType) {
+							$typeID = $module['file']."_".$tagType['type'];
+							$typeName = $tagType['text'];
+							$tags = $class->getTags($tagType['type'], $news);
+							foreach ($tags as $tag) {
+								array_push($moduleTags, htmlspecialchars($tag['tag']));
+							}
+						}
+					}
+				}
+				
+				array_push($items, array('link'=>$link, 'teaser'=>$teaser, 'title'=>$title, 'date'=>$date, 'teaserPicture'=>$teaserPicture, 'newsPicture'=>$newsPicture, 'tags'=>$moduleTags));
 			}
 			require_once("template/rss.tpl.php");
 		}

@@ -15,6 +15,10 @@ echo "<?xml version=\"1.0\" encoding=\"windows-1252\"?>";
 			<link><?php echo $item['link']; ?></link>
 			<guid isPermaLink="true"><?php echo $item['link']; ?></guid>
 			<pubDate><?php echo $item['date']; ?></pubDate>
+			<?php $tags=$item['tags']; ?>
+			<?php foreach($tags as $tag): ?>
+			<category><?php echo $tag; ?></category>
+			<?php endforeach; ?>
 			<?php if ($item['newsPicture']!="empty"||$item['teaserPicture']!="empty"): ?>
 			<media:content url="<?php if ($item['newsPicture']!="empty"): ?><?php echo $item['newsPicture']; ?><?php endif; ?><?php if ($item['newsPicture']=="empty"): ?><?php echo $item['teaserPicture']; ?><?php endif; ?>">
 				<media:thumbnail url="<?php if ($item['teaserPicture']!="empty"): ?><?php echo $item['teaserPicture']; ?><?php endif; ?><?php if ($item['teaserPicture']=="empty"): ?><?php echo $item['newsPicture']; ?><?php endif; ?>" />

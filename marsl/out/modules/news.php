@@ -904,6 +904,8 @@ class News implements Module {
 					$db = new DB();
 					$newsID = mysql_real_escape_string($_GET['show']);
 					$location = mysql_real_escape_string($_GET['id']);
+					$headline = "";
+					$title = "";
 					$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 					while ($row = mysql_fetch_array($result)) {
 						$location = mysql_real_escape_string($row['maps_to']);
