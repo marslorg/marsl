@@ -330,5 +330,14 @@ class Basic {
 	
 		return($xml_array);
 	}
+	
+	public function tempFileKey() {
+		$tempKey = mysql_real_escape_string($this->randomHash());
+		$db = new DB();
+		while($db->isExisting("SELECT * FROM `attachment` WHERE `temporary`='$tempKey'")) {
+			$tempKey = mysql_real_escape_string($this->randomHash());
+		}
+		return $tempKey;
+	}
 }
 ?>

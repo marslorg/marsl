@@ -487,6 +487,31 @@ CREATE  TABLE IF NOT EXISTS `event_band` (
 ENGINE = MyISAM;
 
 
+-- -----------------------------------------------------
+-- Table `attachment`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `attachment` (
+  `file` INT NOT NULL AUTO_INCREMENT ,
+  `servername` VARCHAR(100) NOT NULL ,
+  `realname` VARCHAR(100) NOT NULL ,
+  `key` VARCHAR(255) NOT NULL ,
+  `temporary` VARCHAR(255) NOT NULL ,
+  PRIMARY KEY (`file`) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `post_attachment`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `post_attachment` (
+  `post` INT NOT NULL ,
+  `file` INT NOT NULL ,
+  PRIMARY KEY (`post`, `file`) ,
+  INDEX `pa_post_idx` (`post` ASC) ,
+  INDEX `pa_file_idx` (`file` ASC) )
+ENGINE = MyISAM;
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

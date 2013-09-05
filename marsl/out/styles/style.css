@@ -296,3 +296,27 @@ a:hover {
 .cbenews {
 	color: #FF0000;
 }
+
+#uploaderCell {
+	display: table-cell;
+	vertical-align: top;
+}
+
+#uploader {
+	width: 375px;
+	margin-top: 15px;
+}
+
+.uploaderTitle {
+	padding-left: 8px;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+.plupload_header_content {
+	display: none;
+}
+
+.mceLayout {
+	margin-top: 510px;
+}

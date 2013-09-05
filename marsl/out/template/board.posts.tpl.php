@@ -50,6 +50,19 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<td class="boardauthor"><a name="<?php echo $post['post']; ?>"></a><b><?php echo $post['authorNickname']; ?></b></td>
 		<td class="boardcontent">
 			<?php echo $post['content']; ?>
+			<?php $i = 0; ?>
+			<?php foreach($post['files'] as $file): ?>
+			<?php if ($i==0): ?>
+			<br /><br /><span class="smallfont">Anh&auml;nge:</span>
+			<?php $i++; ?>
+			<?php endif; ?>
+			<br />
+			<span class="smallfont">
+				<a href="file.php?file=<?php echo $file['file']; ?>&amp;scope=board">
+					<?php echo $file['filename']; ?>
+				</a>
+			</span>
+			<?php endforeach; ?>
 			<?php if ($post['operator']>0): ?>
 			<br /><br /><span class="smallfont">zuletzt ge&auml;ndert von <?php echo $post['operatorNickname']; ?> <?php echo $post['lastedit']; ?></span>
 			<?php endif; ?>

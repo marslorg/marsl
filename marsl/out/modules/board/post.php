@@ -62,7 +62,14 @@ class Post {
 						$author = $row['author'];
 						$authorNickname = htmlentities($user->getNickbyID($author), null, "ISO-8859-1");
 						$editable = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole())))));
-						array_push($posts, array('post'=>$post, 'date'=>$date, 'operator'=>$operator, 'operatorNickname'=>$operatorNickname, 'lastedit'=>$lastedit, 'content'=>$content, 'ip'=>$ip, 'author'=>$author, 'authorNickname'=>$authorNickname, 'editable'=>$editable));
+						$files = array();
+						$result2 = $db->query("SELECT `file`, `realname` FROM `post_attachment` NATURAL JOIN `attachment` WHERE `post`='$post'");
+						while ($row2 = mysql_fetch_array($result2)) {
+							$filename = htmlentities($row2['realname'], null, "ISO-8859-1");
+							$file = $row2['file'];
+							array_push($files, array('filename'=>$filename, 'file'=>$file));
+						}
+						array_push($posts, array('post'=>$post, 'date'=>$date, 'operator'=>$operator, 'operatorNickname'=>$operatorNickname, 'lastedit'=>$lastedit, 'content'=>$content, 'ip'=>$ip, 'author'=>$author, 'authorNickname'=>$authorNickname, 'editable'=>$editable, 'files'=>$files));
 					}
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
@@ -178,6 +185,16 @@ class Post {
 								$postcount = $row['postcount']+1;
 								$db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
 							}
+							
+							$temporary = mysql_real_escape_string($_POST['temporary']);
+							$result = $db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
+							while ($row = mysql_fetch_array($result)) {
+								$newTemporary = $basic->tempFileKey();
+								$file = $row['file'];
+								$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
+								$db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
+							}
+							
 							$page = $thread->getPageNumber($threadID);
 							$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
 							echo "<div class=\"success\">Deine Antwort wurde erfolgreich gespeichert! Du wirst gleich zur&uuml;ck geleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
@@ -201,6 +218,7 @@ class Post {
 					$title = $thread->getTitle($threadID);
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
+					$temporaryKey = $basic->tempFileKey();
 					require_once("template/board.answer.tpl.php");
 				}
 			}
@@ -235,6 +253,16 @@ class Post {
 							$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
 							$db->query("UPDATE `post` SET `content`='$content', `operator`='$operator', `lastedit`='$time' WHERE `post`='$postID'");
 							if ($db->isExisting("SELECT `post` FROM `post` WHERE `post`='$postID' AND `content`='$content' AND `operator`='$operator' AND `lastedit`='$time'")) {
+								
+								$temporary = mysql_real_escape_string($_POST['temporary']);
+								$result = $db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
+								while ($row = mysql_fetch_array($result)) {
+									$newTemporary = $basic->tempFileKey();
+									$file = $row['file'];
+									$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
+									$db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
+								}
+								
 								echo "<div class=\"success\">Der Post wurde erfolgreich ge&auml;ndert! Du wirst gleich zur&uuml;ck geleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 							}
 							else {
@@ -251,6 +279,7 @@ class Post {
 						$content = $row['content'];
 						$authTime = time();
 						$authToken = $auth->getToken($authTime);
+						$temporaryKey = $basic->tempFileKey();
 						require_once("template/board.edit.tpl.php");
 					}
 				}

@@ -1,0 +1,57 @@
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+
+
+CREATE  TABLE IF NOT EXISTS `attachment` (
+
+  `file` INT(11) NOT NULL AUTO_INCREMENT ,
+
+  `servername` VARCHAR(100) NOT NULL ,
+
+  `realname` VARCHAR(100) NOT NULL ,
+
+  `key` VARCHAR(255) NOT NULL ,
+  `temporary` VARCHAR(255) NOT NULL ,
+
+  PRIMARY KEY (`file`) )
+
+ENGINE = MyISAM
+
+DEFAULT CHARACTER SET = latin1
+
+COLLATE = latin1_swedish_ci;
+
+
+
+CREATE  TABLE IF NOT EXISTS `post_attachment` (
+
+  `post` INT(11) NOT NULL ,
+
+  `file` INT(11) NOT NULL ,
+
+  PRIMARY KEY (`post`, `file`) ,
+
+  INDEX `pa_post_idx` (`post` ASC) ,
+
+  INDEX `pa_file_idx` (`file` ASC) )
+
+ENGINE = MyISAM
+
+DEFAULT CHARACTER SET = latin1
+
+COLLATE = latin1_swedish_ci;
+
+
+
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+

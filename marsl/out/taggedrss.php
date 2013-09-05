@@ -35,7 +35,6 @@ class RSS {
 				$news = htmlentities($row['news'], null, "ISO-8859-1");
 				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
 				$teaser = html_entity_decode($row['teaser'], null, "ISO-8859-1");
-				//$teaser = htmlentities($teaser, null, "ISO-8859-1");
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$date = date("D, d M Y H:i:s O", $row['postdate']);
 				
@@ -83,7 +82,6 @@ class RSS {
 	
 	private function tagTeaser($text, $tag) {
 		$hashtag = "#".strtolower(str_replace(" ", "", $tag));
-		//$tag = htmlentities($tag, null, "ISO-8859-1");
 		$text = preg_replace("/".$tag."/", $hashtag, $text, 1);
 		return $text;
 	}

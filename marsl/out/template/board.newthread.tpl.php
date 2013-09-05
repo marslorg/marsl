@@ -1,6 +1,49 @@
 <?php
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
+<script type="text/javascript">
+// Convert divs to queue widgets when the DOM is ready
+$(function() {
+	$("#uploader").pluploadQueue({
+
+		 
+		// General settings
+		runtimes : 'flash,silverlight,gears,browserplus,html5',
+		url : 'ajax/general/fileuploader.php?temporary=<?php echo $temporaryKey; ?>&token=<?php echo $authToken; ?>&time=<?php echo $authTime; ?>',
+		max_file_size : '30mb',
+		chunk_size : '1mb',
+		unique_names : true,
+
+		// Flash settings
+		flash_swf_url : 'includes/jscripts/plupload/js/plupload.flash.swf',
+
+		// Silverlight settings
+		silverlight_xap_url : 'includes/jscripts/plupload/js/plupload.silverlight.xap'
+	});
+
+	// Client side form validation
+	$('form').submit(function(e) {
+        var uploader = $('#uploader').pluploadQueue();
+
+        // Files in queue upload them first
+        if (uploader.files.length > 0) {
+            // When all files are uploaded submit form
+            uploader.bind('StateChanged', function() {
+                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
+                    $('form')[1].submit();
+                }
+            });
+                
+            uploader.start();
+        }
+        else {
+            $('form')[1].submit();
+        }
+
+        return false;
+    });
+});
+</script>
 <!-- TinyMCE -->
 <script type="text/javascript" src="includes/jscripts/tiny_mce/tiny_mce.js"></script>
 <script type="text/javascript">
@@ -17,6 +60,8 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		remove_script_host : false,
 		convert_urls : false,
 		inline_styles : false,
+		width : 500,
+		height: 300,
 		
 
 		// Theme options
@@ -58,10 +103,20 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <h2>Neues Thema</h2>
 <form method="post" action="index.php?id=<?php echo $location; ?>&amp;action=newthread&amp;board=<?php echo $boardID; ?>">
 	Titel: <input type="text" name="title" style="width:94%" /><br /><br />
-	<textarea name="content" rows="15" style="width:99%"></textarea>
+	<div style="display:table">
+		<textarea name="content" rows="15" style="display: table-cell; margin-top: 20px;"></textarea>
+		<div id="uploaderCell">
+			<div class="uploaderTitle">Anh&auml;nge hinzuf&uuml;gen:</div>
+			<div id="uploader">
+				Dein Browser unterst&uuml;tzt kein Flash, Silverlight, Gears, BrowserPlus oder HTML5.
+			</div>
+		</div>
+	</div>
+	<input type="hidden" name="temporary" value="<?php echo $temporaryKey; ?>" />
 	<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 	<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
 	<div class="center">
+		<input type="hidden" name="do" value="newthread" />
 		<button type="submit" name="do" value="newthread"> Thema erstellen </button>
 		<button type="reset"> L&ouml;schen </button>
 	</div>

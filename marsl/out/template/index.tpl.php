@@ -14,12 +14,17 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery.js"></script>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery-ui.js"></script>
 		<script type="text/javascript" src="includes/jscripts/slimbox/js/slimbox2.js"></script>
+		<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+		<script type="text/javascript" src="includes/jscripts/plupload/js/plupload.full.js"></script>
+		<script type="text/javascript" src="includes/jscripts/plupload/js/jquery.plupload.queue/jquery.plupload.queue.frontend.js"></script>
+		<script type="text/javascript" src="includes/jscripts/plupload/js/i18n/de.js"></script>
 		<link rel="alternate" type="application/rss+xml" title="<?php echo $title; ?> - RSS Feed" href="<?php echo $domain; ?>/rss.php" />
 		<link rel="icon" href="includes/graphics/favicon.ico" type="image/x-icon" />
 		<link rel="stylesheet" href="includes/jscripts/slimbox/css/slimbox2.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="styles/style.css" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
+		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 	</head>
 	<body>
 		<div class="mainhead">
@@ -50,11 +55,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="230" data-show-faces="true" data-stream="true" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
+				<a href="http://www.jiix.de" target="_blank">jiix.de</a><br />
 				<a href="http://de.dressfirst.com/Brautkleider-c2/" target="_blank">Brautkleider</a><br />
 				<a href="http://se.dressfirst.com/Brollopsklanningar-c2/" target="_blank">br&ouml;llopskl&auml;nning</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
-				<a href="http://www.infantologie.de/love/lovesongs.php" target="_blank">Songs &uuml;ber die Liebe</a><br />
 				<a href="http://www.gs-kosmetik.de" target="_blank">Jafra Kosmetik</a>
 			</div>
 		</div>

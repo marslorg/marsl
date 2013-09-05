@@ -489,6 +489,31 @@ CREATE  TABLE IF NOT EXISTS `mydb`.`event_band` (
   INDEX `eb_event_idx` (`event` ASC) )
 ENGINE = MyISAM;
 
+
+-- -----------------------------------------------------
+-- Table `mydb`.`attachment`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `mydb`.`attachment` (
+  `file` INT NOT NULL AUTO_INCREMENT ,
+  `servername` VARCHAR(100) NOT NULL ,
+  `realname` VARCHAR(100) NOT NULL ,
+  `key` VARCHAR(255) NOT NULL ,
+  `temporary` VARCHAR(255) NOT NULL ,
+  PRIMARY KEY (`file`) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`post_attachment`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `mydb`.`post_attachment` (
+  `post` INT NOT NULL ,
+  `file` INT NOT NULL ,
+  PRIMARY KEY (`post`, `file`) ,
+  INDEX `pa_post_idx` (`post` ASC) ,
+  INDEX `pa_file_idx` (`file` ASC) )
+ENGINE = MyISAM;
+
 USE `mydb` ;
 
 

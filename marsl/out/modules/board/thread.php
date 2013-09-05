@@ -468,6 +468,15 @@ class Thread {
 							$db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
 						}
 						
+						$temporary = mysql_real_escape_string($_POST['temporary']);
+						$result = $db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
+						while ($row = mysql_fetch_array($result)) {
+							$newTemporary = $basic->tempFileKey();
+							$file = $row['file'];
+							$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
+							$db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
+						}
+						
 						$page = $this->getPageNumber($threadID);
 						$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
 						echo "<div class=\"success\">Das Thema wurde erfolgreich erstellt! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
@@ -477,6 +486,7 @@ class Thread {
 			else {
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
+				$temporaryKey = $basic->tempFileKey();
 				require_once("template/board.newthread.tpl.php");
 			}
 		}
