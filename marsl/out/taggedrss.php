@@ -65,6 +65,7 @@ class RSS {
 							$tags = $class->getTags($tagType['type'], $news);
 							foreach ($tags as $tag) {
 								$teaser = $this->tagTeaser($teaser, $tag['tag']);
+								$title = $this->tagTeaser($title, $tag['tag']);
 								array_push($moduleTags, htmlspecialchars($tag['tag']));
 							}
 						}
