@@ -1,4 +1,5 @@
 <?php
+include_once(dirname(__FILE__)."/errorHandler.php");
 
 class Encryption {
 	const CYPHER = MCRYPT_RIJNDAEL_256;
