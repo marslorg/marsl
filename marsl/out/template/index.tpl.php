@@ -57,7 +57,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				Anzeigen:<br />
 				<a href="http://www.jiix.de" target="_blank">jiix.de</a><br />
 				<a href="http://de.dressfirst.com/Brautkleider-c2/" target="_blank">Brautkleider</a><br />
-				<a href="http://se.dressfirst.com/Brollopsklanningar-c2/" target="_blank">br&ouml;llopskl&auml;nning</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
 				<a href="http://www.gs-kosmetik.de" target="_blank">Jafra Kosmetik</a>
