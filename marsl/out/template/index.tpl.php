@@ -55,8 +55,9 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="230" data-show-faces="true" data-stream="true" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
+				<a href="http://de.jennyjoseph.com/Kleider-Fur-Besondere-Anlasse-c3/" target="_blank">abendkleider</a><br />
+				<a href="http://wordpress-themes.org" target="_blank">wordpress-themes.org</a><br />
 				<a href="http://www.jiix.de" target="_blank">jiix.de</a><br />
-				<a href="http://de.dressfirst.com/Brautkleider-c2/" target="_blank">Brautkleider</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
 				<a href="http://www.gs-kosmetik.de" target="_blank">Jafra Kosmetik</a>
