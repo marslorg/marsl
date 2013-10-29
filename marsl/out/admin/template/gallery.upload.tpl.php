@@ -7,13 +7,13 @@ $(function() {
 	$("#uploader").pluploadQueue({
 		// General settings
 		runtimes : 'silverlight,gears,flash,browserplus,html5',
-		url : 'galleryuploader.php?dir=<?php echo $tmpDir; ?>',
+		url : 'ajax/galleryuploader.php?dir=<?php echo $tmpDir; ?>',
 		max_file_size : '30mb',
 		chunk_size : '1mb',
 		unique_names : true,
 
 		// Resize images on clientside if we can
-		resize : {width : 640, height : 640, quality : 100},
+		resize : {width : 900, height : 900, quality : 100},
 
 		// Specify what files to browse for
 		filters : [

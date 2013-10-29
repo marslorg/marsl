@@ -71,6 +71,111 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 	});
 </script>
 <!-- /TinyMCE -->
+<script type="text/javascript">
+	function handleTeaser(files) {
+		teaserPhoto = files[0];
+	}
+
+	function uploadTeaser() {
+		var reader = new FileReader();
+		reader.onload = function () {
+			var photograph = $('#teaser_photo_photograph').val();
+			var fileName = $('#teaser_photo').val();
+			document.getElementById('teaser_photo_form').innerHTML = '<tr><td class="center"><br />Je nach Gr&ouml;&szlig;e des Fotos kann dieser Vorgang etwas dauern.<br /><img src="../includes/graphics/big_loader.gif" /></td></tr>';
+			$.post('ajax/newsphoto.php', {fileName: teaserPhoto.name, data: reader.result, authTime: '<?php echo $authTime; ?>', authToken: '<?php echo $authToken; ?>', type: 'teaser', photograph: escape(photograph)}, function(data) {
+				var result = eval('(' + data + ')');
+				if (result.type=="error") {
+					if (result.code=="1") {
+						document.getElementById('teaser_photo_form').innerHTML = '<tr><td colspan="2" class="center"><br /><b>Die hochgeladene Datei ist kein Bild.</b></td></tr>';	
+					}
+					if (result.code=="3") {
+						document.getElementById('teaser_photo_form').innerHTML = '<tr><td colspan="2" class="center"><br /><b>Leider ist ein interner Fehler aufgetreten. Versuche es nochmal. Sollte der Fehler &ouml;fter auftreten, kontaktiere einen Administrator.</b></td></tr>';			
+					}
+					document.getElementById('teaser_photo_form').innerHTML += '<tr><td colspan="2" class="center"><h3>Teaser Foto</h3></td></tr>';
+					document.getElementById('teaser_photo_form').innerHTML += '<tr><td>Foto: </td><td><input id="teaser_photo" type="file" onchange="JavaScript:handleTeaser(this.files)" /></td></tr>';
+					document.getElementById('teaser_photo_form').innerHTML += '<tr><td>Fotograf: </td><td><input type="text" id="teaser_photo_photograph" value="'+photograph+'" /></td></tr>';
+					document.getElementById('teaser_photo_form').innerHTML += '<tr><td colspan="2" class="center"><a onmouseover="this.style.cursor = \'pointer\'" onclick="JavaScript:uploadTeaser()"><b>Hochladen</b></a></td></tr>';
+				}
+				if (result.type=="success") {
+					document.getElementById('teaser_photo_form').innerHTML = '<tr><td class="center"><br /><input type="hidden" name="picture1" value="'+result.id+'" /><img src="../news/'+result.file+'" /><br />Foto: '+photograph+'</td></tr>';
+				}
+			});
+		}
+		reader.readAsDataURL(teaserPhoto);
+	}
+
+	function handleText(files) {
+		textPhoto = files[0];
+	}
+
+	function uploadText() {
+		var reader = new FileReader();
+		reader.onload = function () {
+			var photograph = $('#text_photo_photograph').val();
+			var fileName = $('#text_photo').val();
+			var subtitle = $('#text_photo_text').val();
+			document.getElementById('text_photo_form').innerHTML = '<tr><td class="center"><br />Je nach Gr&ouml;&szlig;e des Fotos kann dieser Vorgang etwas dauern.<br /><img src="../includes/graphics/big_loader.gif" /></td></tr>';
+			$.post('ajax/newsphoto.php', {fileName: textPhoto.name, data: reader.result, authTime: '<?php echo $authTime; ?>', authToken: '<?php echo $authToken; ?>', type: 'text', photograph: escape(photograph), subtitle: escape(subtitle)}, function(data) {
+				var result = eval('(' + data + ')');
+				if (result.type=="error") {
+					if (result.code=="1") {
+						document.getElementById('text_photo_form').innerHTML = '<tr><td colspan="2" class="center"><br /><b>Die hochgeladene Datei ist kein Bild.</b></td></tr>';	
+					}
+					if (result.code=="2") {
+						document.getElementById('text_photo_form').innerHTML = '<tr><td colspan="2" class="center"><br /><b>Die hochgeladene Datei muss die Mindestma&szlig;e 640 Pixel Breite und 320 Pixel H&ouml;he haben. Au&szlig;erdem muss die Breite mindestens halb so lang und h&ouml;chstens vier Mal so lang, wie die H&ouml;he sein.</b></td></tr>';
+					}
+					if (result.code=="3") {
+						document.getElementById('text_photo_form').innerHTML = '<tr><td colspan="2" class="center"><br /><b>Leider ist ein interner Fehler aufgetreten. Versuche es nochmal. Sollte der Fehler &ouml;fter auftreten, kontaktiere einen Administrator.</b></td></tr>';			
+					}
+					document.getElementById('text_photo_form').innerHTML += '<tr><td colspan="2" class="center"><h3>Text Foto</h3></td></tr>';
+					document.getElementById('text_photo_form').innerHTML += '<tr><td>Foto: </td><td><input id="text_photo" type="file" onchange="JavaScript:handleText(this.files)" /></td></tr>';
+					document.getElementById('text_photo_form').innerHTML += '<tr><td>Fotograf: </td><td><input type="text" id="text_photo_photograph" value="'+photograph+'" /></td></tr>';
+					document.getElementById('text_photo_form').innerHTML += '<tr><td>Untertitel: </td><td><input type="text" class="subtitle" id="text_photo_text" value="'+subtitle+'" /></td></tr>';
+					document.getElementById('text_photo_form').innerHTML += '<tr><td colspan="2" class="center"><a onmouseover="this.style.cursor = \'pointer\'" onclick="JavaScript:uploadText()"><b>Hochladen</b></a></td></tr>';
+				}
+				if (result.type=="success") {
+					document.getElementById('text_photo_form').innerHTML = '<tr><td class="center"><br />';
+					document.getElementById('text_photo_form').innerHTML += '<input type="hidden" id="pic2X" name="pic2X" /><input type="hidden" id="pic2Y" name="pic2Y" />';
+					document.getElementById('text_photo_form').innerHTML += '<input type="hidden" id="pic2W" name="pic2W" /><input type="hidden" id="pic2H" name="pic2H" />';
+					document.getElementById('text_photo_form').innerHTML += '<input type="hidden" name="picture2" value="'+result.id+'" />';
+					document.getElementById('text_photo_form').innerHTML += '<img src="../news/'+result.file+'" id="crop" /><br />Foto: '+photograph+'<br />Untertitel: '+subtitle+'</td></tr>';
+					$('#crop').Jcrop({
+						minSize: [640, 320],
+						aspectRatio: 2,
+						onSelect: updateCoords,
+						setSelect: [0, 0, 640, 320],
+						allowSelect: false
+					});
+				}
+			});
+		}
+		reader.readAsDataURL(textPhoto);
+	}
+
+	function updateCoords(c) {
+
+		$('#pic2X').val(c.x);
+		$('#pic2Y').val(c.y);
+		$('#pic2W').val(c.w);
+		$('#pic2H').val(c.h);
+
+	}
+
+	function checkForm() {
+		if (document.getElementById('teaser_photo')) {
+			if (document.getElementById('teaser_photo').value != "") {
+				alert("Bitte lade zu erst das Foto für den Teaser hoch!");
+				return false;
+			}
+		}
+		if (document.getElementById('text_photo')) {
+			if (document.getElementById('text_photo').value != "") {
+				alert("Bitte lade zu erst das Foto für den Text hoch!");
+				return false;
+			}
+		}
+	}
+</script>
 <?php if (!$new): ?>
 <?php if ($failed): ?>
 <div class="caution">Achtung, mindestens ein hochgeladenes Foto hat nicht die erforderlichen Ma&szlig;e. Der Text wurde nicht hochgeladen!</div>
@@ -79,7 +184,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <div class="success">Der Text wurde erfolgreich eingestellt!</div>
 <?php endif; ?>
 <?php endif; ?>
-<form method="post" action="index.php?var=module&amp;module=news" enctype="multipart/form-data">
+<form method="post" action="index.php?var=module&amp;module=news" enctype="multipart/form-data" onsubmit="return checkForm()">
 	<table class="newstable">
 		<tr>
 			<td>Dachzeile: </td>
@@ -122,25 +227,40 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			<td><textarea name="text" rows="30"><?php echo $text; ?></textarea></td>
 		</tr>
 		<tr>
-			<td>Teaser-Foto: <br />(max. 200 Pixel Kantenl&auml;nge)</td>
-			<td><input type="file" name="picture1" /></td>
+			<td class="top">Korrigiert: </td>
+			<td><input type="checkbox" name="corrected" value="1" <?php if ($corrected): ?>checked<?php endif; ?> /></td>
 		</tr>
 		<tr>
-			<td>Fotograf: </td>
-			<td><input type="text" name="photograph1" /></td>
+			<td colspan="2">
+				<table class="news_photo" id="teaser_photo_form">
+					<tr><td colspan="2" class="center"><h3>Teaser Foto</h3></td></tr>
+					<tr><td>Foto: </td><td><input id="teaser_photo" type="file" onchange="JavaScript:handleTeaser(this.files)" /></td></tr>
+					<tr><td>Fotograf: </td><td><input type="text" id="teaser_photo_photograph" /></td></tr>
+					<tr><td colspan="2" class="center"><a onmouseover="this.style.cursor = 'pointer'" onclick="JavaScript:uploadTeaser()"><b>Hochladen</b></a></td></tr>
+				</table>
+			</td>
 		</tr>
 		<tr>
-			<td>News-Foto: <br />(genau(!) 640 Pixel breit)<br />(H&ouml;he: max. 320 Pixel)</td>
-			<td><input type="file" name="picture2" /></td>
+			<td colspan="2">
+				<table class="news_photo" id="text_photo_form">
+					<tr><td colspan="2" class="center"><h3>Text Foto</h3></td></tr>
+					<tr><td>Foto: </td><td><input id="text_photo" type="file" onchange="JavaScript:handleText(this.files)" /></td></tr>
+					<tr><td>Fotograf: </td><td><input type="text" id="text_photo_photograph" /></td></tr>
+					<tr><td>Untertitel: </td><td><input type="text" class="subtitle" id="text_photo_text" /></td></tr>
+					<tr><td colspan="2" class="center"><a onmouseover="this.style.cursor = 'pointer'" onclick="JavaScript:uploadText()"><b>Hochladen</b></a><br /><br /></td></tr>
+				</table>
+			</td>
 		</tr>
 		<tr>
-			<td>Untertitel: </td>
-			<td><input type="text" class="subtitle" name="subtitle2" /></td>
+			<td><b>Tags:</b></td>
+			<td>Einzelne Tags k&ouml;nnen voneinander mit einem Semikolon getrennt werden. Nach dem letzten Tag darf kein Semikolon angegeben werden.</td>
 		</tr>
+		<?php foreach($moduleTags as $moduleTag): ?>
 		<tr>
-			<td>Fotograf: </td>
-			<td><input type="text" name="photograph2" /></td>
+			<td><?php echo $moduleTag['name']; ?>: </td>
+			<td><input type="text" name="<?php echo $moduleTag['type']; ?>" class="newstitle" value="<?php echo $moduleTag['tags']; ?>" /></td>
 		</tr>
+		<?php endforeach; ?>
 		<tr>
 			<td colspan="2">
 				<input type="hidden" value="<?php echo $authTime; ?>" name="authTime" />

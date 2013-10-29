@@ -50,6 +50,19 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<td class="boardauthor"><a name="<?php echo $post['post']; ?>"></a><b><?php echo $post['authorNickname']; ?></b></td>
 		<td class="boardcontent">
 			<?php echo $post['content']; ?>
+			<?php $i = 0; ?>
+			<?php foreach($post['files'] as $file): ?>
+			<?php if ($i==0): ?>
+			<br /><br /><span class="smallfont">Anh&auml;nge:</span>
+			<?php $i++; ?>
+			<?php endif; ?>
+			<br />
+			<span class="smallfont">
+				<a href="file.php?file=<?php echo $file['file']; ?>&amp;scope=board">
+					<?php echo $file['filename']; ?>
+				</a>
+			</span>
+			<?php endforeach; ?>
 			<?php if ($post['operator']>0): ?>
 			<br /><br /><span class="smallfont">zuletzt ge&auml;ndert von <?php echo $post['operatorNickname']; ?> <?php echo $post['lastedit']; ?></span>
 			<?php endif; ?>
@@ -62,7 +75,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<td class="boardcontent">
 			<?php if($isAuthor): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=answer&amp;thread=<?php echo $threadID; ?>&amp;quote=<?php echo $post['post']; ?>&amp;page=<?php echo $page; ?>">Zitieren</a><?php endif; ?>
 			<?php if($post['editable']): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=edit&amp;post=<?php echo $post['post']; ?>&amp;page=<?php echo $page; ?>">Editieren</a><?php endif; ?>
-			<?php if ($isOperator): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;do=del&amp;post=<?php echo $post['post']; ?>&amp;thread=<?php echo $threadID; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">L&ouml;schen</a><?php endif; ?>
+			<?php if ($isOperator): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;do=del&amp;post=<?php echo $post['post']; ?>&amp;thread=<?php echo $threadID; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a><?php endif; ?>
 		</td>
 	</tr>
 	<?php endforeach; ?>

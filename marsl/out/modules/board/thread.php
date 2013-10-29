@@ -46,11 +46,11 @@ class Thread {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
-				$title = htmlentities($row['title']);
+				$title = htmlentities($row['title'], null, "ISO-8859-1");
 				$postAuthor = $row['postauthor'];
 				$threadAuthor = $row['threadauthor'];
-				$postNickname = htmlentities($user->getNickbyID($postAuthor));
-				$threadNickname = htmlentities($user->getNickbyID($threadAuthor));
+				$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
+				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "ISO-8859-1");
 				$viewcount = $row['viewcount'];
 				$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
 				$type = "closed";
@@ -103,7 +103,7 @@ class Thread {
 		$title = "";
 		$result = $db->query("SELECT `title` FROM `thread` WHERE `thread`='$thread' AND NOT (`type`='4')");
 		while ($row = mysql_fetch_array($result)) {
-			$title = htmlentities($row['title']);
+			$title = htmlentities($row['title'], null, "ISO-8859-1");
 		}
 		return $title;
 	}
@@ -124,11 +124,11 @@ class Thread {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
-				$title = htmlentities($row['title']);
+				$title = htmlentities($row['title'], null, "ISO-8859-1");
 				$postAuthor = $row['postauthor'];
 				$threadAuthor = $row['threadauthor'];
-				$postNickname = htmlentities($user->getNickbyID($postAuthor));
-				$threadNickname = htmlentities($user->getNickbyID($threadAuthor));
+				$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
+				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "ISO-8859-1");
 				$viewcount = $row['viewcount'];
 				$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
 				$page = $this->getPageNumber($thread);
@@ -151,11 +151,11 @@ class Thread {
 			$thread = $row['thread'];
 			$post = $row['post'];
 			$postcount = $row['postcount']-1;
-			$title = htmlentities($row['title']);
+			$title = htmlentities($row['title'], null, "ISO-8859-1");
 			$postAuthor = $row['postauthor'];
 			$threadAuthor = $row['threadauthor'];
-			$postNickname = htmlentities($user->getNickbyID($postAuthor));
-			$threadNickname = htmlentities($user->getNickbyID($threadAuthor));
+			$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
+			$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "ISO-8859-1");
 			$viewcount = $row['viewcount'];
 			$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
 			$page = $this->getPageNumber($thread);
@@ -229,7 +229,7 @@ class Thread {
 				$result = $db->query("SELECT `board`, `title` FROM `board` WHERE `type`='1'");
 				while ($row = mysql_fetch_array($result)) {
 					$destinationID = $row['board'];
-					$destinationTitle = htmlentities($row['title']);
+					$destinationTitle = htmlentities($row['title'], null, "ISO-8859-1");
 					if ($board->readAllowed($destinationID, $role->getRole())&&$board->writeAllowed($destinationID, $role->getRole())&&$auth->locationReadAllowed($board->getLocation($destinationID), $role->getRole())&&$auth->locationWriteAllowed($board->getLocation($destinationID), $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())) {
 						array_push($boards, array('board'=>$destinationID, 'title'=>$destinationTitle));
 					}
@@ -468,6 +468,15 @@ class Thread {
 							$db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
 						}
 						
+						$temporary = mysql_real_escape_string($_POST['temporary']);
+						$result = $db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
+						while ($row = mysql_fetch_array($result)) {
+							$newTemporary = $basic->tempFileKey();
+							$file = $row['file'];
+							$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
+							$db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
+						}
+						
 						$page = $this->getPageNumber($threadID);
 						$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
 						echo "<div class=\"success\">Das Thema wurde erfolgreich erstellt! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
@@ -477,6 +486,7 @@ class Thread {
 			else {
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
+				$temporaryKey = $basic->tempFileKey();
 				require_once("template/board.newthread.tpl.php");
 			}
 		}

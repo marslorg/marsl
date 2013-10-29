@@ -9,7 +9,7 @@ class DB {
 	 */
 	public function connect() {
 		$config = new Configuration();
-		mysql_connect($config->getDBHost(), $config->getDBUser(), $config->getDBPass());
+		@mysql_connect($config->getDBHost(), $config->getDBUser(), $config->getDBPass());
 	}
 	
 	/*

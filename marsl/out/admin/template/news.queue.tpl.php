@@ -5,6 +5,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <table class="newstable">
 	<tr>
 		<td class="newsinformation">
+			Korrigiert: <?php if ($article['corrected']): ?><img src="../includes/graphics/ok32.png" /><?php endif; if (!$article['corrected']): ?><img src="../includes/graphics/cancel32.png" /><?php endif; ?><br />
 			Autor: <?php echo $article['author']; ?><br />
 			IP: <?php echo $article['authorIP']; ?><br />
 			Kategorie: <?php echo $article['location']; ?><br />
@@ -12,7 +13,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			eingereicht am: <?php echo $article['postdate']; ?><br />
 			<a href="index.php?var=module&amp;module=news&amp;action=queue&amp;do=submit&amp;id=<?php echo $article['news']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Freischalten</a> 
 			<a href="index.php?var=module&amp;module=news&amp;action=edit&amp;id=<?php echo $article['news']; ?>">Editieren</a> 
-			<a href="index.php?var=module&amp;module=news&amp;action=queue&amp;do=del&amp;id=<?php echo $article['news']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">L&ouml;schen</a>
+			<a href="index.php?var=module&amp;module=news&amp;action=queue&amp;do=del&amp;id=<?php echo $article['news']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a>
 		</td>
 		<td class="news">
 			<h3 class="headline"><?php echo $article['headline']; ?></h3>

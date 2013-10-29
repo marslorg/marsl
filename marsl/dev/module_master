@@ -1,0 +1,43 @@
+<?php
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/module.php");
+
+class CLASSNAME implements Module {
+	
+	public function display() {
+		
+	}
+	
+	public function admin() {
+		
+	}
+	
+	public function isSearchable() {
+		return false;
+	}
+	
+	public function getSearchList() {
+		return null;
+	}
+	
+	public function search($query, $type) {
+		return null;
+	}
+	
+	public function isTaggable() {
+		return false;
+	}
+	
+	public function getTagList() {
+		return null;
+	}
+	
+	public function addTags($tagString, $type, $news) {
+		
+	}
+	
+	public function getTagString($type, $news) {
+		return null;
+	}	
+}
+?>

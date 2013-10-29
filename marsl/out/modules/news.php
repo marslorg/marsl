@@ -20,11 +20,29 @@ class News implements Module {
 		$basic = new Basic();
 		$user = new User();
 		$role = new Role();
+		$modules = $basic->getModules();
+		$moduleTags = array();
+		foreach ($modules as $module) {
+			include_once(dirname(__FILE__)."/".$module['file'].".php");
+			$class = new $module['class'];
+			if ($class->isTaggable()) {
+				$tagList = $class->getTagList();
+				foreach($tagList as $tagType) {
+					$typeID = $module['file']."_".$tagType['type'];
+					$typeName = $tagType['text'];
+					array_push($moduleTags, array('type'=>$typeID, 'name'=>$typeName));
+				}
+			}	
+		}
 		if ($auth->moduleAdminAllowed("news", $role->getRole())) {
 			$db = new DB();
 			require_once("template/news.navigation.tpl.php");
 			if(!isset($_GET['action'])) {
+				/*
+				 * TODO Tag-Editing
+				 */
 				$headline = "";
+				$corrected = false;
 				$title = "";
 				$category = "";
 				$day = "DD";
@@ -32,38 +50,36 @@ class News implements Module {
 				$year = "YYYY";
 				$teaser = "";
 				$text = "";
-				$picture1 = "";
-				$picture2 = "";
-				$subtitle2 = "";
-				$photograph1 = "";
-				$photograph2 = "";
 				$city = "";
+				$tmpModuleTags = array();
+				foreach ($moduleTags as $moduleTag) {
+					$moduleTag['tags'] = "";
+					array_push($tmpModuleTags, $moduleTag);
+				}
+				$moduleTags = $tmpModuleTags;
 				$new = true;
 				if (isset($_POST['action'])) {
 					$new = false;
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$failed = false;
-						$picture1 = $this->savePicture($_FILES['picture1'], 200, 200, 0, 0);
-						if ($picture1==false) {
-							$failed = true;
-						}
-						$picture2 = $this->savePicture($_FILES['picture2'], 0, 320, 640, 0);
-						if ($picture2==false) {
-							$failed = true;
-						}
+
 						if ($failed) {
-							$headline = htmlentities($_POST['headline']);
-							$title = htmlentities($_POST['title']);
+							$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+							$title = htmlentities($_POST['title'], null, "ISO-8859-1");
 							$category = $_POST['category'];
-							$day = htmlentities($_POST['day']);
-							$month = htmlentities($_POST['month']);
-							$year = htmlentities($_POST['year']);
+							$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+							$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+							$year = htmlentities($_POST['year'], null, "ISO-8859-1");
 							$teaser = $basic->cleanHTML($_POST['teaser']);
 							$text = $basic->cleanHTML($_POST['text']);
 							$city = $basic->cleanHTML($_POST['city']);
-							$subtitle2 = htmlentities($_POST['subtitle2']);
-							$photograph1 = htmlentities($_POST['photograph1']);
-							$photograph2 = htmlentities($_POST['photograph2']);
+							$corrected = isset($_POST['corrected']);
+							$tmpModuleTags = array();
+							foreach ($moduleTags as $moduleTag) {
+								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
+								array_push($tmpModuleTags, $moduleTag);
+							}
+							$moduleTags = $tmpModuleTags;
 						}
 						else {
 							$author = mysql_real_escape_string($user->getID());
@@ -71,9 +87,13 @@ class News implements Module {
 							$headline = mysql_real_escape_string($_POST['headline']);
 							$title = mysql_real_escape_string($_POST['title']);
 							$location = mysql_real_escape_string($_POST['category']);
-							$subtitle2 = mysql_real_escape_string($_POST['subtitle2']);
-							$photograph1 = mysql_real_escape_string($_POST['photograph1']);
-							$photograph2 = mysql_real_escape_string($_POST['photograph2']);
+							$corrected = isset($_POST['corrected']);
+							$tmpModuleTags = array();
+							foreach ($moduleTags as $moduleTag) {
+								$moduleTag['tags'] = $_POST[$moduleTag['type']];
+								array_push($tmpModuleTags, $moduleTag);
+							}
+							$moduleTags = $tmpModuleTags;
 							$date = "";
 							$postdate = time();
 							$city = mysql_real_escape_string($_POST['city']);
@@ -86,24 +106,49 @@ class News implements Module {
 							$teaser = mysql_real_escape_string($basic->cleanHTML($_POST['teaser']));
 							$text = mysql_real_escape_string($basic->cleanHTML($_POST['text']));
 							if ($auth->locationAdminAllowed($location, $role->getRole())||$auth->locationExtendedAllowed($location, $role->getRole())) {
-								if ($picture1!="empty") {
-									$picture1 = mysql_real_escape_string($picture1);
-									$db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$picture1', '$photograph1')");
-									$picture1 = mysql_insert_id();
+
+								$picture1 = "";
+								if (isset($_POST['picture1'])) {
+									$picture1 = mysql_real_escape_string($_POST['picture1']);
 								}
-								else {
-									$picture1 = "";
+								
+								$picture2 = "";
+								if (isset($_POST['picture2'])) {
+									$picture2 = mysql_real_escape_string($_POST['picture2']);
+									$result = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
+									while ($row = mysql_fetch_array($result)) {
+										$fileName = $row['url'];
+										$fileLink = "../news/".$fileName;
+										$oldIMG = imagecreatefromjpeg($fileLink);
+										$newIMG = imagecreatetruecolor(640, 320);
+										$pic2X = $_POST['pic2X'];
+										$pic2Y = $_POST['pic2Y'];
+										$pic2W = $_POST['pic2W'];
+										$pic2H = $_POST['pic2H'];
+										unlink($fileLink);
+										$fileName = "r".$fileName;
+										$fileLink = "../news/".$fileName;
+										$db->query("UPDATE `news_picture` SET `url`='$fileName' WHERE `picture`='$picture2'");
+										imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
+										ImageDestroy($oldIMG);
+										imagejpeg($newIMG, $fileLink);
+									}
 								}
-								if ($picture2!="empty") {
-									$picture2 = mysql_real_escape_string($picture2);
-									$db->query("INSERT INTO `news_picture`(`url`, `subtitle`, `photograph`) VALUES('$picture2', '$subtitle2', '$photograph2')");
-									$picture2 = mysql_insert_id();
+
+								$db->query("INSERT INTO `news`(`author`,`author_ip`,`headline`,`title`,`teaser`,`text`,`picture1`,`picture2`,`date`,`visible`,`deleted`,`location`,`city`,`postdate`,`corrected`) 
+								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate','$corrected')");
+								$newsID = mysql_insert_id();
+								foreach ($moduleTags as $moduleTag) {
+									
+									$type = explode("_", $moduleTag['type']);
+									$file = $type[0];
+									$scope = $type[1];
+									$module = $basic->getModule($file);
+									include_once(dirname(__FILE__)."/".$file.".php");
+									$class = new $module['class'];
+									$class->addTags($moduleTag['tags'], $scope, $newsID);
+
 								}
-								else {
-									$picture2 = "";
-								}
-								$db->query("INSERT INTO `news`(`author`,`author_ip`,`headline`,`title`,`teaser`,`text`,`picture1`,`picture2`,`date`,`visible`,`deleted`,`location`,`city`,`postdate`) 
-								VALUES('$author','$authorIP','$headline','$title','$teaser','$text','$picture1','$picture2','$date','0','0','$location','$city','$postdate')");
 								$administrators = $user->getAdminUsers();
 								foreach ($administrators as $administrator) {
 									$administratorRole = $role->getRolebyUser($administrator);
@@ -123,9 +168,13 @@ class News implements Module {
 								$teaser = "";
 								$text = "";
 								$city = "";
-								$subtitle2 = "";
-								$photograph1 = "";
-								$photograph2 = "";
+								$corrected = false;
+								$tmpModuleTags = array();
+								foreach ($moduleTags as $moduleTag) {
+									$moduleTag['tags'] = "";
+									array_push($tmpModuleTags, $moduleTag);
+								}
+								$moduleTags = $tmpModuleTags;
 							}
 						}
 					}
@@ -134,7 +183,7 @@ class News implements Module {
 				$result = $db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 				while ($row = mysql_fetch_array($result)) {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
-						array_push($locations,array('location'=>htmlentities($row['id']),'name'=>htmlentities($row['name'])));
+						array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 					}
 				}
 				$authTime = time();
@@ -147,13 +196,14 @@ class News implements Module {
 				$result = $db->query("SELECT * FROM `news` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = mysql_fetch_array($result)) {
 					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-						$id = htmlentities($row['news']);
+						$id = htmlentities($row['news'], null, "ISO-8859-1");
 						$author = $row['author'];
-						$authorName = htmlentities($user->getAcronymbyID($author));
-						$authorIP = htmlentities($row['author_ip']);
-						$location = htmlentities($navigation->getNamebyID($row['location']));
-						$headline = htmlentities($row['headline']);
-						$title = htmlentities($row['title']);
+						$corrected = $row['corrected'];
+						$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
+						$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
+						$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
+						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$teaser = $row['teaser'];
 						$text = $row['text'];
 						$picID1 = mysql_real_escape_string($row['picture1']);
@@ -167,21 +217,21 @@ class News implements Module {
 						while ($row2 = mysql_fetch_array($result2)) {
 							$picture1 = $row2['url'];
 							if (!empty($row2['photograph'])) {
-								$photograph1 = "<br />Foto: ".htmlentities($row2['photograph']);
+								$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 							}
 						}
 						$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
 						while ($row2 = mysql_fetch_array($result2)) {
 							$picture2 = $row2['url'];
-							$subtitle2 = $row2['subtitle'];
+							$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
 							if (!empty($row2['photograph'])) {
-								$photograph2 = " Foto: ".htmlentities($row2['photograph']);
+								$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 							}
 						}
-						$city = htmlentities($row['city']);
+						$city = htmlentities($row['city'], null, "ISO-8859-1");
 						$date = date("d\.m\.Y", $row['date']);
 						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
-						array_push($news,array('author'=>$authorName,'authorIP'=>$authorIP,'news'=>$id, 'location'=>$location, 'headline'=>$headline, 'title'=>$title, 'teaser'=>$teaser, 'picture1'=>$picture1, 'photograph1'=>$photograph1, 'city'=>$city, 'date'=>$date, 'postdate'=>$postdate, 'text'=>$text));
+						array_push($news,array('author'=>$authorName,'authorIP'=>$authorIP,'news'=>$id, 'location'=>$location, 'headline'=>$headline, 'title'=>$title, 'teaser'=>$teaser, 'picture1'=>$picture1, 'photograph1'=>$photograph1, 'city'=>$city, 'date'=>$date, 'postdate'=>$postdate, 'text'=>$text, 'corrected'=>$corrected));
 					}
 				}
 				$authTime = time();
@@ -189,51 +239,61 @@ class News implements Module {
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
-				$id = mysql_real_escape_string(htmlentities($_GET['id']));
+				$id = mysql_real_escape_string(htmlentities($_GET['id'], null, "ISO-8859-1"));
 				if ($db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'")) {
 					$result = $db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 					while ($row = mysql_fetch_array($result)) {
 						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-							$headline = htmlentities($row['headline']);
-							$title = htmlentities($row['title']);
-							$category = htmlentities($row['location']);
+							$corrected = $row['corrected'];
+							$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+							$title = htmlentities($row['title'], null, "ISO-8859-1");
+							$category = htmlentities($row['location'], null, "ISO-8859-1");
 							$day = date("d", $row['date']);
 							$month = date("m", $row['date']);
 							$year = date("Y", $row['date']);
 							$teaser = $row['teaser'];
 							$text = $row['text'];
-							$pic1 = $row['picture1'];
-							$pic2 = $row['picture2'];
-							$picture1 = "empty";
-							$picture2 = "empty";
-							$subtitle2 = "";
-							$photograph1 = "";
-							$photograph2 = "";
-							$city = htmlentities($row['city']);
+							$picture1 = $row['picture1'];
+							$picture2 = $row['picture2'];
+							$city = htmlentities($row['city'], null, "ISO-8859-1");
+							$tmpModuleTags = array();
+							foreach ($moduleTags as $moduleTag) {
+
+								$type = explode("_", $moduleTag['type']);
+								$file = $type[0];
+								$scope = $type[1];
+								$module = $basic->getModule($file);
+								include_once(dirname(__FILE__)."/".$file.".php");
+								$class = new $module['class'];
+								$moduleTag['tags'] = htmlentities($class->getTagString($scope, $id), null, "ISO-8859-1");
+
+								array_push($tmpModuleTags, $moduleTag);
+							}
+							$moduleTags = $tmpModuleTags;
 							$new = true;
 							$failed = false;
 							if (isset($_POST['action'])) {
 								$new = false;
 								if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 									$failed = false;
-									$picture1 = $this->savePicture($_FILES['picture1'], 200, 200, 0, 0);
-									if ($picture1==false) {
-										$failed = true;
-									}
-									$picture2 = $this->savePicture($_FILES['picture2'], 0, 320, 640, 0);
-									if ($picture2==false) {
-										$failed = true;
-									}
+
 									if ($failed) {
-										$headline = htmlentities($_POST['headline']);
-										$title = htmlentities($_POST['title']);
+										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
 										$category = $_POST['category'];
-										$day = htmlentities($_POST['day']);
-										$month = htmlentities($_POST['month']);
-										$year = htmlentities($_POST['year']);
+										$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+										$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+										$year = htmlentities($_POST['year'], null, "ISO-8859-1");
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
+										$corrected = isset($_POST['corrected']);
+										$tmpModuleTags = array();
+										foreach ($moduleTags as $moduleTag) {
+											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
+											array_push($tmpModuleTags, $moduleTag);
+										}
+										$moduleTags = $tmpModuleTags;
 									}
 									else {
 										$author = mysql_real_escape_string($user->getID());
@@ -241,6 +301,7 @@ class News implements Module {
 										$headline = mysql_real_escape_string($_POST['headline']);
 										$title = mysql_real_escape_string($_POST['title']);
 										$location = mysql_real_escape_string($_POST['category']);
+										$corrected = isset($_POST['corrected']);
 										$date = "";
 										$postdate = time();
 										$city = mysql_real_escape_string($_POST['city']);
@@ -252,31 +313,68 @@ class News implements Module {
 										}
 										$teaser = mysql_real_escape_string($basic->cleanHTML($_POST['teaser']));
 										$text = mysql_real_escape_string($basic->cleanHTML($_POST['text']));
-										if ($picture1!="empty") {
-											$picture1 = mysql_real_escape_string($picture1);
-											$photograph1 = mysql_real_escape_string($_POST['photograph1']);
-											$db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$picture1', '$photograph1')");
-											$pic1 = mysql_insert_id();
+										
+										if (isset($_POST['picture1'])) {
+											$picture1 = mysql_real_escape_string($_POST['picture1']);
 										}
-										if ($picture2!="empty") {
-											$picture2 = mysql_real_escape_string($picture2);
-											$subtitle2 = mysql_real_escape_string($_POST['subtitle2']);
-											$photograph2 = mysql_real_escape_string($_POST['photograph2']);
-											$db->query("INSERT INTO `news_picture`(`url`, `subtitle`, `photograph`) VALUES('$picture2', '$subtitle2', '$photograph2')");
-											$pic2 = mysql_insert_id();
+										
+										if (isset($_POST['picture2'])) {
+											$picture2 = mysql_real_escape_string($_POST['picture2']);
+											$result = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
+											while ($row = mysql_fetch_array($result)) {
+												$fileName = $row['url'];
+												$fileLink = "../news/".$fileName;
+												$oldIMG = imagecreatefromjpeg($fileLink);
+												$newIMG = imagecreatetruecolor(640, 320);
+												$pic2X = $_POST['pic2X'];
+												$pic2Y = $_POST['pic2Y'];
+												$pic2W = $_POST['pic2W'];
+												$pic2H = $_POST['pic2H'];
+												unlink($fileLink);
+												$fileName = "r".$fileName;
+												$fileLink = "../news/".$fileName;
+												$db->query("UPDATE `news_picture` SET `url`='$fileName' WHERE `picture`='$picture2'");
+												imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
+												ImageDestroy($oldIMG);
+												imagejpeg($newIMG, $fileLink);
+											}
 										}
+										
+										$tmpModuleTags = array();
+										foreach ($moduleTags as $moduleTag) {
+											$moduleTag['tags'] = $_POST[$moduleTag['type']];
+											array_push($tmpModuleTags, $moduleTag);
+										}
+										$moduleTags = $tmpModuleTags;
 										$admin = mysql_real_escape_string($user->getID());
 										$adminIP = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
-										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$pic1', `picture2`='$pic2', `location`='$location', `city`='$city' WHERE `news`='$id'"); 
-										$headline = htmlentities($_POST['headline']);
-										$title = htmlentities($_POST['title']);
+										$db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city', `corrected`='$corrected' WHERE `news`='$id'"); 
+										foreach ($moduleTags as $moduleTag) {
+
+											$type = explode("_", $moduleTag['type']);
+											$file = $type[0];
+											$scope = $type[1];
+											$module = $basic->getModule($file);
+											include_once(dirname(__FILE__)."/".$file.".php");
+											$class = new $module['class'];
+											$class->addTags($moduleTag['tags'], $scope, $id);
+
+										}
+										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
 										$category = $_POST['category'];
-										$day = htmlentities($_POST['day']);
-										$month = htmlentities($_POST['month']);
-										$year = htmlentities($_POST['year']);
+										$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+										$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+										$year = htmlentities($_POST['year'], null, "ISO-8859-1");
 										$teaser = $basic->cleanHTML($_POST['teaser']);
 										$text = $basic->cleanHTML($_POST['text']);
 										$city = $basic->cleanHTML($_POST['city']);
+										$tmpModuleTags = array();
+										foreach ($moduleTags as $moduleTag) {
+											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
+											array_push($tmpModuleTags, $moduleTag);
+										}
+										$moduleTags = $tmpModuleTags;
 									}
 								}
 							}
@@ -284,7 +382,7 @@ class News implements Module {
 							$result = $db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 							while ($row = mysql_fetch_array($result)) {
 								if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
-									array_push($locations,array('location'=>htmlentities($row['id']),'name'=>htmlentities($row['name'])));
+									array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 								}
 							}
 							$authTime = time();
@@ -308,30 +406,31 @@ class News implements Module {
 				$start = mysql_real_escape_string($start);
 				$result = $db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row = mysql_fetch_array($result)) {
-					$id = htmlentities($row['news']);
-					$author = htmlentities($user->getAcronymbyID($row['author']));
-					$authorIP = htmlentities($row['author_ip']);
+					$id = htmlentities($row['news'], null, "ISO-8859-1");
+					$corrected = $row['corrected'];
+					$author = htmlentities($user->getAcronymbyID($row['author']), null, "ISO-8859-1");
+					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
 					$category = $row['location'];
 					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$location = $navigation->getNamebyID($category);
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
-					$headline = htmlentities($row['headline']);
-					$title = htmlentities($row['title']);
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$picture1 = "empty";
 					$photograph1 = "";
 					$picID1 = mysql_real_escape_string($row['picture1']);
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
-					$city = htmlentities($row['city']);
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$teaser = $row['teaser'];
 					$text = $row['text'];
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url']);
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph']);
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
-					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP));
+					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP, 'corrected'=>$corrected));
 				}
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
@@ -345,12 +444,13 @@ class News implements Module {
 					$submitLink = (($row['visible']==0)&&($auth->locationAdminAllowed($row['location'], $role->getRole())));
 					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$author = $row['author'];
-					$authorName = htmlentities($user->getAcronymbyID($author));
-					$id = htmlentities($id);
-					$authorIP = htmlentities($row['author_ip']);
-					$location = htmlentities($navigation->getNamebyID($row['location']));
-					$headline = htmlentities($row['headline']);
-					$title = htmlentities($row['title']);
+					$corrected = $row['corrected'];
+					$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
+					$id = htmlentities($id, null, "ISO-8859-1");
+					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
+					$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$teaser = $row['teaser'];
 					$text = $row['text'];
 					$picID1 = mysql_real_escape_string($row['picture1']);
@@ -362,20 +462,20 @@ class News implements Module {
 					$photograph2 = "";
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url']);
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph']);
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture2 = htmlentities($row2['url']);
-						$subtitle2 = htmlentities($row2['subtitle']);
+						$picture2 = htmlentities($row2['url'], null, "ISO-8859-1");
+						$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph2 = " Foto: ".htmlentities($row2['photograph']);
+							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
-					$city = htmlentities(strtoupper($row['city']));
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("\a\m d\. M Y \u\m H\:i\:s", $row['postdate']);
 					$authTime = time();
@@ -395,6 +495,7 @@ class News implements Module {
 		$basic = new Basic();
 		$user = new User();
 		$role = new Role();
+		
 		if ($auth->moduleReadAllowed("news", $role->getRole())) {
 			if (!isset($_GET['action'])) {
 				$location = "";
@@ -424,23 +525,23 @@ class News implements Module {
 					$date = date("d\.m\.Y", $row['date']);
 					$postdate = date("d\.m\.Y", $row['postdate']);
 					$author = $row['author'];
-					$authorName = strtolower(htmlentities($user->getAcronymbyID($author)));
+					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
 					$picID1 = mysql_real_escape_string($row['picture1']);
 					$picture1 = "empty";
 					$photograph1 = "";
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url']);
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph']);
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					$city = htmlentities($row['city']);
-					$headline = htmlentities($row['headline']);
-					$title = htmlentities($row['title']);
-					$id = htmlentities($row['news']);
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$id = htmlentities($row['news'], null, "ISO-8859-1");
 					array_push($news,array('city'=>$city,'headline'=>$headline,'title'=>$title,'id'=>$id,'date'=>$date,'postdate'=>$postdate,'author'=>$authorName,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'teaser'=>$teaser,'text'=>$text));
 				}
 				require_once("template/news.main.tpl.php");
@@ -456,7 +557,7 @@ class News implements Module {
 				while ($row = mysql_fetch_array($result)) {
 					$date = date("d\.m\.Y", $row['date']);
 					$author = $row['author'];
-					$authorName = strtolower(htmlentities($user->getAcronymbyID($author)));
+					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
 					$picID1 = mysql_real_escape_string($row['picture1']);
 					$picID2 = mysql_real_escape_string($row['picture2']);
 					$picture1 = "empty";
@@ -466,26 +567,42 @@ class News implements Module {
 					$photograph2 = "";
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture1 = htmlentities($row2['url']);
+						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph']);
+							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$result2 = $db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
 					while ($row2 = mysql_fetch_array($result2)) {
-						$picture2 = htmlentities($row2['url']);
-						$subtitle2 = htmlentities($row2['subtitle']);
+						$picture2 = htmlentities($row2['url'], null, "ISO-8859-1");
+						$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
 						if (!empty($row2['photograph'])) {
-							$photograph2 = " Foto: ".htmlentities($row2['photograph']);
+							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					$city = htmlentities($row['city']);
-					$headline = htmlentities($row['headline']);
-					$title = htmlentities($row['title']);
+					$city = htmlentities($row['city'], null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$config = new Configuration();
 					$url = $config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
+					
+					$modules = $basic->getModules();
+					$moduleTags = array();
+					foreach ($modules as $module) {
+						include_once(dirname(__FILE__)."/".$module['file'].".php");
+						$class = new $module['class'];
+						if ($class->isTaggable()) {
+							$tagList = $class->getTagList();
+							foreach($tagList as $tagType) {
+								$typeID = $module['file']."_".$tagType['type'];
+								$typeName = $tagType['text'];
+								array_push($moduleTags, array('type'=>$typeID, 'name'=>$typeName, 'tags'=>$class->getTags($tagType['type'], $news)));
+							}
+						}
+					}
+					
 					require_once("template/news.tpl.php");
 				}
 			}
@@ -625,8 +742,8 @@ class News implements Module {
 							WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC LIMIT $start,$end");
 					while ($row = mysql_fetch_array($result)) {
 						$teaser = $row['teaser'];
-						$headline = htmlentities($row['headline']);
-						$title = htmlentities($row['title']);
+						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$newsid = $row['news'];
 						$location = $row['location'];
 						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));
@@ -634,6 +751,194 @@ class News implements Module {
 				}
 				require_once("template/news.search.tpl.php");
 			}
+		}
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isTaggable() {
+		return true;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getTagList() {
+		$types = array();
+		array_push($types, array('type'=>"general", 'text'=>"Allgemein"));
+		return $types;
+	}
+	
+	/*
+	 * Adds the tags for the general scope.
+	*/
+	public function addTags($tagString, $type, $news) {
+		$db = new DB();
+		$tags = array_filter(explode(";", $tagString));
+		$news = mysql_real_escape_string($news);
+		$db->query("DELETE FROM `news_tag` WHERE `type`='general' AND `news`='$news'");
+		foreach ($tags as $tag) {
+			$tag = mysql_real_escape_string($tag);
+			$tag = trim($tag);
+			$id = "";
+			if ((strlen($tag)>0)&&(!$db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag'"))) {
+				$db->query("INSERT INTO `general`(`tag`) VALUES('$tag')");
+			}
+	
+			$result = $db->query("SELECT `id` FROM `general` WHERE `tag`='$tag'");
+			while ($row = mysql_fetch_array($result)) {
+				$id = $row['id'];
+			}
+			$db->query("INSERT INTO `news_tag`(`tag`,`news`,`type`) VALUES('$id','$news','general')");
+		}
+	}
+	
+	/*
+	 * Returns the tags for the general scope.
+	*/
+	public function getTagString($type, $news) {
+		$db = new DB();
+		$retString = array();
+		$news = mysql_real_escape_string($news);
+		
+		$result = $db->query("SELECT `general`.`tag` AS tagname FROM `general` JOIN `news_tag` ON(`general`.`id`=`news_tag`.`tag`) WHERE `type`='general' AND `news`='$news' ORDER BY `general`.`tag`");
+		while ($row = mysql_fetch_array($result)) {
+			array_push($retString, $row['tagname']);
+		}
+		
+		return implode(";", $retString);
+	}
+	
+	public function getTags($type, $news) {
+		$db = new DB();
+		$ret = array();
+		$news = mysql_real_escape_string($news);
+		$result = $db->query("SELECT `id`, `general`.`tag` AS tagname FROM `general` JOIN `news_tag` ON(`general`.`id`=`news_tag`.`tag`) WHERE `type`='general' AND `news`='$news' ORDER BY `general`.`tag`");
+		while ($row = mysql_fetch_array($result)) {
+			array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+		}
+		
+		return $ret;
+	}
+	
+	public function displayTag($tagID, $type) {
+		$db = new DB();
+		$role = new Role();
+		$auth = new Authentication();
+		$tagID = mysql_real_escape_string($tagID);
+		$articles = array();
+		$tagName = "";
+		$result = $db->query("SELECT `tag` FROM `general` WHERE `id`='$tagID'");
+		while ($row = mysql_fetch_array($result)) {
+			$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+		}
+		$result = $db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='general' ORDER BY `date` DESC");
+		while ($row = mysql_fetch_array($result)) {
+			if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
+				$news = $row['news'];
+				$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+				$title = htmlentities($row['title'], null, "ISO-8859-1");
+				$date = date("d\.m\.Y", $row['date']);
+				$location = $row['location'];
+				$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+				array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+			}
+		}
+		require_once("template/news.tag.tpl.php");
+	}
+	
+	public function getImage() {
+		if (isset($_GET['action'])) {
+			if ($_GET['action']=="read") {
+				$auth = new Authentication();
+				$role = new Role();
+				if ($auth->moduleReadAllowed("news", $role->getRole())) {
+					$db = new DB();
+					$newsID = mysql_real_escape_string($_GET['show']);
+					$location = mysql_real_escape_string($_GET['id']);
+					$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
+					while ($row = mysql_fetch_array($result)) {
+						$location = mysql_real_escape_string($row['maps_to']);
+					}
+					if ($auth->locationReadAllowed($location, $role->getRole())) {
+						$picture = "empty";
+						$result = $db->query("SELECT `picture2` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
+						while ($row = mysql_fetch_array($result)) {
+							$picID = $row['picture2'];
+							$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID'");
+							while ($row2 = mysql_fetch_array($result2)) {
+								$picture = "news/".htmlentities($row2['url'], null, "ISO-8859-1");
+							}
+						}
+						if ($picture=="empty") {
+							return null;
+						}
+						else {
+							return $picture;
+						}
+					}
+					else {
+						return null;
+					}
+				}
+				else {
+					return null;
+				}
+			}
+			else {
+				return null;
+			}
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public function getTitle() {
+			if (isset($_GET['action'])) {
+			if ($_GET['action']=="read") {
+				$auth = new Authentication();
+				$role = new Role();
+				if ($auth->moduleReadAllowed("news", $role->getRole())) {
+					$db = new DB();
+					$newsID = mysql_real_escape_string($_GET['show']);
+					$location = mysql_real_escape_string($_GET['id']);
+					$headline = "";
+					$title = "";
+					$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
+					while ($row = mysql_fetch_array($result)) {
+						$location = mysql_real_escape_string($row['maps_to']);
+					}
+					if ($auth->locationReadAllowed($location, $role->getRole())) {
+						$picture = "empty";
+						$result = $db->query("SELECT `headline`, `title` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
+						while ($row = mysql_fetch_array($result)) {
+							$headline = $row['headline'];
+							$title = $row['title'];
+							$newsTitle = $headline.": ".$title;
+						}
+						if ((strlen($headline)==0)&&(strlen($title)==0)) {
+							return null;
+						}
+						else {
+							return $newsTitle;
+						}
+					}
+					else {
+						return null;
+					}
+				}
+				else {
+					return null;
+				}
+			}
+			else {
+				return null;
+			}
+		}
+		else {
+			return null;
 		}
 	}
 }

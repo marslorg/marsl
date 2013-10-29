@@ -20,7 +20,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<button type="submit" name="id" value="<?php echo $category['id']; ?>"> &Auml;ndern </button>
 				<?php if ($category['role']): ?>
 				<br />
-				<a href="index.php?var=module&amp;module=navigation&amp;action=del&amp;id=<?php echo $category['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Kategorie l&ouml;schen</a>
+				<a href="index.php?var=module&amp;module=navigation&amp;action=del&amp;id=<?php echo $category['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">Kategorie l&ouml;schen</a>
 				<?php endif; ?>
 			</td>
 		</form>
@@ -46,7 +46,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<button type="submit" name="id" value="<?php echo $category['id']; ?>"> &Auml;ndern </button>
 				<?php if ($category['role']): ?>
 				<br />
-				<a href="index.php?var=module&amp;module=navigation&amp;action=del&amp;id=<?php echo $category['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Kategorie l&ouml;schen</a>
+				<a href="index.php?var=module&amp;module=navigation&amp;action=del&amp;id=<?php echo $category['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">Kategorie l&ouml;schen</a>
 				<?php endif; ?>
 			</td>
 		</form>
@@ -87,7 +87,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<button type="submit" name="id" value="<?php echo $link['id']; ?>"> &Auml;ndern </button>
 				<?php if ($link['role']): ?>
 				<br />
-				<a href="index.php?var=module&amp;module=navigation&amp;action=del&amp;id=<?php echo $link['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Link l&ouml;schen</a>
+				<a href="index.php?var=module&amp;module=navigation&amp;action=del&amp;id=<?php echo $link['id']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">Link l&ouml;schen</a>
 				<?php endif; ?>
 			</td>
 		</form>

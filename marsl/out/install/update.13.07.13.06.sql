@@ -1,0 +1,45 @@
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+CREATE  TABLE IF NOT EXISTS `event` (
+  `event` INT(11) NOT NULL AUTO_INCREMENT ,
+  `title` LONGTEXT NULL DEFAULT NULL ,
+  `visible` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `deleted` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `start` INT(11) NOT NULL ,
+  `end` INT(11) NULL DEFAULT NULL ,
+  `doors` INT(11) NULL DEFAULT NULL ,
+  `date` INT(11) NOT NULL ,
+  `author` INT(11) NOT NULL ,
+  `foreign_id` VARCHAR(255) NULL DEFAULT NULL ,
+  PRIMARY KEY (`event`) ,
+  INDEX `event_author_idx` (`author` ASC) )
+ENGINE = MyISAM
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_swedish_ci;
+
+CREATE  TABLE IF NOT EXISTS `event_location` (
+  `location` INT(11) NOT NULL ,
+  `event` INT(11) NOT NULL ,
+  PRIMARY KEY (`location`, `event`) ,
+  INDEX `el_location_idx` (`location` ASC) ,
+  INDEX `el_event_idx` (`event` ASC) )
+ENGINE = MyISAM
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_swedish_ci;
+
+CREATE  TABLE IF NOT EXISTS `event_band` (
+  `band` INT(11) NOT NULL ,
+  `event` INT(11) NOT NULL ,
+  PRIMARY KEY (`band`, `event`) ,
+  INDEX `eb_band_idx` (`band` ASC) ,
+  INDEX `eb_event_idx` (`event` ASC) )
+ENGINE = MyISAM
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_swedish_ci;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

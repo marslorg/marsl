@@ -21,15 +21,15 @@ class URLLoader implements Module {
 			while ($row = mysql_fetch_array($result)) {
 				
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					$cat_id = htmlentities($row['id']);
-					$cat_name = htmlentities($row['name']);
-					$cat_type = htmlentities($row['type']);
+					$cat_id = htmlentities($row['id'], null, "ISO-8859-1");
+					$cat_name = htmlentities($row['name'], null, "ISO-8859-1");
+					$cat_type = htmlentities($row['type'], null, "ISO-8859-1");
 					$cat_id = mysql_real_escape_string($cat_id);
 					$result_links = $db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='2' AND `category`='$cat_id'");
 					$links = array();
 					while ($row_links = mysql_fetch_array($result_links)) {
 						if ($auth->locationReadAllowed($row_links['id'], $role->getRole())) {
-							array_push($links, array('id' => htmlentities($row_links['id']), 'name' => htmlentities($row_links['name'])));
+							array_push($links, array('id' => htmlentities($row_links['id'], null, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], null, "ISO-8859-1")));
 						}
 					}
 					
@@ -72,7 +72,7 @@ class URLLoader implements Module {
 				$locations = array();
 				$result = $db->query("SELECT * FROM `navigation` WHERE `type`='1' OR `type`='2'");
 				while ($row = mysql_fetch_array($result)) {
-					$name = htmlentities($row['name']);
+					$name = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));
 				}
 				$authTime = time();
@@ -125,8 +125,8 @@ class URLLoader implements Module {
 					$foot = $row['foot'];
 				}
 				$navi = new Navigation();
-				$name = htmlentities($navi->getNamebyID($_GET['id']));
-				$id = htmlentities($_GET['id']);
+				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "ISO-8859-1");
+				$id = htmlentities($_GET['id'], null, "ISO-8859-1");
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
 				require_once("template/urlloader.content.tpl.php");
@@ -142,6 +142,7 @@ class URLLoader implements Module {
 		$db = new DB();
 		$id = -1;
 		$role = new Role();
+		$basic = new Basic();
 		if (isset($_GET['id'])) {
 			$id = $_GET['id'];
 		}
@@ -151,7 +152,7 @@ class URLLoader implements Module {
 				$id = $row['homepage'];
 			}
 		}
-		if (isset($_GET['search'])) {
+		if ((isset($_GET['search']))&&(!isset($_GET['id']))) {
 			$searchQuery = mysql_real_escape_string($_GET['search']);
 			$type = "standard";
 			if (isset($_GET['scope'])) {
@@ -160,7 +161,8 @@ class URLLoader implements Module {
 				$type = $searchScope[1];
 				if ($auth->moduleReadAllowed($searchContext, $role->getRole())) {
 					include_once(dirname(__FILE__)."/".$searchContext.".php");
-					$module = new $searchContext;
+					$moduleInfo = $basic->getModule($searchContext);
+					$module = new $moduleInfo['class'];
 					if ($module->isSearchable()) {
 						$module->search($searchQuery, $type);
 					}
@@ -168,6 +170,25 @@ class URLLoader implements Module {
 			}
 			else {
 				//Implement a standard search, if possible over the standard search methods of each module.
+			}
+		}
+		else if ((isset($_GET['tag']))&&(!isset($_GET['id']))) {
+			$tagID = mysql_real_escape_string($_GET['tag']);
+			if (isset($_GET['scope'])) {
+				$tagScope = explode("_", $_GET['scope']);
+				$tagContext = $tagScope[0];
+				if ($tagContext == "general") {
+					$tagContext = "news";
+				}
+				$type = $tagScope[1];
+				if ($auth->moduleReadAllowed($tagContext, $role->getRole())) {
+					include_once(dirname(__FILE__)."/".$tagContext.".php");
+					$moduleInfo = $basic->getModule($tagContext);
+					$module = new $moduleInfo['class'];
+					if ($module->isTaggable()) {
+						$module->displayTag($tagID, $type);
+					}
+				}
 			}
 		}
 		else {
@@ -215,6 +236,120 @@ class URLLoader implements Module {
 	*/
 	public function search($query, $type) {
 		return null;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function isTaggable() {
+		return false;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getTagList() {
+		return null;
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function addTags($tagString, $type, $news) {
+	}
+	
+	/*
+	 * Interface method stub.
+	*/
+	public function getTagString($type, $news) {
+	}
+	
+	public function getTags($type, $news) {
+		return null;
+	}
+	
+	public function displayTag($tagID, $type) {
+	}
+	
+	public function getImage() {
+		$db = new DB();
+		$auth = new Authentication();
+		$id = -1;
+		$role = new Role();
+		if (isset($_GET['id'])) {
+			$id = $_GET['id'];
+		}
+		else {
+			$result = $db->query("SELECT `homepage` FROM homepage");
+			while ($row = mysql_fetch_array($result)) {
+				$id = $row['homepage'];
+			}
+		}
+		$id = mysql_real_escape_string($id);
+		$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
+		while ($row = mysql_fetch_array($result)) {
+			$id = mysql_real_escape_string($row['maps_to']);
+		}
+			
+		if ($auth->locationReadAllowed($id, $role->getRole())) {
+			$result = $db->query("SELECT `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+			while ($row = mysql_fetch_array($result)) {
+				$module = mysql_real_escape_string($row['module']);
+				$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
+				while ($row2 = mysql_fetch_array($result2)) {
+					include_once(dirname(__FILE__)."/".$module.".php");
+					$content = new $row2['class'];
+					return $content->getImage();
+				}
+			}
+		}
+		return null;
+	}
+	
+	public function getTitle() {
+		$db = new DB();
+		$auth = new Authentication();
+		$id = -1;
+		$role = new Role();
+		$basic = new Basic();
+		$title = "";
+		if (isset($_GET['id'])) {
+			$id = $_GET['id'];
+		}
+		else {
+			$result = $db->query("SELECT `homepage` FROM homepage");
+			while ($row = mysql_fetch_array($result)) {
+				$id = $row['homepage'];
+			}
+		}
+		$id = mysql_real_escape_string($id);
+		if ($id==$basic->getHomeLocation()) {
+			return null;
+		}
+		else {
+			$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
+			while ($row = mysql_fetch_array($result)) {
+				$id = mysql_real_escape_string($row['maps_to']);
+			}
+				
+			if ($auth->locationReadAllowed($id, $role->getRole())) {
+				$result = $db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+				while ($row = mysql_fetch_array($result)) {
+					$title = $row['name']." - ";
+					$module = mysql_real_escape_string($row['module']);
+					$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
+					while ($row2 = mysql_fetch_array($result2)) {
+						include_once(dirname(__FILE__)."/".$module.".php");
+						$content = new $row2['class'];
+						$newTitle = $content->getTitle();
+						if ($newTitle!=null) {
+							$title = $newTitle." - ";
+						}
+					}
+				}
+			}
+			return $title;
+		}
 	}
 }
 ?>

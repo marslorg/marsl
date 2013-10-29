@@ -34,7 +34,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<button type="submit" name="board" value="<?php echo $category['board']; ?>"> &Auml;ndern </button>
 				<?php if ($category['boardAdmin']): ?>
 				<br />
-				<a href="index.php?var=module&amp;module=board&amp;action=del&amp;board=<?php echo $category['board']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Kategorie l&ouml;schen</a>
+				<a href="index.php?var=module&amp;module=board&amp;action=del&amp;board=<?php echo $category['board']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">Kategorie l&ouml;schen</a>
 				<?php endif; ?>
 			</td>
 		</form>
@@ -83,7 +83,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<button type="submit" name="board" value="<?php echo $board['board']; ?>"> &Auml;ndern </button>
 				<?php if ($board['boardAdmin']): ?>
 				<br />
-				<a href="index.php?var=module&amp;module=board&amp;action=del&amp;board=<?php echo $board['board']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Forum l&ouml;schen</a>
+				<a href="index.php?var=module&amp;module=board&amp;action=del&amp;board=<?php echo $board['board']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">Forum l&ouml;schen</a>
 				<?php endif; ?>
 			</td>
 		</form>

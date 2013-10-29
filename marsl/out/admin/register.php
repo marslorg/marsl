@@ -6,7 +6,7 @@ include_once (dirname(__FILE__)."/../includes/dbsocket.php");
 include_once (dirname(__FILE__)."/../includes/basic.php");
 include_once (dirname(__FILE__)."/../user/auth.php");
 
-class Register {
+class RegisterUser {
 	
 	/*
 	 * Dialog for administrators to register a new user.
@@ -20,6 +20,10 @@ class Register {
 			$db = new DB();
 			$role = new Role();
 			$possibleRoles = $role->getPossibleRoles($role->getRole());
+			$userRole = true;
+			if (!in_array($role->getUserRole(), $possibleRoles)) {
+				$userRole = false;
+			}
 			$passwordProof = true;
 			$emailProof = true;
 			$registered = false;
@@ -63,7 +67,7 @@ class Register {
 					$possibleRole = mysql_real_escape_string($possibleRole);
 					$result = $db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = mysql_fetch_array($result)) {
-						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'])));
+						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 					}
 				}
 			}

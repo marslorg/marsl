@@ -2,10 +2,33 @@
 include_once(dirname(__FILE__)."/errorHandler.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/config.inc.php");
+include_once(dirname(__FILE__)."/dbsocket.php");
 
 class Mailer {
-	public function sendConfirmationMail($confirmID) {
-		
+	public function sendConfirmationMail($userID, $mail) {
+		$db = new DB();
+		$config = new Configuration();
+		$user = new User();
+		$nickname = $user->getNickbyId($userID);
+		$userID = mysql_real_escape_string($userID);
+		$mail = mysql_real_escape_string($mail);
+		$result = $db->query("SELECT `confirm_id` FROM `email` WHERE `confirmed`='0' AND `user`='$userID' AND `email`='$mail'");
+		while ($row = mysql_fetch_array($result)) {
+			$confirm_id = $row['confirm_id'];
+			$link = $config->getDomain()."/confirm.php?mail=".$mail."&code=".$confirm_id;
+			$msg = "Hallo ".$nickname.",\n";
+			$msg .= "\n";
+			$msg .= "du hast auf ".$config->getTitle()." eine neue E-Mail-Adresse eingetragen.\n";
+			$msg .= "Es ist jetzt noch ein Schritt, damit diese verwendet werden kann.\n";
+			$msg .= "Bitte klicke auf den Link unten, um zu zeigen, dass die E-Mail-Adresse wirklich dir gehört.\n";
+			$msg .= "\n";
+			$msg .= $link."\n";
+			$msg .= "\n";
+			$msg .= "Falls du mit dieser E-Mail nichts anfangen kannst, lösch sie einfach. Du wirst keine weitere Post mehr von uns bekommen.\n";
+			$msg .= "\n";
+			$msg .= "Dein ".$config->getTitle()."-Team";
+			mail($mail, "Bestätige deine E-Mail-Adresse", $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
+		}
 	}
 	
 	/*
@@ -45,7 +68,7 @@ class Mailer {
 				$link = $config->getDomain()."/admin/index.php?var=forgot&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			else {
-				$link = $config->getDomain()."/index.php?id=".$page."&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
+				$link = $config->getDomain()."/index.php?id=".$page."&action2=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";

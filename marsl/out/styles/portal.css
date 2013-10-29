@@ -107,6 +107,15 @@
 	color: #FFFFFF;
 }
 
+.portalheadline {
+	margin-top: -12px;
+}
+
+.portaltitle {
+	margin-top: -17px;
+	margin-bottom: -3px;
+}
+
 .portaltext, .portallinks {
 	font-size: 10px;
 }

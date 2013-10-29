@@ -38,6 +38,12 @@ class Configuration {
 	private $lastfmKey = "";
 	private $cities = "Arnsberg;Oeynhausen;Balve;Barsinghausen;Bestwig;Berlin;Bielefeld;Bochum;Bonn;Braunschweig;Bremen;Dieburg;Diepholz;Dortmund;Duisburg;Düren;Düsseldorf;Eschwege;Essen;Eupen;Frankfurt;Friedrichshafen;Gelsenkirchen;Gütersloh;Hamburg;Hannover;Haßfurt;Hemer;Herford;Hiddenhausen;Karlsruhe;Köln;Konstanz;Liedolsheim;Lüdinghausen;Lünen;Lüttich;Magdeburg;Mannheim;Münster;Nideggen;Nürnberg;Ochtrup;Osnabrück;Paderborn;Recklinghausen;Rodgau;Scheeßel;Stukenbrock;Soest;Stuttgart;Trier;Vlotho;Wien;Witten;Wuppertal;Würzburg";
 	
+	/***
+	 * Recaptcha Codes
+	 */
+	private $privateRecaptcha = "6LchdekSAAAAAFIzvFEfI4Fz9rstTEZ-1PUK4nkO";
+	private $publicRecaptcha = "6LchdekSAAAAALPCXPe191Yv_Hdkex3XnXsjJgDR";
+	
 	public function getLastFMKey() {
 		return $this->lastfmKey;
 	}
@@ -96,6 +102,14 @@ class Configuration {
 	
 	public function errMail() {
 		return $this->errMail;
+	}
+	
+	public function getPrivateRecaptcha() {
+		return $this->privateRecaptcha;
+	}
+	
+	public function getPublicRecaptcha() {
+		return $this->publicRecaptcha;
 	}
 }
 ?>

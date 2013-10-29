@@ -2,6 +2,7 @@
 include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
 include_once(dirname(__FILE__)."/htmlpurifier/library/HTMLPurifier.auto.php");
+include_once(dirname(__FILE__)."/../modules/urlloader.php");
 
 class Basic {
 	
@@ -56,7 +57,22 @@ class Basic {
 	 */
 	public function getTitle() {
 		$config = new Configuration();
-		return $config->getTitle()." - ".$config->getSubTitle();
+		$urlloader = new URLLoader();
+		$title = $urlloader->getTitle();
+		if ($title!=null) {
+			return $urlloader->getTitle().$config->getTitle();
+		}
+		else {
+			return $config->getTitle()." - ".$config->getSubTitle();
+		}
+	}
+	
+	/*
+	 * Gets the page corresponding thumbnail.
+	 */
+	public function getImage() {
+		$urlloader = new URLLoader();
+		return $urlloader->getImage();
 	}
 	
 	/*
@@ -313,6 +329,15 @@ class Basic {
 		}
 	
 		return($xml_array);
+	}
+	
+	public function tempFileKey() {
+		$tempKey = mysql_real_escape_string($this->randomHash());
+		$db = new DB();
+		while($db->isExisting("SELECT * FROM `attachment` WHERE `temporary`='$tempKey'")) {
+			$tempKey = mysql_real_escape_string($this->randomHash());
+		}
+		return $tempKey;
 	}
 }
 ?>
