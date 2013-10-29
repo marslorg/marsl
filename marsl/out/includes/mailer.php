@@ -18,7 +18,7 @@ class Mailer {
 			$link = $config->getDomain()."/confirm.php?mail=".$mail."&code=".$confirm_id;
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";
-			$msg .= "du hast auf Music2Web.de eine neue E-Mail-Adresse eingetragen.\n";
+			$msg .= "du hast auf ".$config->getTitle()." eine neue E-Mail-Adresse eingetragen.\n";
 			$msg .= "Es ist jetzt noch ein Schritt, damit diese verwendet werden kann.\n";
 			$msg .= "Bitte klicke auf den Link unten, um zu zeigen, dass die E-Mail-Adresse wirklich dir gehört.\n";
 			$msg .= "\n";
