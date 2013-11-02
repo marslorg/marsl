@@ -43,6 +43,10 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<?php $urlloader->display(); ?>
 		</div>
 		<div class="right_box">
+			<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+			<g:plus href="https://plus.google.com/100391409990964784179" width="260"></g:plus>
+			<a class="twitter-timeline"  href="https://twitter.com/music2web"  lang="de" width="260" height="130" data-widget-id="396626984853196800"></a>
+    		<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 			<div id="fb-root"></div>
 			<script>(function(d, s, id) {
 			  var js, fjs = d.getElementsByTagName(s)[0];
@@ -51,13 +55,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			  js.src = "//connect.facebook.net/de_DE/all.js#xfbml=1";
 			  fjs.parentNode.insertBefore(js, fjs);
 			}(document, 'script', 'facebook-jssdk'));</script>
-			
-			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="230" data-show-faces="true" data-stream="true" data-header="true"></div>
+			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="260" data-show-faces="true" data-stream="false" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
 				<a href="http://de.jennyjoseph.com/Kleider-Fur-Besondere-Anlasse-c3/" target="_blank">abendkleider</a><br />
 				<a href="http://wordpress-themes.org" target="_blank">wordpress-themes.org</a><br />
-				<a href="http://www.jiix.de" target="_blank">jiix.de</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<?php if (((!isset($_GET['id']))&&(!isset($_GET['scope'])))||(isset($_GET['id'])&&($_GET['id']=="178"))): ?>
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
