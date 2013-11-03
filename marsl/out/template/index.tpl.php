@@ -25,50 +25,39 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 	</head>
-	<body id="top">
+	<body>
 	
-		<div id="header-wrapper">
-			<div id="header-wrapper-2">
-				<div class="center-wrapper">
-		
-					<div id="header">
-		
-						<div id="logo">
-							<h1 id="site-title"><a href="http://www.mlrecords.de">marsl CMS</a></h1>
-							<h2 id="site-slogan">Standard Theme</h2>
-						</div>
-		
-						<div id="help-wrapper">
-							<div id="help">
-		
-								<a href="<?php echo $domain; ?>/rss.php" target="_blank">RSS Feed</a> <span class="text-separator">|</span> Impressum </span> 
-							</div>
-						</div>
-		
+		<div id="wrapper">
+			<div id="header">
+	
+				<div id="logo">
+					<img src="includes/graphics/logo.png" alt="Logo" />
+					<h1 id="site-title"><a href="http://www.mlrecords.de">marsl CMS</a></h1>
+					<h2 id="site-slogan">Standard Theme</h2>
+				</div>
+
+				<div id="topnav">
+					<div class="moduletab_menu">
+						<ul class="menu">
+							<li><a href="<?php echo $domain; ?>/rss.php" target="_blank">RSS Feed</a></li>
+							<li><a href="index.php?id=100">Disclaimer</a>
+							<li><a href="index.php?id=74">Impressum</a></li>
+						</ul>
 					</div>
-		
+				</div>
+				<div id="search">
+					<?php $this->displaySearchBox(); ?>
 				</div>
 			</div>
+			<div id="topmenu">
+				<ul class="menu">
+					<?php $navigation->display(); ?>
+				</ul>
+			</div>
 		</div>
-		<div id="content-wrapper">
-			<div class="center-wrapper">
-				<div class="content" id="content-two-columns">
-					<div id="main-wrapper">
-
-						<div id="main">
-							<?php $urlloader->display(); ?>
-						</div>
-					</div>
-					<div id="sidebar-wrapper">
-		
-						<div id="sidebar">
-							<?php $this->displaySearchBox(); ?>
-							<?php $navigation->display(); ?>
-						</div>
-		
-					</div>
-					<div class="clearer">&nbsp;</div>
-				</div>
+		<div id="content-menu_wrap">
+			<div id="container-leftmenu-content">
+				<?php $urlloader->display(); ?>
 			</div>
 		</div>
 		<div id="footer-wrapper">

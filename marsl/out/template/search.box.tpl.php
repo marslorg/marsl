@@ -1,18 +1,10 @@
 <?php
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
-<div class="box">
-	<div class="box-title">Suche</div>
-	<div class="box-content">
-		<form method="get" action="index.php">
-			<input type="text" name="search" /><br />
-			in <select name="scope">
-				<?php foreach ($searchList as $scope): ?>
-				<option value="<?php echo $scope['class']; ?>_<?php echo $scope['type']; ?>"><?php echo $scope['text']; ?></option>
-				<?php endforeach; ?>
-			</select>
-			<br />
-			<button type="submit"> Suchen </button>
-		</form>
+<form method="get" action="index.php">
+	<div class="search">
+		<label for="mod-search-searchword">Suche...</label>
+		<input type="text" name="search" id="mod-search-searchword" class="inputbox" size="20" value="Suche..." onblur="if (this.value=='') this.value='Suche...';" onfocus="if (this.value=='Suche...') this.value='';" />
+		<input type="hidden" name="scope" value="news_all" />
 	</div>
-</div>
+</form>
