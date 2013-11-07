@@ -165,6 +165,13 @@ h3 a:hover {
 	text-decoration: none;
 }
 
+.headtitle {
+	color: #ffffff;
+	margin-left: 100px;
+	margin-top: 60px;
+	font-size: 30px;
+}
+
 .moduletable h3 {
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-weight: 400;
@@ -297,9 +304,8 @@ hr {
 	height: 157px;
 	margin-bottom: -1px; /* iPhone/iPad fix */
 	overflow: auto;
-	background-image:url(../images/header-bg.png);
 	background-repeat:no-repeat;	
-	background-color: #023c56;
+	background-color: #455ff5;
 }
 
 #logo {
@@ -309,7 +315,6 @@ hr {
 	line-height: 0.75em;
 	letter-spacing: -0.03em;
 	color: #ffffff;
-	padding-top: 46px;
 	padding-left: 40px;
 	margin: 0px;
 }
