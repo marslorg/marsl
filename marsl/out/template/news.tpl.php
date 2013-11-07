@@ -17,7 +17,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<?php endforeach; ?>
 				<br />
 				<div class="newsbottom">
-					<div class="fb-like" data-href="<?php echo $url; ?>" data-colorscheme="light" data-layout="box_count" data-action="like" data-show-faces="true" data-send="false""></div>
+					<div class="fb-like" data-href="<?php echo $url; ?>" data-colorscheme="light" data-layout="box_count" data-action="like" data-show-faces="true" data-send="false"></div>
 					<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-url="<?php echo $url; ?>" data-via="music2web" data-lang="de"></a>
 					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
 					<g:plusone href="<?php echo $url; ?>" size="tall"></g:plusone><script type="text/javascript">gapi.plusone.go();</script>
