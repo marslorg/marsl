@@ -56,38 +56,9 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		</div>
 		<div id="content-menu_wrap">
 			<div id="container-leftmenu-content">
+				<br />
 				<?php $urlloader->display(); ?>
 			</div>
-		</div>
-		<div id="footer-wrapper">
-
-			<div class="center-wrapper">
-
-				<div id="footer">
-
-					<div class="left">
-				
-						<ul class="tabbed">
-							<li>Home</li>
-							<li class="page_item page-item-30">Impressum</li>
-							<li class="page_item page-item-2">Kontakt</li>
-							<li class="page_item page-item-4">Jobs</li>
-						</ul>
-
-						<div class="clearer">&nbsp;</div>
-
-					</div>
-
-					<div class="right">
-						<a href="#top">Top ^</a>
-					</div>
-			
-					<div class="clearer">&nbsp;</div>
-
-				</div>
-
-			</div>
-
 		</div>
 	</body>
 </html>
