@@ -8,11 +8,17 @@ This stylesheet and the assocaited (x)html may be modified in any
 way to fit your requirements.
 =================================================================== */
 /* common styling */
+
+.menu ul li a, .menu ul li a:visited {
+    border: none;
+}
+
 .menu {
 	font-family: Verdana, Arial, Helvetica, Sans-Serif;
 	position:relative;
 	font-size:11px;
 	z-index:100;
+	margin-left: 4%;
 }
 
 .menu ul li a, .menu ul li a:visited {
@@ -23,8 +29,8 @@ way to fit your requirements.
 	height: 20px;
 	text-align: center;
 	color: #FFFFFF;
-	border: #FFFFFF 1px solid;
-	background: #FF0000;
+	border: none;
+	background: #580000;
 	line-height: 20px;
 	font-size: 11px;
 	overflow: hidden;
@@ -35,6 +41,10 @@ way to fit your requirements.
 	margin: 0;
 	list-style: none;
 	z-index: 99;
+	width: 100%M
+	background: #e00000;
+	position: absolute;
+	top: -20px;
 }
 
 .menu ul li {
@@ -49,7 +59,7 @@ way to fit your requirements.
 }
 
 .menu ul li:hover a {
-	background: #777777;
+	background: #000000;
 	color: #FFFFFF;
 }
 
@@ -62,12 +72,12 @@ way to fit your requirements.
 }
 
 .menu ul li:hover ul li a.hide {
-	background: #FF0000;
+	background: #e00000;
 	color:#FFFFFF;
 }
 
 .menu ul li:hover ul li:hover a.hide {
-	background: #FF0000;
+	background: #e00000;
 	color: #FFFFFF;
 }
 
@@ -77,12 +87,12 @@ way to fit your requirements.
 
 .menu ul li:hover ul li a {
 	display: block;
-	background: #FF0000;
+	background: #e00000;
 	color: #FFFFFF;
 }
 
 .menu ul li:hover ul li a:hover {
-	background: #777777;
+	background: #000000;
 	color: #FFFFFF;
 }
 

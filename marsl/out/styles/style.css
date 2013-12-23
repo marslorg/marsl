@@ -1,5 +1,9 @@
 body {
 	min-width: 1235px;
+	background: #fafafa;
+	margin: 0px;
+	padding: 0px;
+	padding-bottom: 8px;
 }
 
 blockquote {
@@ -11,7 +15,7 @@ blockquote {
 }
 
 a {
-	color: #FF0000;
+	color: #e00000;
 	text-decoration: none;
 }
 
@@ -47,19 +51,18 @@ a:hover {
 }
 
 .right_ads a {
-	color: #FF0000;
+	color: #e00000;
 }
 
 .mainhead {
-	margin-left: 2%;
-	margin-top: 2%;
-	margin-bottom: 2%;
-	border-left-width: 1px;
-	border-bottom-width: 0px;
-	border-top-width: 0px;
-	border-right-width: 0px;
-	border-style: solid;
-	border-color: #FFFFFF;
+    margin: 0px;
+    background: #e00000;
+    height: 90px;
+    padding: 10px;
+    border: none;
+    border-bottom: 20px solid #000000;
+    padding-left: 5%;
+    background-image: url('../includes/graphics/header.png');
 }
 
 .mainhead a {
@@ -68,14 +71,11 @@ a:hover {
 
 .naviseparator {
 	clear: both;
-	background: #FF0000;
-	margin-left: 2%;
-	margin-right: 2%;
-	width: 96%;
-	height: 10px;
-	border-left-width: 1px;
-	border-color: #FFFFFF;
-	border-style: solid;
+	background: none;
+	width: 100%;
+	height: 0px;
+	border: none;
+	visibility: hidden;
 }
 
 .menu {
@@ -140,7 +140,7 @@ a:hover {
 	clear: both;
 	height: 4px;
 	border-width: 0px;
-	background: #FF0000;
+	background: #e00000;
 	width: 100%;
 }
 
@@ -155,10 +155,11 @@ a:hover {
 .footer {
 	font-family: Verdana, Arial, Helvetica, Sans-Serif;
 	font-size: 11px;
-	color: #FF0000;
+	color: #e00000;
 	text-align: right;
 	position: relative;
 	clear: both;
+	margin-right: 4%;
 }
 .advertiser {
 	font-family: Verdana, Arial, Helvetica, Sans-Serif;
@@ -167,6 +168,7 @@ a:hover {
 	position: relative;
 	margin-bottom: 0px;
 	margin-top: 5px;
+	margin-left: 4%;
 }
 
 .advertiser a {
@@ -176,7 +178,7 @@ a:hover {
 .boardtable {
 	width: 100%;
 	border-width: 1px;
-	border-color: #FF0000;
+	border-color: #e00000;
 	border-style: solid;
 	border-collapse: collapse;
 	border-spacing: 0px;
@@ -184,7 +186,7 @@ a:hover {
 
 .boardtable td {
 	border-width: 1px;
-	border-color: #FF0000;
+	border-color: #e00000;
 	border-style: solid;
 	padding-left: 2px;
 	padding-right: 2px;
@@ -192,7 +194,7 @@ a:hover {
 
 .category, .boardhead {
 	font-weight: bold;
-	background: #FF0000;
+	background: #e00000;
 	color: #FFFFFF;
 }
 .boardhead {
@@ -294,7 +296,7 @@ a:hover {
 }
 
 .cbenews {
-	color: #FF0000;
+	color: #e00000;
 }
 
 #uploaderCell {
@@ -319,4 +321,36 @@ a:hover {
 
 .mceLayout {
 	margin-top: 510px;
+}
+
+.searchbox {
+	padding: 0px;
+	padding-bottom: 4px;
+    border-radius: 0;
+    background: none;
+    border: none;
+    margin-top: 20px;
+    color: #ffffff;
+}
+
+#select-search, #input-search, #search-button {
+    border-radius: 2px;
+    border: 1px solid #afafaf;
+}
+
+#search-button {
+	background: white;
+}
+
+#select-search {
+	padding-left: 2px;
+}
+
+#input-search {
+	padding-left: 2px;
+    padding-right: 2px;
+}
+
+.fb-like-box {
+	background: #ffffff;
 }
