@@ -42,6 +42,7 @@ a:hover {
 
 .fb-like-box {
 	margin-bottom: 10px;
+	z-index: -1;
 }
 
 .right_ads {
@@ -349,8 +350,4 @@ a:hover {
 #input-search {
 	padding-left: 2px;
     padding-right: 2px;
-}
-
-.fb-like-box {
-	background: #ffffff;
 }
