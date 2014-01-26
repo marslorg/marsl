@@ -63,8 +63,8 @@ body {
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size: 12px;
 	line-height: 20px;
-	color: #777777;
-	background-color: #f3f3f3;
+	color: #ffffff;
+	background-color: #00aefd;
 }
 
 a {
@@ -155,7 +155,7 @@ h3 a:hover {
 }
 
 .headtitle {
-	color: #ffffff;
+	color: #777777;
 	margin-left: 100px;
 	margin-top: 60px;
 	font-size: 30px;
@@ -294,7 +294,7 @@ hr {
 	margin-bottom: -1px; /* iPhone/iPad fix */
 	overflow: auto;
 	background-repeat:no-repeat;	
-	background-color: #455ff5;
+	background-color: #f3f3f3;
 }
 
 #logo {
@@ -303,14 +303,13 @@ hr {
 	font-size: 4.4em;
 	line-height: 0.75em;
 	letter-spacing: -0.03em;
-	color: #ffffff;
 	padding-left: 40px;
 	margin: 0px;
+	background-color: #f3f3f3;
 }
 
 #logo a {
 	text-decoration: none;
-	color: #ffffff;
 }
 
 #logo a:hover {
@@ -335,7 +334,7 @@ hr {
 
 #topnav a {
 	text-decoration: none;
-	color: #ffffff;
+	color: #777777;
 }
 
 #topnav a:hover {

@@ -31,7 +31,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div id="header">
 	
 				<div id="logo">
-					<img src="includes/graphics/logo.svg" height="150" alt="Logo" style="float: left;" />
+					<img src="includes/graphics/logo.png" height="150" alt="Logo" style="float: left;" />
 					<h1 class="headtitle">Schwimmverein 08/21 Bad Oeynhausen e.V.</h1>
 				</div>
 
