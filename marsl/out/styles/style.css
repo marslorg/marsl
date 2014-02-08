@@ -297,6 +297,10 @@ hr {
 	background-color: #f3f3f3;
 }
 
+#logo img {
+	background-color: #f7f7f7;
+}
+
 #logo {
 	float: left;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700;
