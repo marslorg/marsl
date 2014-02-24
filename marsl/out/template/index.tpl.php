@@ -58,7 +58,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="fb-like-box" data-href="http://www.facebook.com/music2web" data-width="260" data-show-faces="true" data-stream="false" data-header="true"></div>
 			<div class="right_ads">
 				Anzeigen:<br />
-				<a href="http://de.jennyjoseph.com/Kleider-Fur-Besondere-Anlasse-c3/" target="_blank">abendkleider</a><br />
+				<a href="http://www.jennyjoseph.de/Kleider-Fur-Besondere-Anlasse-c3/" target="_blank">abendkleider</a><br />
 				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<?php if (((!isset($_GET['id']))&&(!isset($_GET['scope'])))||(isset($_GET['id'])&&($_GET['id']=="178"))): ?>
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
