@@ -61,7 +61,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<a href="http://www.dressfirst.es/Vestidos-De-Novia-c2/" target="_blank">vestidos de novia</a><br />
 				<a href="http://www.amormoda.nl/Avondjurken-c17/">avondjurken</a><br />
 				<a href="http://www.jennyjoseph.de/Kleider-Fur-Besondere-Anlasse-c3/" target="_blank">abendkleider</a><br />
-				<a href="http://standesamtverzeichnis.de/" target="_blank">Standesamt</a><br />
 				<?php if (((!isset($_GET['id']))&&(!isset($_GET['scope'])))||(isset($_GET['id'])&&($_GET['id']=="178"))): ?>
 				<a href="http://www.giga-music.de/" target="_blank">Konzert Tickets</a><br />
 				<?php endif; ?>
