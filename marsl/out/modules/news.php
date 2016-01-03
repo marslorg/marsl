@@ -536,8 +536,8 @@ class News implements Module {
 							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
-					$teaser = $row['teaser'];
-					$text = $row['text'];
+					$teaser = $this->nofollowOutboundLinks($row['teaser']);
+					$text = $this->nofollowOutboundLinks($row['text']);
 					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
@@ -580,8 +580,8 @@ class News implements Module {
 							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
 						}
 					}
-					$teaser = $row['teaser'];
-					$text = $row['text'];
+					$teaser = $this->nofollowOutboundLinks($row['teaser']);
+					$text = $this->nofollowOutboundLinks($row['text']);
 					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
@@ -896,7 +896,7 @@ class News implements Module {
 	}
 	
 	public function getTitle() {
-			if (isset($_GET['action'])) {
+		if (isset($_GET['action'])) {
 			if ($_GET['action']=="read") {
 				$auth = new Authentication();
 				$role = new Role();
@@ -940,6 +940,26 @@ class News implements Module {
 		else {
 			return null;
 		}
+	}
+	
+	private function nofollowOutboundLinks($content) {
+		return preg_replace_callback('~<(a\s[^>]+)>~isU',
+				function ($match) {
+					$config = new Configuration();
+					
+					list ($original, $tag) = $match;
+					
+					if (strpos($tag, "nofollow")) {
+						return $original;
+					}
+					elseif (strpos($tag, $config->getDomain())) {
+						return $original;
+					}
+					else {
+						return "<$tag rel=\"nofollow\">";
+					}
+				},
+				$content);
 	}
 }
 ?>
