@@ -6,10 +6,10 @@ class Configuration {
 	/***
 	 * Database variables
 	 */
-	private $dbname = "music2test";
+	private $dbname = "marsl";
 	private $dbuser = "root";
 	private $dbhost = "localhost";
-	private $dbpass = "123";
+	private $dbpass = "";
 	
 	/***
 	 * System environment
