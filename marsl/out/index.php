@@ -51,7 +51,7 @@ class Main {
 		}
 		
 	
-		require_once("template/searchbox.tpl.php");
+		require_once("template/search.box.tpl.php");
 	}
 	
 }

@@ -19,18 +19,18 @@ class Configuration {
 	/***
 	 * Metatags 
 	 */
-	private $title = "Music2Web.de";
-	private $subtitle = "Das Musikportal für alternative Popkultur.";
-	private $author = "Music2Web.de e. V.";
-	private $keywords = "Musik, Konzertberichte, Konzertfotos, MP3, News, Musiknews, Music, Musicnews, Community";
+	private $title = "The marsl CMS";
+	private $subtitle = "Standard Subtitle";
+	private $author = "marsl cms";
+	private $keywords = "cms, content, management, system, blog, software, easy, to, use";
 	private $fb_comments = "";
 	
 	/***
 	 * Administrative variables
 	 */
-	private $sysMail = "noreply@music2web.de";
-	private $errMail = "webmaster@music2web.de";
-	private $domain = "http://www.music2web.de";
+	private $sysMail = "noreply@mustermail.de";
+	private $errMail = "bugs@mlrecords.de";
+	private $domain = "http://www.musterdomain.de";
 	
 	/***
 	 * Last.fm event importer
@@ -41,8 +41,8 @@ class Configuration {
 	/***
 	 * Recaptcha Codes
 	 */
-	private $privateRecaptcha = "6Ldbb-ISAAAAAHJ8Dt9295r0T6cuQR0NXa9JYm6F";
-	private $publicRecaptcha = "6Ldbb-ISAAAAADUVLSl1Gx2t7OGb-KVE0Aq9aY-Z";
+	private $privateRecaptcha = "6LchdekSAAAAAFIzvFEfI4Fz9rstTEZ-1PUK4nkO";
+	private $publicRecaptcha = "6LchdekSAAAAALPCXPe191Yv_Hdkex3XnXsjJgDR";
 	
 	public function getLastFMKey() {
 		return $this->lastfmKey;
