@@ -23,12 +23,12 @@ class FileUploader {
 		
 		if ($auth->checkToken($authTime, $authToken)) {
 			if (!$user->isGuest()) {
-				$directory = mysql_real_escape_string($_GET['temporary']);
+				$directory = $db->escape($_GET['temporary']);
 				
 				$uploadResult = $this->upload();
 				
 				if (isset($uploadResult['filename'])) {
-					$fileName = mysql_real_escape_string($uploadResult['filename']);
+					$fileName = $db->escape($uploadResult['filename']);
 					$filePath = ini_get("upload_tmp_dir") . $directory . DIRECTORY_SEPARATOR . $fileName;
 					if (file_exists($filePath)) {
 						$fileContent = file_get_contents($filePath);
@@ -190,9 +190,9 @@ class FileUploader {
 	private function generateFileName() {
 		$db = new DB();
 		$basic = new Basic();
-		$filename = mysql_real_escape_string($basic->randomHash());
+		$filename = $db->escape($basic->randomHash());
 		while ($db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename'")) {
-			$filename = mysql_real_escape_string($basic->randomHash());
+			$filename = $db->escape($basic->randomHash());
 		}
 		return $filename;
 	}
@@ -200,9 +200,9 @@ class FileUploader {
 	private function generateKey() {
 		$db = new DB();
 		$basic = new Basic();
-		$key = mysql_real_escape_string($basic->randomHash());
+		$key = $db->escape($basic->randomHash());
 		while ($db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key'")) {
-			$key = mysql_real_escape_string($basic->randomHash());
+			$key = $db->escape($basic->randomHash());
 		}
 		return $key;
 	}

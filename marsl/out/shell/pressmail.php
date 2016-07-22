@@ -68,27 +68,27 @@ if ($MN>0) {
 		 	$curTime = time();
 		 	
 		 	$msgBody = "<h3>".$email."</h3>".$basic->cleanHTML($msgBody);
-		 	$msgBody = mysql_real_escape_string($msgBody);
-		 	$subj = mysql_real_escape_string($subj);
+		 	$msgBody = $db->escape($msgBody);
+		 	$subj = $db->escape($subj);
 		 	
 		 	$db->query("INSERT INTO `thread`(`board`,`postcount`,`type`,`title`,`author`,`viewcount`) VALUES('$board','0','0','$subj','$boardUser','0')");
-		 	$threadID = mysql_insert_id();
+		 	$threadID = $db->getLastID();
 		 	
 		 	$result = $db->query("SELECT `threadcount` FROM `board` WHERE `board`='$board'");
-		 	while ($row = mysql_fetch_array($result)) {
+		 	while ($row = $db->fetchArray($result)) {
 		 		$threadcount = $row['threadcount']+1;
 		 		$db->query("UPDATE `board` SET `threadcount`='$threadcount' WHERE `board`='$board'");
 		 	}
 		 	
 		 	$db->query("INSERT INTO `post`(`author`, `thread`, `date`, `operator`, `lastedit`, `content`, `ip`, `deleted`) VALUES('$boardUser','$threadID','$curTime','0','0','$msgBody','$ip','0')");
-		 	$postID = mysql_insert_id();
+		 	$postID = $db->getLastID();
 		 	$result = $db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
-		 	while ($row = mysql_fetch_array($result)) {
+		 	while ($row = $db->fetchArray($result)) {
 		 		$postcount = $row['postcount']+1;
 		 		$db->query("UPDATE `thread` SET `postcount`='$postcount', `lastpost`='$postID' WHERE `thread`='$threadID'");
 		 	}
 		 	$result = $db->query("SELECT `postcount` FROM `board` WHERE `board`='$board'");
-		 	while ($row = mysql_fetch_array($result)) {
+		 	while ($row = $db->fetchArray($result)) {
 		 		$postcount = $row['postcount']+1;
 		 		$db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$board'");
 		 	}
@@ -145,7 +145,7 @@ if ($MN>0) {
 								$cryptedContent = $crypt->encrypt($fileContent, $key);
 								file_put_contents(dirname(__FILE__)."/../files/".$newFileName, $cryptedContent);
 								$db->query("INSERT INTO `attachment`(`servername`, `realname`, `key`, `temporary`) VALUES('$newFileName', '$strFileName', '$key', '$temporary')");
-								$fileID = mysql_insert_id();
+								$fileID = $db->getLastID();
 								$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$fileID')");
 							}
 						}
@@ -208,9 +208,9 @@ function get_part($stream, $msg_number, $mime_type, $structure = false,$part_num
 function generateFileName() {
 	$db = new DB();
 	$basic = new Basic();
-	$filename = mysql_real_escape_string($basic->randomHash());
+	$filename = $db->escape($basic->randomHash());
 	while ($db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename'")) {
-		$filename = mysql_real_escape_string($basic->randomHash());
+		$filename = $db->escape($basic->randomHash());
 	}
 	return $filename;
 }
@@ -218,9 +218,9 @@ function generateFileName() {
 function generateKey() {
 	$db = new DB();
 	$basic = new Basic();
-	$key = mysql_real_escape_string($basic->randomHash());
+	$key = $db->escape($basic->randomHash());
 	while ($db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key'")) {
-		$key = mysql_real_escape_string($basic->randomHash());
+		$key = $db->escape($basic->randomHash());
 	}
 	return $key;
 }

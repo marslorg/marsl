@@ -23,19 +23,19 @@ class EditPicture {
 		$title = $basic->getTitle();
 		$new = true;
 		if ($user->isAdmin()&&$auth->moduleAdminAllowed("gallery", $role->getRole())&&$auth->moduleExtendedAllowed("gallery", $role->getRole())) {
-			$picture = mysql_real_escape_string($_GET['id']);
+			$picture = $db->escape($_GET['id']);
 			if (isset($_POST['action'])) {
 				$new = false;
 				if ($_POST['action']=="send"&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$result = $db->query("SELECT `location` FROM `picture` JOIN `album` USING(`album`) WHERE `picture`='$picture'");
-					while ($row = mysql_fetch_array($result)) {
-						$subtitle = mysql_real_escape_string($basic->cleanHTML($_POST['subtitle']));
+					while ($row = $db->fetchArray($result)) {
+						$subtitle = $db->escape($basic->cleanHTML($_POST['subtitle']));
 						$db->query("UPDATE `picture` SET `subtitle`='$subtitle' WHERE `picture`='$picture'");
 					}
 				}
 			}
 			$result = $db->query("SELECT `subtitle`, `location`, `folder`, `filename`, `picture` FROM `picture` JOIN `album` USING(`album`) WHERE `picture`='$picture'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 					$subtitle = $row['subtitle'];
 					$path = "../albums/".htmlentities($row['folder'], null, "ISO-8859-1").htmlentities($row['filename'], null, "ISO-8859-1");

@@ -23,7 +23,7 @@ class ModuleRights {
 			if (!isset($_GET['action'])) {
 				$modules = array();
 				$result = $db->query("SELECT * FROM `module`");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					if ($auth->moduleAdminAllowed($row['file'], $role->getRole())&&$auth->moduleExtendedAllowed($row['file'], $role->getRole())
 					&&$auth->moduleWriteAllowed($row['file'], $role->getRole())&&$auth->moduleReadAllowed($row['file'], $role->getRole())) {
 						array_push($modules,array('file'=>$row['file'],'name'=>$row['name']));
@@ -33,7 +33,7 @@ class ModuleRights {
 			}
 			else if ($_GET['action']=="role") {
 				$module = $basic->getModule($_GET['module']);
-				$moduleID = mysql_real_escape_string($module['file']);
+				$moduleID = $db->escape($module['file']);
 				$name = htmlentities($module['name'], null, "ISO-8859-1");
 				if ($auth->moduleAdminAllowed($moduleID, $role->getRole())&&$auth->moduleExtendedAllowed($moduleID, $role->getRole())
 				&&$auth->moduleWriteAllowed($moduleID, $role->getRole())&&$auth->moduleReadAllowed($moduleID, $role->getRole())) {
@@ -54,10 +54,10 @@ class ModuleRights {
 					$rights = array();
 					foreach ($roles as $roleID) {
 						if ($roleID!=$role->getRole()) {
-							$roleID = mysql_real_escape_string($roleID);
+							$roleID = $db->escape($roleID);
 							if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'")) {
 								$result = $db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
-								while ($row = mysql_fetch_array($result)) {
+								while ($row = $db->fetchArray($result)) {
 									$roleName = htmlentities($role->getNamebyID($row['role']), null, "ISO-8859-1");
 									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}

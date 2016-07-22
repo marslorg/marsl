@@ -27,11 +27,11 @@ class UserData implements Module {
 			if (isset($_GET['action'])) {
 				if (($_GET['action']=="list")&&$auth->moduleAdminAllowed("userdata", $role->getRole())) {
 					$userdata = array();
-					$search = mysql_real_escape_string($_GET['search']);
+					$search = $db->escape($_GET['search']);
 					$ownRole = $role->getRole();
 					$possibleRoles = $role->getPossibleRoles($ownRole);
 					$result = $db->query("SELECT `user`, `user`.`role` AS `roleid`, `nickname`, `prename`, `acronym`, `regdate`, `email`, `postcount`, `user`.`name` AS `username`, `role`.`name` AS `rolename` FROM `user` JOIN `role` USING(`role`) LEFT OUTER JOIN `email` USING(`user`) WHERE `nickname` LIKE '$search%' ORDER BY `nickname`");
-					while ($row = mysql_fetch_array($result)) {
+					while ($row = $db->fetchArray($result)) {
 						$userid = htmlentities($row['user'], null, "ISO-8859-1");
 						$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
 						$prename = htmlentities($row['prename'], null, "ISO-8859-1");
@@ -52,14 +52,14 @@ class UserData implements Module {
 				}
 				if ($_GET['action']=="details") {
 					if ($auth->moduleAdminAllowed("userdata", $role->getRole())||($auth->moduleExtendedAllowed("userdata", $role->getRole())&&($_GET['user']==$user->getID()))) {
-						$userID = mysql_real_escape_string($_GET['user']);
+						$userID = $db->escape($_GET['user']);
 						$ownID = $user->getID();
 						$ownRole = $role->getRole();
 						$possibleRoles = $role->getPossibleRoles($ownRole);
 						
 						if (isset($_POST['entermail'])) {
 							if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-								$email = mysql_real_escape_string($_POST['email']);
+								$email = $db->escape($_POST['email']);
 								if ($basic->checkMail($email)) {
 									$curTime = time();
 									$confirmID = $basic->confirmID();
@@ -70,13 +70,13 @@ class UserData implements Module {
 						
 						if (isset($_GET['delmail'])) {
 							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-								$email = mysql_real_escape_string(urldecode($_GET['delmail']));
+								$email = $db->escape(urldecode($_GET['delmail']));
 								$db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
 							}
 						}
 						if (isset($_GET['primemail'])) {
 							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-								$email = mysql_real_escape_string(urldecode($_GET['primemail']));
+								$email = $db->escape(urldecode($_GET['primemail']));
 								if (!$db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
 									$db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
 									$db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
@@ -85,13 +85,13 @@ class UserData implements Module {
 						}
 						if (isset($_GET['confmail'])) {
 							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-								$email = mysql_real_escape_string(urldecode($_GET['confmail']));
+								$email = $db->escape(urldecode($_GET['confmail']));
 								$mailer->sendConfirmationMail($userID, $email);
 							}
 						}
 							
 						$result = $db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `name` FROM `user` WHERE `user`='$userID'");
-						while ($row = mysql_fetch_array($result)) {
+						while ($row = $db->fetchArray($result)) {
 							$userRole = htmlentities($row['role'], null, "ISO-8859-1");
 							$isMaster = $role->isMaster($ownRole, $userRole, $possibleRoles);
 							if ($isMaster||($user->getID()==$userID)) {
@@ -101,7 +101,7 @@ class UserData implements Module {
 								$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
 								$emails = array();
 								$result2 = $db->query("SELECT * FROM `email` WHERE `user`='$userID' ORDER BY `confirmed` DESC, `primary` DESC");
-								while ($row2 = mysql_fetch_array($result2)) {
+								while ($row2 = $db->fetchArray($result2)) {
 									$email = htmlentities($row2['email'], null, "ISO-8859-1");
 									$confirmed = $row2['confirmed'];
 									$primary = $row2['primary'];
@@ -196,7 +196,7 @@ class UserData implements Module {
 			$mailer = new Mailer();
 			if (isset($_POST['entermail'])) {
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-					$email = mysql_real_escape_string($_POST['email']);
+					$email = $db->escape($_POST['email']);
 					if ($basic->checkMail($email)) {
 						$curTime = time();
 						$confirmID = $basic->confirmID();
@@ -208,13 +208,13 @@ class UserData implements Module {
 			
 			if (isset($_GET['delmail'])) {
 				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-					$email = mysql_real_escape_string(urldecode($_GET['delmail']));
+					$email = $db->escape(urldecode($_GET['delmail']));
 					$db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
 				}
 			}
 			if (isset($_GET['primemail'])) {
 				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-					$email = mysql_real_escape_string(urldecode($_GET['primemail']));
+					$email = $db->escape(urldecode($_GET['primemail']));
 					if (!$db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
 						$db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
 						$db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
@@ -223,7 +223,7 @@ class UserData implements Module {
 			}
 			if (isset($_GET['confmail'])) {
 				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-					$email = mysql_real_escape_string(urldecode($_GET['confmail']));
+					$email = $db->escape(urldecode($_GET['confmail']));
 					$mailer->sendConfirmationMail($userID, $email);
 				}
 			}
@@ -251,10 +251,10 @@ class UserData implements Module {
 					}
 					
 					if ($_POST['action']=="edit") {
-						$prename = mysql_real_escape_string($_POST['prename']);
-						$name = mysql_real_escape_string($_POST['name']);
-						$info = mysql_real_escape_string($basic->cleanStrict($_POST['info']));
-						$signature = mysql_real_escape_string($basic->cleanStrict($_POST['signature']));
+						$prename = $db->escape($_POST['prename']);
+						$name = $db->escape($_POST['name']);
+						$info = $db->escape($basic->cleanStrict($_POST['info']));
+						$signature = $db->escape($basic->cleanStrict($_POST['signature']));
 						$birthdate = 0;
 						if (checkdate($_POST['month'], $_POST['day'], $_POST['year'])) {
 							$birthdate = mktime(0,0,0,$_POST['month'],$_POST['day'],$_POST['year']);
@@ -266,12 +266,12 @@ class UserData implements Module {
 						if ($_POST['gender']=="male") {
 							$gender = "male";
 						}
-						$interests = mysql_real_escape_string($_POST['interests']);
-						$job = mysql_real_escape_string($_POST['job']);
-						$zip = mysql_real_escape_string($_POST['zip']);
-						$street = mysql_real_escape_string($_POST['street']);
-						$house = mysql_real_escape_string($_POST['house']);
-						$city = mysql_real_escape_string($_POST['city']);
+						$interests = $db->escape($_POST['interests']);
+						$job = $db->escape($_POST['job']);
+						$zip = $db->escape($_POST['zip']);
+						$street = $db->escape($_POST['street']);
+						$house = $db->escape($_POST['house']);
+						$city = $db->escape($_POST['city']);
 						$db->query("UPDATE `user` SET `prename`='$prename', `name`='$name', `info`='$info', `signature`='$signature', `birthdate`='$birthdate', `gender`='$gender', `interests`='$interests', `job`='$job', `zip`='$zip', `street`='$street', `house`='$house', `city`='$city' WHERE `user`='$userID'");
 					}
 				}
@@ -296,7 +296,7 @@ class UserData implements Module {
 			$city = "";
 			
 			$result = $db->query("SELECT * FROM `user` WHERE `user`='$userID'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				
 				$userID = $row['user'];
 				$prename = htmlentities($row['prename'], null, "ISO-8859-1");
@@ -319,7 +319,7 @@ class UserData implements Module {
 			$emails = array();
 			
 			$result = $db->query("SELECT * FROM `email` WHERE `user` = '$userID' ORDER BY `confirmed` DESC, `primary` DESC");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				
 				$email = htmlentities($row['email'], null, "ISO-8859-1");
 				$confirmed = $row['confirmed'];

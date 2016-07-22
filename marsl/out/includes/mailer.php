@@ -10,10 +10,10 @@ class Mailer {
 		$config = new Configuration();
 		$user = new User();
 		$nickname = $user->getNickbyId($userID);
-		$userID = mysql_real_escape_string($userID);
-		$mail = mysql_real_escape_string($mail);
+		$userID = $db->escape($userID);
+		$mail = $db->escape($mail);
 		$result = $db->query("SELECT `confirm_id` FROM `email` WHERE `confirmed`='0' AND `user`='$userID' AND `email`='$mail'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$confirm_id = $row['confirm_id'];
 			$link = $config->getDomain()."/confirm.php?mail=".$mail."&code=".$confirm_id;
 			$msg = "Hallo ".$nickname.",\n";

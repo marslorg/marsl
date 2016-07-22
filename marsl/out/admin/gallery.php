@@ -30,10 +30,10 @@ class Gallery {
 			if ($auth->checkToken($authTime, $authToken)) {
 				if ($auth->moduleExtendedAllowed("gallery", $role->getRole())||$auth->moduleAdminAllowed("gallery", $role->getRole())) {
 					if (isset($_GET['id'])) {
-						$id = mysql_real_escape_string($_GET['id']);
+						$id = $db->escape($_GET['id']);
 						$folder = "";
 						$result = $db->query("SELECT `folder` FROM `album` WHERE `album`='$id'");
-						while ($row = mysql_fetch_array($result)) {
+						while ($row = $db->fetchArray($result)) {
 							$folder = $row['folder'];
 						}
 						$dir = "../albums/";
@@ -51,7 +51,7 @@ class Gallery {
 								$pause = $_POST['pause'];
 							}
 							while($file = readdir($handle)) {
-								$file = mysql_real_escape_string($file);
+								$file = $db->escape($file);
 								$cur = time();
 								$diff = $cur-$start;
 								if ($diff<$maxTime) {
@@ -86,12 +86,12 @@ class Gallery {
 					}
 					else {
 						if (isset($_POST['action'])) {
-							$folder = mysql_real_escape_string($_POST['folder']);
-							$photograph = mysql_real_escape_string($_POST['photograph']);
-							$location = mysql_real_escape_string($_POST['category']);
-							$day = mysql_real_escape_string($_POST['day']);
-							$month = mysql_real_escape_string($_POST['month']);
-							$year = mysql_real_escape_string($_POST['year']);
+							$folder = $db->escape($_POST['folder']);
+							$photograph = $db->escape($_POST['photograph']);
+							$location = $db->escape($_POST['category']);
+							$day = $db->escape($_POST['day']);
+							$month = $db->escape($_POST['month']);
+							$year = $db->escape($_POST['year']);
 							$date = "";
 							if (checkdate($month,$day,$year)) {
 								$date = mktime(0,0,0,$month,$day,$year);
@@ -99,15 +99,15 @@ class Gallery {
 							else {
 								$date = time();
 							}
-							$description = mysql_real_escape_string($basic->cleanHTML($_POST['description']));
-							$author = mysql_real_escape_string($user->getID());
-							$authorIP = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
+							$description = $db->escape($basic->cleanHTML($_POST['description']));
+							$author = $db->escape($user->getID());
+							$authorIP = $db->escape($_SERVER['REMOTE_ADDR']);
 							$postdate = time();
-							$location = mysql_real_escape_string($_POST['category']);
+							$location = $db->escape($_POST['category']);
 							if ($auth->locationExtendedAllowed($location, $role->getRole())||$auth->locationAdminAllowed($location, $role->getRole())) {
 								$db->query("INSERT INTO `album`(`name`,`author`,`author_ip`,`photograph`,`description`,`folder`,`visible`,`deleted`,`date`,`postdate`,`location`)
 								VALUES(' ','$author','$authorIP','$photograph','$description','$folder','0','0','$date','$postdate','$location')");
-								$id = mysql_insert_id();
+								$id = $db->getLastID();
 								header("Location: gallery.php?id=".$id."&time=".$authTime."&token=".$authToken);
 							}
 							else {

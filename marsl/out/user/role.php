@@ -14,11 +14,11 @@ class Role {
 			return $this->getGuestRole();
 		}
 		else {
-			$session = mysql_real_escape_string($user->getSession());
 			$db = new DB();
+			$session = $db->escape($user->getSession());
 			$result = $db->query("SELECT `role` FROM `role` JOIN `user` USING(`role`) WHERE `sessionid`='$session' AND `deleted`='0'");
 			$role = "";
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$role = $row['role'];
 			}
 			return $role;
@@ -32,7 +32,7 @@ class Role {
 		$db = new DB();
 		$result = $db->query("SELECT `role` FROM `role` JOIN `stdroles` ON `role`=`guest`");
 		$role = "";
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$role = $row['role'];
 		}
 		return $role;
@@ -42,11 +42,11 @@ class Role {
 	 * Get a role of a user.
 	 */
 	public function getRolebyUser($user) {
-		$user = mysql_real_escape_string($user);
 		$db = new DB();
+		$user = $db->escape($user);
 		$result = $db->query("SELECT `role` FROM `role` JOIN `user` USING(`role`) WHERE `user`='$user' AND `deleted`='0'");
 		$role = "";
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$role = $row['role'];
 		}
 		return $role;
@@ -59,7 +59,7 @@ class Role {
 		$db = new DB();
 		$result = $db->query("SELECT `role` FROM `role` JOIN `stdroles` ON `role`=`user`");
 		$role = "";
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$role = $row['role'];
 		}
 		return $role;
@@ -70,10 +70,10 @@ class Role {
 	 */
 	public function getNamebyID($id) {
 		$name = "";
-		$id = mysql_real_escape_string($id);
 		$db = new DB();
+		$id = $db->escape($id);
 		$result = $db->query("SELECT `name` FROM `role` WHERE `role`='$id'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$name = $row['name'];
 		}
 		return $name;
@@ -84,10 +84,10 @@ class Role {
 	 */
 	public function getIDbyName($name) {
 		$role = "";
-		$name = mysql_real_escape_string($name);
 		$db = new DB();
+		$name = $db->escape($name);
 		$result = $db->query("SELECT `role` FROM `role` WHERE `name`='$name'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$role = $row['role'];
 		}
 		return $role;
@@ -98,12 +98,12 @@ class Role {
 	 */
 	public function setModuleRights($role, $module, $read, $write, $extended, $admin) {
 		$db = new DB();
-		$role = mysql_real_escape_string($role);
-		$module = mysql_real_escape_string($module);
-		$read = mysql_real_escape_string($read);
-		$write = mysql_real_escape_string($write);
-		$extended = mysql_real_escape_string($extended);
-		$admin = mysql_real_escape_string($admin);
+		$role = $db->escape($role);
+		$module = $db->escape($module);
+		$read = $db->escape($read);
+		$write = $db->escape($write);
+		$extended = $db->escape($extended);
+		$admin = $db->escape($admin);
 		if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`= '$role' AND `module`='$module'")) {
 			$db->query("UPDATE `rights_module` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `module` = '$module'");
 		}
@@ -117,12 +117,12 @@ class Role {
 	 */
 	public function setRights($role, $location, $read, $write, $extended, $admin) {
 		$db = new DB();
-		$role = mysql_real_escape_string($role);
-		$location = mysql_real_escape_string($location);
-		$read = mysql_real_escape_string($read);
-		$write = mysql_real_escape_string($write);
-		$extended = mysql_real_escape_string($extended);
-		$admin = mysql_real_escape_string($admin);
+		$role = $db->escape($role);
+		$location = $db->escape($location);
+		$read = $db->escape($read);
+		$write = $db->escape($write);
+		$extended = $db->escape($extended);
+		$admin = $db->escape($admin);
 		if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$role' AND `location`='$location'")) {
 			$db->query("UPDATE `rights` SET `read` = '$read', `write` = '$write', `extended`='$extended', `admin` = '$admin' WHERE `role`='$role' AND `location`='$location'");
 		}
@@ -135,8 +135,8 @@ class Role {
 	 * Create a new role.
 	 */
 	public function createRole($name) {
-		$name = mysql_real_escape_string($name);
 		$db = new DB();
+		$name = $db->escape($name);
 		if (!$db->isExisting("SELECT * FROM `role` WHERE `name`='$name'")) {
 			$db->query("INSERT INTO `role`(`name`) VALUES('$name')");
 			return true;
@@ -152,10 +152,10 @@ class Role {
 	public function getPossibleRoles($role) {
 		$roles = array();
 		$db = new DB();
-		$role = mysql_real_escape_string($role);
+		$role = $db->escape($role);
 		if ($db->isExisting("SELECT * FROM `role_editor` WHERE `master`='$role'")) {
 			$result = $db->query("SELECT slave FROM `role_editor` WHERE `master`='$role'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$slaves = $this->getPossibleRoles($row['slave']);
 				foreach ($slaves as $slave) {
 					array_push($roles,$slave);
@@ -187,7 +187,7 @@ class Role {
 		$roles = array();
 		$db = new DB();
 		$result = $db->query("SELECT * FROM `role`");
-		while($row = mysql_fetch_array($result)) {
+		while($row = $db->fetchArray($result)) {
 			array_push($roles, $row);
 		}
 		return $roles;
@@ -201,7 +201,7 @@ class Role {
 		$roles = array();
 		$db = new DB();
 		foreach($allRoles as $role) {
-			$roleID = mysql_real_escape_string($role['role']);
+			$roleID = $db->escape($role['role']);
 			$location = $db->isExisting("SELECT * FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1'");
 			$module = $db->isExisting("SELECT * FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1'");
 			$master = $db->isExisting("SELECT * FROM `role_editor` WHERE `master` = '$roleID'");
