@@ -38,20 +38,20 @@ class NewsPhoto {
 					if (getimagesize($fileLink)) {
 						$width = $picinfo[0];
 						$height = $picinfo[1];
-						$fileName = mysql_real_escape_string($fileName);
-						$photograph = mysql_real_escape_string(urldecode($_POST['photograph']));
+						$fileName = $db->escape($fileName);
+						$photograph = $db->escape(urldecode($_POST['photograph']));
 						if ($_POST['type']=="teaser") {
 							if (($width>200)||($height>200)) {
 								$this->thumb($fileLink, $fileLink, 200, 200, TRUE);
 							}
 							$db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$fileName', '$photograph')");
-							$pictureID = mysql_insert_id();
+							$pictureID = $db->getLastID();
 							$result = array('type'=>"success", 'id'=>$pictureID, 'file'=>$fileName);
 							echo json_encode($result);
 						}
 						
 						if ($_POST['type']=="text") {
-							$subtitle = mysql_real_escape_string(urldecode($_POST['subtitle']));
+							$subtitle = $db->escape(urldecode($_POST['subtitle']));
 							if (($width>1280)||($height>1280)) {
 								$this->thumb($fileLink, $fileLink, 1280, 1280, TRUE);
 							}
@@ -62,7 +62,7 @@ class NewsPhoto {
 							}
 							else {
 								$db->query("INSERT INTO `news_picture`(`url`, `photograph`,`subtitle`) VALUES('$fileName', '$photograph','$subtitle')");
-								$pictureID = mysql_insert_id();
+								$pictureID = $db->getLastID();
 								$result = array('type'=>"success", 'id'=>$pictureID, 'file'=>$fileName);
 								echo json_encode($result);
 							}

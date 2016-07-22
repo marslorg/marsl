@@ -22,9 +22,9 @@ class GalleryUploader {
 			$directory = $_GET['dir'];
 		}
 		if (isset($_GET['id'])) {
-			$album = mysql_real_escape_string($_GET['id']);
+			$album = $db->escape($_GET['id']);
 			$result = $db->query("SELECT `folder` FROM `album` WHERE `album`='$album'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$directory = $row['folder'];
 			}
 		}
@@ -80,9 +80,9 @@ class GalleryUploader {
 			$directory = $_GET['dir'];
 		}
 		if (isset($_GET['id'])) {
-			$album = mysql_real_escape_string($_GET['id']);
+			$album = $db->escape($_GET['id']);
 			$result = $db->query("SELECT `folder` FROM `album` WHERE `album`='$album'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$directory = $row['folder'];
 			}
 		}

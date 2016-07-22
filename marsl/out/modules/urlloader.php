@@ -18,16 +18,16 @@ class URLLoader implements Module {
 		if ($auth->moduleWriteAllowed("urlloader", $role->getRole())) {
 			$db = new DB();
 			$result = $db->query("SELECT `id`, `name`, `type` FROM `navigation` WHERE `type`='0' OR `type`='1' ORDER BY `pos`");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 					$cat_id = htmlentities($row['id'], null, "ISO-8859-1");
 					$cat_name = htmlentities($row['name'], null, "ISO-8859-1");
 					$cat_type = htmlentities($row['type'], null, "ISO-8859-1");
-					$cat_id = mysql_real_escape_string($cat_id);
+					$cat_id = $db->escape($cat_id);
 					$result_links = $db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='2' AND `category`='$cat_id'");
 					$links = array();
-					while ($row_links = mysql_fetch_array($result_links)) {
+					while ($row_links = $db->fetchArray($result_links)) {
 						if ($auth->locationReadAllowed($row_links['id'], $role->getRole())) {
 							array_push($links, array('id' => htmlentities($row_links['id'], null, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], null, "ISO-8859-1")));
 						}
@@ -55,7 +55,7 @@ class URLLoader implements Module {
 				if (isset($_POST['action'])) {
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$homepage = $_POST['homepage'];
-						$homepage = mysql_real_escape_string($homepage);
+						$homepage = $db->escape($homepage);
 						if ($db->isExisting("SELECT * FROM `homepage`")) {
 							$db->query("UPDATE `homepage` SET `homepage`='$homepage'");
 						}
@@ -66,12 +66,12 @@ class URLLoader implements Module {
 				}
 				$homepage = "";
 				$result = $db->query("SELECT * FROM `homepage`");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$homepage = $row['homepage'];
 				}
 				$locations = array();
 				$result = $db->query("SELECT * FROM `navigation` WHERE `type`='1' OR `type`='2'");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$name = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));
 				}
@@ -88,12 +88,11 @@ class URLLoader implements Module {
 	private function updateLocation() {
 		$basic = new Basic();
 		$db = new DB();
-		$id = mysql_real_escape_string($_GET['id']);
-		$head = mysql_real_escape_string($basic->cleanHTML($_POST['head']));
-		$module = mysql_real_escape_string($basic->cleanHTML($_POST['module']));
-		$foot = mysql_real_escape_string($basic->cleanHTML($_POST['foot']));
+		$id = $db->escape($_GET['id']);
+		$head = $db->escape($basic->cleanHTML($_POST['head']));
+		$module = $db->escape($basic->cleanHTML($_POST['module']));
+		$foot = $db->escape($basic->cleanHTML($_POST['foot']));
 		$db->query("UPDATE `navigation` SET `head`='$head', `module`='$module', `foot`='$foot' WHERE `id`='$id'");
-		$db = new DB();
 	}
 	
 	/*
@@ -114,12 +113,12 @@ class URLLoader implements Module {
 				$basic = new Basic();
 				$modules = $basic->getModules();
 				$db = new DB();
-				$id = mysql_real_escape_string($_GET['id']);
+				$id = $db->escape($_GET['id']);
 				$head = "";
 				$module = "";
 				$foot = "";
 				$result = $db->query("SELECT `head`,`module`,`foot` FROM `navigation` WHERE `id`='$id'");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$head = $row['head'];
 					$proof = $row['module'];
 					$foot = $row['foot'];
@@ -148,12 +147,12 @@ class URLLoader implements Module {
 		}
 		else {
 			$result = $db->query("SELECT `homepage` FROM homepage");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$id = $row['homepage'];
 			}
 		}
 		if ((isset($_GET['search']))&&(!isset($_GET['id']))) {
-			$searchQuery = mysql_real_escape_string($_GET['search']);
+			$searchQuery = $db->escape($_GET['search']);
 			$type = "standard";
 			if (isset($_GET['scope'])) {
 				$searchScope = explode("_",$_GET['scope']);
@@ -173,7 +172,7 @@ class URLLoader implements Module {
 			}
 		}
 		else if ((isset($_GET['tag']))&&(!isset($_GET['id']))) {
-			$tagID = mysql_real_escape_string($_GET['tag']);
+			$tagID = $db->escape($_GET['tag']);
 			if (isset($_GET['scope'])) {
 				$tagScope = explode("_", $_GET['scope']);
 				$tagContext = $tagScope[0];
@@ -192,21 +191,21 @@ class URLLoader implements Module {
 			}
 		}
 		else {
-			$id = mysql_real_escape_string($id);
+			$id = $db->escape($id);
 			$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
-			while ($row = mysql_fetch_array($result)) {
-				$id = mysql_real_escape_string($row['maps_to']);
+			while ($row = $db->fetchArray($result)) {
+				$id = $db->escape($row['maps_to']);
 			}
 			
 			if ($auth->locationReadAllowed($id, $role->getRole())) {
 				$result = $db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$head = $row['head'];
 					$foot = $row['foot'];
-					$module = mysql_real_escape_string($row['module']);
+					$module = $db->escape($row['module']);
 					$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
 					echo $head;
-					while ($row2 = mysql_fetch_array($result2)) {
+					while ($row2 = $db->fetchArray($result2)) {
 						include_once(dirname(__FILE__)."/".$module.".php");
 						$content = new $row2['class'];
 						$content->display();
@@ -281,22 +280,22 @@ class URLLoader implements Module {
 		}
 		else {
 			$result = $db->query("SELECT `homepage` FROM homepage");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$id = $row['homepage'];
 			}
 		}
-		$id = mysql_real_escape_string($id);
+		$id = $db->escape($id);
 		$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
-		while ($row = mysql_fetch_array($result)) {
-			$id = mysql_real_escape_string($row['maps_to']);
+		while ($row = $db->fetchArray($result)) {
+			$id = $db->escape($row['maps_to']);
 		}
 			
 		if ($auth->locationReadAllowed($id, $role->getRole())) {
 			$result = $db->query("SELECT `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
-			while ($row = mysql_fetch_array($result)) {
-				$module = mysql_real_escape_string($row['module']);
+			while ($row = $db->fetchArray($result)) {
+				$module = $db->escape($row['module']);
 				$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
-				while ($row2 = mysql_fetch_array($result2)) {
+				while ($row2 = $db->fetchArray($result2)) {
 					include_once(dirname(__FILE__)."/".$module.".php");
 					$content = new $row2['class'];
 					return $content->getImage();
@@ -318,27 +317,27 @@ class URLLoader implements Module {
 		}
 		else {
 			$result = $db->query("SELECT `homepage` FROM homepage");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$id = $row['homepage'];
 			}
 		}
-		$id = mysql_real_escape_string($id);
+		$id = $db->escape($id);
 		if ($id==$basic->getHomeLocation()) {
 			return null;
 		}
 		else {
 			$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
-			while ($row = mysql_fetch_array($result)) {
-				$id = mysql_real_escape_string($row['maps_to']);
+			while ($row = $db->fetchArray($result)) {
+				$id = $db->escape($row['maps_to']);
 			}
 				
 			if ($auth->locationReadAllowed($id, $role->getRole())) {
 				$result = $db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$title = $row['name']." - ";
-					$module = mysql_real_escape_string($row['module']);
+					$module = $db->escape($row['module']);
 					$result2 = $db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
-					while ($row2 = mysql_fetch_array($result2)) {
+					while ($row2 = $db->fetchArray($result2)) {
 						include_once(dirname(__FILE__)."/".$module.".php");
 						$content = new $row2['class'];
 						$newTitle = $content->getTitle();

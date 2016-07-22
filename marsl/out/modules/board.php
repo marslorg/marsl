@@ -18,7 +18,8 @@ class Board implements Module {
 	public function display() {
 		$auth = new Authentication();
 		$role = new Role();
-		$location = mysql_real_escape_string($_GET['id']);
+		$db = new DB();
+		$location = $db->escape($_GET['id']);
 		if ($auth->moduleReadAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
 			if (isset($_GET['action'])) {
 				$threadClass = new Thread();
@@ -64,18 +65,17 @@ class Board implements Module {
 				}
 			}
 			else {
-				$db = new DB();
 				$user = new User();
 				$categories = array();
 				$result = $db->query("SELECT `board`, `title` FROM `board` WHERE `type`='0' AND `location`='$location' ORDER BY `pos`");
-				while ($row = mysql_fetch_array($result)) {
-					$category = mysql_real_escape_string($row['board']);
+				while ($row = $db->fetchArray($result)) {
+					$category = $db->escape($row['board']);
 					if ($this->readAllowed($category, $role->getRole())) {
 						$catTitle = htmlentities($row['title'], null, "ISO-8859-1");
 						$boards = array();
 						$result2 = $db->query("SELECT `board`, `title`, `threadcount`, `postcount`, `description` FROM `board` WHERE `type`='1' AND `location`='$category' ORDER BY `pos`");
-						while ($row2 = mysql_fetch_array($result2)) {
-							$board = mysql_real_escape_string($row2['board']);
+						while ($row2 = $db->fetchArray($result2)) {
+							$board = $db->escape($row2['board']);
 							if ($this->readAllowed($board, $role->getRole())) {
 								$boardTitle = htmlentities($row2['title'], null, "ISO-8859-1");
 								$threadcount = htmlentities($row2['threadcount'], null, "ISO-8859-1");
@@ -89,7 +89,7 @@ class Board implements Module {
 								$authorName = "";
 								$page = "";
 								$result3 = $db->query("SELECT `post`, `date`, `post`.`thread` AS `thread`, `title`, `post`.`author` AS postauthor FROM `post` JOIN `thread` ON (`thread`.`thread`=`post`.`thread`) WHERE `deleted`='0' AND `board`='$board' AND (`type`='0' OR `type`='1' OR `type`='2' OR `type`='3') ORDER BY `date` DESC LIMIT 0,1");
-								while ($row3 = mysql_fetch_array($result3)) {
+								while ($row3 = $db->fetchArray($result3)) {
 									$thread = htmlentities($row3['thread'], null, "ISO-8859-1");
 									$post = htmlentities($row3['post'], null, "ISO-8859-1");
 									$threadTitle = htmlentities($row3['title'], null, "ISO-8859-1");
@@ -98,13 +98,13 @@ class Board implements Module {
 									$authorName = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
 									$page = 1;
 									$result4 = $db->query("SELECT COUNT(*) AS paging FROM `post` WHERE `thread`='$thread' AND `deleted`='0'");
-									while ($row4 = mysql_fetch_array($result4)) {
+									while ($row4 = $db->fetchArray($result4)) {
 										$page = ceil($row4['paging']/10);
 									}
 								}
 								$operators = array();
 								$result3 = $db->query("SELECT `user` FROM `board_operator` WHERE `board`='$board'");
-								while ($row3 = mysql_fetch_array($result3)) {
+								while ($row3 = $db->fetchArray($result3)) {
 									$operator = htmlentities($row3['user'], null, "ISO-8859-1");
 									$operatorRole = $role->getRolebyUser($operator);
 									if ($auth->moduleReadAllowed("board", $operatorRole)&&$auth->moduleWriteAllowed("board", $operatorRole)&&$auth->locationReadAllowed($location, $operatorRole)&&$auth->locationWriteAllowed($location, $operatorRole)&&$this->readAllowed($board, $operatorRole)&&$this->writeAllowed($board, $operatorRole)&&$this->extendedAllowed($board, $operatorRole)) {
@@ -145,8 +145,8 @@ class Board implements Module {
 	 */
 	public function isOperator($boardID, $userID) {
 		$db = new DB();
-		$boardID = mysql_real_escape_string($boardID);
-		$userID = mysql_real_escape_string($userID);
+		$boardID = $db->escape($boardID);
+		$userID = $db->escape($userID);
 		if ($db->isExisting("SELECT `user` FROM `board_operator` WHERE `board`='$boardID' AND `user`='$userID'")) {
 			$role = new Role();
 			$roleID = $role->getRolebyUser($userID);
@@ -170,6 +170,7 @@ class Board implements Module {
 	public function admin() {
 		$auth = new Authentication();
 		$role = new Role();
+		$db = new DB();
 		if ($auth->moduleAdminAllowed("board", $role->getRole())) {
 			if (isset($_GET['page'])) {
 				if ($_GET['page']=="role") {
@@ -183,17 +184,16 @@ class Board implements Module {
 				}
 			}
 			else {
-				$db = new DB();
 				if (isset($_GET['action'])) {
 					if ($_GET['action']=="change"&&(isset($_POST['board']))) {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$board = mysql_real_escape_string($_POST['board']);
+							$board = $db->escape($_POST['board']);
 							if ($this->adminAllowed($board, $role->getRole())) {
 								$type = "2";
 								$location = "-1";
-								$newLocation = mysql_real_escape_string($_POST['location']);
+								$newLocation = $db->escape($_POST['location']);
 								$result = $db->query("SELECT `type`, `location` FROM `board` WHERE `board`='$board'");
-								while ($row = mysql_fetch_array($result)) {
+								while ($row = $db->fetchArray($result)) {
 									$type = $row['type'];
 									$location = $row['location'];
 								}
@@ -207,15 +207,15 @@ class Board implements Module {
 										$location = $newLocation;
 									}
 								}
-								$pos = mysql_real_escape_string($_POST['pos']);
-								$title = mysql_real_escape_string($_POST['title']);
+								$pos = $db->escape($_POST['pos']);
+								$title = $db->escape($_POST['title']);
 								$db->query("UPDATE `board` SET `title`='$title', `pos`='$pos', `location`='$location' WHERE `board`='$board'");
 							}
 						}
 					}
 					if ($_GET['action']=="del") {
 						if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-							$board = mysql_real_escape_string($_GET['board']);
+							$board = $db->escape($_GET['board']);
 							if ($this->adminAllowed($board, $role->getRole())&&$this->extendedAllowed($board, $role->getRole())&&$this->writeAllowed($board, $role->getRole())&&$this->readAllowed($board, $role->getRole())) {
 								$db->query("UPDATE `board` SET `type`='2' WHERE `board`='$board'");
 							}
@@ -224,14 +224,14 @@ class Board implements Module {
 					if ($_GET['action']=="addcat") {
 						if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 							$db->query("INSERT INTO `board`(`pos`, `title`,`type`) VALUES('0','Standard','0')");
-							$board = mysql_insert_id();
+							$board = $db->getLastID();
 							$this->setRights($role->getRole(), $board, '1', '1', '1', '1');
 						}
 					}
 					if ($_GET['action']=="addboard") {
 						if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 							$db->query("INSERT INTO `board`(`pos`, `title`,`type`,`threadcount`,`postcount`) VALUES('0','Standard','1','0','0')");
-							$board = mysql_insert_id();
+							$board = $db->getLastID();
 							$this->setRights($role->getRole(), $board, '1', '1', '1', '1');
 						}
 					}
@@ -239,7 +239,7 @@ class Board implements Module {
 				
 				$locations = array();
 				$result = $db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='board' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 						$id = htmlentities($row['id'], null, "ISO-8859-1");
 						$name = htmlentities($row['name'], null, "ISO-8859-1");
@@ -249,7 +249,7 @@ class Board implements Module {
 				
 				$categories = array();
 				$result = $db->query("SELECT `board`, `pos`, `location`, `title` FROM `board` WHERE `type`='0' ORDER BY `pos`");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					if ($this->adminAllowed($row['board'], $role->getRole())) {
 						$board = htmlentities($row['board'], null, "ISO-8859-1");
 						$pos = htmlentities($row['pos'], null, "ISO-8859-1");
@@ -262,9 +262,9 @@ class Board implements Module {
 				
 				$boards = array();
 				$result = $db->query("SELECT `board`, `pos`, `location`, `title` FROM `board` WHERE `type`='1' ORDER BY `pos`");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					if ($this->adminAllowed($row['board'], $role->getRole())) {
-						$location = mysql_real_escape_string($row['location']);
+						$location = $db->escape($row['location']);
 						$board = htmlentities($row['board'], null, "ISO-8859-1");
 						$pos = htmlentities($row['pos'], null, "ISO-8859-1");
 						$location = htmlentities($row['location'], null, "ISO-8859-1");
@@ -285,12 +285,12 @@ class Board implements Module {
 	 */
 	public function setRights($role, $board, $read, $write, $extended, $admin) {
 		$db = new DB();
-		$role = mysql_real_escape_string($role);
-		$board = mysql_real_escape_string($board);
-		$read = mysql_real_escape_string($read);
-		$write = mysql_real_escape_string($write);
-		$extended = mysql_real_escape_string($extended);
-		$admin = mysql_real_escape_string($admin);
+		$role = $db->escape($role);
+		$board = $db->escape($board);
+		$read = $db->escape($read);
+		$write = $db->escape($write);
+		$extended = $db->escape($extended);
+		$admin = $db->escape($admin);
 		if ($db->isExisting("SELECT * FROM `rights_board` WHERE `role`= '$role' AND `board`='$board'")) {
 			$db->query("UPDATE `rights_board` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `board` = '$board'");
 		}
@@ -304,15 +304,15 @@ class Board implements Module {
 	 */
 	private function right($board, $roleID) {
 		$role = new Role();
-		$board = mysql_real_escape_string($board);
 		$db = new DB();
+		$board = $db->escape($board);
 		$rights['read'] = 0;
 		$rights['write'] = 0;
 		$rights['extended'] = 0;
 		$rights['admin'] = 0;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = mysql_real_escape_string($roleID);
+			$roleID = $db->escape($roleID);
 			if ($db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `read`='1'")) {
 				$rights['read'] = 1;
 			}
@@ -334,10 +334,10 @@ class Board implements Module {
 	 */
 	private function roleManagement() {
 		$role = new Role();
-		$board = mysql_real_escape_string($_GET['board']);
+		$db = new DB();
+		$board = $db->escape($_GET['board']);
 		if ($this->adminAllowed($board, $role->getRole())&&$this->extendedAllowed($board, $role->getRole())&&$this->writeAllowed($board, $role->getRole())&&$this->readAllowed($board, $role->getRole())) {
 			$auth = new Authentication();
-			$db = new DB();
 			$name = $this->getNameById($board);
 			$roles = $role->getPossibleRoles($role->getRole());
 			if (isset($_POST['change'])) {
@@ -356,10 +356,10 @@ class Board implements Module {
 			$rights = array();
 			foreach ($roles as $roleID) {
 				if ($roleID!=$role->getRole()) {
-					$roleID = mysql_real_escape_string($roleID);
+					$roleID = $db->escape($roleID);
 					if ($db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'")) {
 						$result = $db->query("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'");
-						while ($row = mysql_fetch_array($result)) {
+						while ($row = $db->fetchArray($result)) {
 							$roleName = htmlentities($role->getNamebyID($row['role']), null, "ISO-8859-1");
 							array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 						}
@@ -381,12 +381,12 @@ class Board implements Module {
 	 */
 	private function operatorManagement() {
 		$role = new Role();
-		$board = mysql_real_escape_string($_GET['board']);
+		$db = new DB();
+		$board = $db->escape($_GET['board']);
 		$auth = new Authentication();
 		if ($this->adminAllowed($board, $role->getRole())&&$auth->moduleAdminAllowed("board", $role->getRole())) {
-			$db = new DB();
 			if (isset($_POST['add'])) {
-				$operator = mysql_real_escape_string($_POST['operator']);
+				$operator = $db->escape($_POST['operator']);
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if ($db->isExisting("SELECT `nickname` FROM `user` JOIN `rights_board` USING(`role`) WHERE `extended`='1' AND `read`='1' AND `write`='1' AND `admin`='0' AND `board`='$board' AND `user`='$operator'")) {
 						$db->query("INSERT INTO `board_operator`(`user`,`board`) VALUES('$operator','$board')");
@@ -396,7 +396,7 @@ class Board implements Module {
 			if (isset($_GET['action'])) {
 				if ($_GET['action']=="delete") {
 					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-						$operator = mysql_real_escape_string($_GET['operator']);
+						$operator = $db->escape($_GET['operator']);
 						$db->query("DELETE FROM `board_operator` WHERE `user`='$operator' AND `board`='$board'");
 					}
 				}
@@ -405,8 +405,8 @@ class Board implements Module {
 			$operators = array();
 			$boardOperators = array();
 			$result = $db->query("SELECT `user`, `nickname` FROM `user` JOIN `rights_board` USING(`role`) WHERE `extended`='1' AND `read`='1' AND `write`='1' AND `admin`='0' AND `board`='$board'");
-			while ($row = mysql_fetch_array($result)) {
-				$user = mysql_real_escape_string($row['user']);
+			while ($row = $db->fetchArray($result)) {
+				$user = $db->escape($row['user']);
 				$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
 				if ($db->isExisting("SELECT * FROM `board_operator` WHERE `user`='$user' AND `board`='$board'")) {
 					array_push($boardOperators, array('user'=>$user, 'nickname'=>$nickname));
@@ -426,13 +426,13 @@ class Board implements Module {
 	 */
 	public function changeDescription() {
 		$role = new Role();
-		$board = mysql_real_escape_string($_GET['board']);
+		$db = new DB();
+		$board = $db->escape($_GET['board']);
 		$auth = new Authentication();
 		if ($this->adminAllowed($board, $role->getRole())) {
-			$db = new DB();
 			if (isset($_POST['action'])) {
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-					$description = mysql_real_escape_string($_POST['description']);
+					$description = $db->escape($_POST['description']);
 					$db->query("UPDATE `board` SET `description`='$description' WHERE `board`='$board' AND `type`='1'");
 				}
 			}
@@ -440,7 +440,7 @@ class Board implements Module {
 			$description = "";
 			$basic = new Basic();
 			$result = $db->query("SELECT `description` FROM `board` WHERE `board`='$board'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$description = $basic->cleanHTML($row['description']);
 			}
 			$authTime = time();
@@ -453,10 +453,10 @@ class Board implements Module {
 	 * Get the name of a board by a given board ID.
 	 */
 	public function getNameById($board) {
-		$board = mysql_real_escape_string($board);
 		$db = new DB();
+		$board = $db->escape($board);
 		$result = $db->query("SELECT `title` FROM `board` WHERE `board`='$board'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$title = $row['title'];
 		}
 		return $title;
@@ -507,15 +507,15 @@ class Board implements Module {
 	 * Get location of a board.
 	 */
 	public function getLocation($board) {
-		$board = mysql_real_escape_string($board);
 		$location = "";
 		$db = new DB();
+		$board = $db->escape($board);
 		$result = $db->query("SELECT `location`, `type` FROM `board` WHERE `board`='$board'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			if ($row['type']=="1") {
 				$board = $row['location'];
 				$result2 = $db->query("SELECT `location` FROM `board` WHERE `board`='$board'");
-				while ($row2 = mysql_fetch_array($result2)) {
+				while ($row2 = $db->fetchArray($result2)) {
 					$location = $row2['location'];
 				}
 			}

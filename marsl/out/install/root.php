@@ -36,8 +36,8 @@ class Root {
 							$role = new Role();
 							$roleID = $role->getIDbyName("root");
 							$user->changeRole($userID, $roleID);
-							$email = mysql_real_escape_string($_POST['email']);
 							$db = new DB();
+							$email = $db->escape($_POST['email']);
 							$db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 						}
 						else {

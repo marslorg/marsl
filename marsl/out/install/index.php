@@ -41,8 +41,8 @@ class Install {
 		$roleID = $role->getIDbyName("root");
 		
 		$result = $db->query("SELECT `file` FROM `module`");
-		while ($row = mysql_fetch_array($result)) {
-			$module = mysql_real_escape_string($row['file']);
+		while ($row = $db->fetchArray($result)) {
+			$module = $db->escape($row['file']);
 			$role->setModuleRights($roleID, $module, "1", "1", "1", "1");
 		}
 		

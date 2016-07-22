@@ -15,10 +15,10 @@ class User {
 	public function User() {
 
 		if (isset($_COOKIE["sessionid"])) {
-			$session = mysql_real_escape_string($_COOKIE["sessionid"]);
 			$db = new DB();
+			$session = $db->escape($_COOKIE["sessionid"]);
 			if ($db->isExisting("SELECT * FROM `user` WHERE `sessionid`='$session'")) {
-				$lastseen = mysql_real_escape_string(time());
+				$lastseen = $db->escape(time());
 				$db->query("UPDATE `user` SET `lastseen` = '$lastseen' WHERE `sessionid` = '$session'");
 				$this->session = $session;
 			}
@@ -32,7 +32,7 @@ class User {
 		$db = new DB();
 		
 		$role = new Role();
-		$roleID = mysql_real_escape_string($role->getRole());
+		$roleID = $db->escape($role->getRole());
 		
 		$headAdmin = 0;
 		
@@ -58,8 +58,8 @@ class User {
 	 */
 	public function isAdmin() {
 		$role = new Role();
-		$roleID = mysql_real_escape_string($role->getRole());
 		$db = new DB();
+		$roleID = $db->escape($role->getRole());
 		$location = $db->isExisting("SELECT * FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1'");
 		$module = $db->isExisting("SELECT * FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1'");
 		$master = $db->isExisting("SELECT * FROM `role_editor` WHERE `master` = '$roleID'");
@@ -79,9 +79,9 @@ class User {
 	public function logout() {
 		$basic = new Basic();
 		$db = new DB();
-		$session = mysql_real_escape_string($basic->session());
-		$lastlogout = mysql_real_escape_string(time());
-		$oldsession = mysql_real_escape_string($this->session);
+		$session = $db->escape($basic->session());
+		$lastlogout = $db->escape(time());
+		$oldsession = $db->escape($this->session);
 		$db->query("UPDATE `user` SET `lastlogout`='$lastlogout', `sessionid`='$session' WHERE `sessionid`='$oldsession'");
 		setcookie("sessionid", "destroyed", time()-3600);
 	}
@@ -94,19 +94,19 @@ class User {
 			return false;
 		}
 		else {
-			$nickname = mysql_real_escape_string($nickname);
 			$db = new DB();
+			$nickname = $db->escape($nickname);
 			if ($db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname')")) {
 				$result = $db->query("SELECT `regdate` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname')");
 				$regdate = "";
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$regdate = $row['regdate'];
 				}
-				$password = mysql_real_escape_string($this->hashPassword($regdate, $password));
+				$password = $db->escape($this->hashPassword($regdate, $password));
 				if ($db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password'")) {
-					$lastlogin = mysql_real_escape_string(time());
+					$lastlogin = $db->escape(time());
 					$basic = new Basic();
-					$session = mysql_real_escape_string($basic->session());
+					$session = $db->escape($basic->session());
 					
 					$db->query("UPDATE `user` SET `lastlogin`='$lastlogin', `sessionid`='$session' WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password'");
 					setcookie("sessionid",$session,time()+(3600*24*365));
@@ -128,9 +128,9 @@ class User {
 	public function getID() {
 		$user = "";
 		$db = new DB();
-		$sessionid = mysql_real_escape_string($this->session);
+		$sessionid = $db->escape($this->session);
 		$result = $db->query("SELECT `user` FROM `user` WHERE `sessionid`='$sessionid'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$user = $row['user'];
 		}
 		return $user;
@@ -141,10 +141,10 @@ class User {
 	 */
 	public function getIDbyName($name) {
 		$user = "";
-		$name = mysql_real_escape_string($name);
 		$db = new DB();
+		$name = $db->escape($name);
 		$result = $db->query("SELECT `user` FROM `user` WHERE LOWER(`nickname`)=LOWER('$name')");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$user = $row['user'];
 		}
 		return $user;
@@ -155,10 +155,10 @@ class User {
 	 */
 	public function getPassbyID($id) {
 		$password = "";
-		$user = mysql_real_escape_string($id);
 		$db = new DB();
+		$user = $db->escape($id);
 		$result = $db->query("SELECT `password` FROM `user` WHERE `user`='$user'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$password = $row['password'];
 		}
 		return $password;
@@ -169,10 +169,10 @@ class User {
 	 */
 	public function getMailbyID($id) {
 		$mail = "";
-		$user = mysql_real_escape_string($id);
 		$db = new DB();
+		$user = $db->escape($id);
 		$result = $db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1' AND `primary`='1'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$mail = htmlentities($row['email'], null, "ISO-8859-1");
 		}
 		return $mail;
@@ -183,10 +183,10 @@ class User {
 	 */
 	public function getNickbyID($id) {
 		$name = "";
-		$user = mysql_real_escape_string($id);
 		$db = new DB();
+		$user = $db->escape($id);
 		$result = $db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$name = htmlentities($row['nickname'], null, "ISO-8859-1");
 		}
 		return $name;
@@ -197,10 +197,10 @@ class User {
 	 */
 	public function getAcronymbyID($id) {
 		$acronym = "";
-		$user = mysql_real_escape_string($id);
 		$db = new DB();
+		$user = $db->escape($id);
 		$result = $db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$name = htmlentities($row['acronym'], null, "ISO-8859-1");
 			if (empty($name)) {
 				$name = $this->getNickbyID($user);
@@ -214,10 +214,10 @@ class User {
 	 */
 	public function getNickbyMail($mail) {
 		$name = "";
-		$mail = mysql_real_escape_string($mail);
 		$db = new DB();
+		$mail = $db->escape($mail);
 		$result = $db->query("SELECT `nickname` FROM `email` NATURAL JOIN `user` WHERE `email`='$mail' AND `confirmed`='1'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$name = htmlentities($row['nickname'], null, "ISO-8859-1");
 		}
 		return $name;
@@ -227,9 +227,9 @@ class User {
 	 * Change the role of a user.
 	 */
 	public function changeRole($user, $role) {
-		$user = mysql_real_escape_string($user);
-		$role = mysql_real_escape_string($role);
 		$db = new DB();
+		$user = $db->escape($user);
+		$role = $db->escape($role);
 		$db->query("UPDATE `user` SET `role`='$role' WHERE `user`='$user'");
 	}
 	
@@ -239,9 +239,9 @@ class User {
 	public function getRegisterDate($user) {
 		$regdate = "";
 		$db = new DB();
-		$user = mysql_real_escape_string($user);
+		$user = $db->escape($user);
 		$result = $db->query("SELECT `regdate` FROM `user` WHERE `user`='$user'");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $db->fetchArray($result)) {
 			$regdate = $row['regdate'];
 		}
 		return $regdate;
@@ -253,8 +253,8 @@ class User {
 	public function setPassword($user, $password) {
 		$db = new DB();
 		$time = $this->getRegisterDate($user);
-		$hash = mysql_real_escape_string($this->hashPassword($time, $password));
-		$user = mysql_real_escape_string($user);
+		$hash = $db->escape($this->hashPassword($time, $password));
+		$user = $db->escape($user);
 		$db->query("UPDATE `user` SET `password`='$hash' WHERE `user`='$user'");
 		return true;
 	}
@@ -270,8 +270,8 @@ class User {
 			$possibleRoles = $role->getPossibleRoles($ownRole);
 			foreach ($possibleRoles as $possibleRole) {
 				if ($possibleRole == $roleID) {
-					$user = mysql_real_escape_string($user);
-					$roleID = mysql_real_escape_string($roleID);
+					$user = $db->escape($user);
+					$roleID = $db->escape($roleID);
 					$db->query("UPDATE `user` SET `role` = '$roleID' WHERE `user`='$user'");
 				}
 			}
@@ -283,8 +283,8 @@ class User {
 	 */
 	public function updateAcronym($user, $acronym) {
 		$db = new DB();
-		$acronym = mysql_real_escape_string($acronym);
-		$user = mysql_real_escape_string($user);
+		$acronym = $db->escape($acronym);
+		$user = $db->escape($user);
 		if (empty($acronym)) {
 			$db->query("UPDATE `user` SET `acronym` = NULL WHERE `user`='$user'");
 			return true;
@@ -294,7 +294,7 @@ class User {
 				$db->query("UPDATE `user` SET `acronym`='$acronym' WHERE `user`='$user'");
 				$proofacronym = null;
 				$result = $db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$proofacronym = $row['acronym'];
 				}
 				if ($acronym==$proofacronym) {
@@ -316,13 +316,13 @@ class User {
 	public function updateNickname($user, $nickname) {
 		$db = new DB();
 		if (strlen($nickname)>=4) {
-			$nickname = mysql_real_escape_string($nickname);
-			$user = mysql_real_escape_string($user);
+			$nickname = $db->escape($nickname);
+			$user = $db->escape($user);
 			if ((!$db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND NOT (`user`='$user')"))&&(!$db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') AND NOT(`user`='$user')"))) {
 				$db->query("UPDATE `user` SET `nickname`='$nickname' WHERE `user`='$user'");
 				$proofnick = null;
 				$result = $db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
-				while ($row = mysql_fetch_array($result)) {
+				while ($row = $db->fetchArray($result)) {
 					$proofnick = $row['nickname'];
 				}
 				if ($nickname==$proofnick) {
@@ -348,19 +348,19 @@ class User {
 		$db = new DB();
 		$basic = new Basic();
 		if ($basic->checkMail($email)) {
-			$email = mysql_real_escape_string($email);
-			$user = mysql_real_escape_string($user);
+			$email = $db->escape($email);
+			$user = $db->escape($user);
 			if ($db->isExisting("SELECT `email` FROM `email` WHERE `user`='$user'")) {
 				$db->query("UPDATE `email` SET `email`='$email' WHERE `user`='$user'");
 			}
 			else {
 				$time = time();
-				$confirmID = mysql_real_escape_string($basic->confirmID());
+				$confirmID = $db->escape($basic->confirmID());
 				$db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`) VALUES('$email','$user','0','$time','$confirmID')");
 			}
 			$proofmail = null;
 			$result = $db->query("SELECT `email` FROM `email` WHERE `user`='$user'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$proofmail = $row['email'];
 			}
 			if ($email == $proofmail) {
@@ -380,8 +380,8 @@ class User {
 	 */
 	public function updatePrename($user, $prename) {
 		$db = new DB();
-		$prename = mysql_real_escape_string($prename);
-		$user = mysql_real_escape_string($user);
+		$prename = $db->escape($prename);
+		$user = $db->escape($user);
 		$db->query("UPDATE `user` SET `prename`='$prename' WHERE `user`='$user'");
 		return true;
 	}
@@ -391,8 +391,8 @@ class User {
 	 */
 	public function updateName($user, $name) {
 		$db = new DB();
-		$name = mysql_real_escape_string($name);
-		$user = mysql_real_escape_string($user);
+		$name = $db->escape($name);
+		$user = $db->escape($user);
 		$db->query("UPDATE `user` SET `name`='$name' WHERE `user`='$user'");
 		return true;
 	}
@@ -402,20 +402,20 @@ class User {
 	 */
 	public function register($nickname, $password, $mail) {
 		$db = new DB();
-		$nickname = mysql_real_escape_string($nickname);
+		$nickname = $db->escape($nickname);
 		if (strlen($nickname)>=4) {
 			if ((!$db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname')"))&&(!$db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname')"))) {
-				$regdate = mysql_real_escape_string(time());
-				$hashPassword = mysql_real_escape_string($this->hashPassword($regdate, $password));
+				$regdate = $db->escape(time());
+				$hashPassword = $db->escape($this->hashPassword($regdate, $password));
 				$basic = new Basic();
-				$session = mysql_real_escape_string($basic->randomHash().$basic->randomHash());
+				$session = $db->escape($basic->randomHash().$basic->randomHash());
 				$db->query("INSERT INTO `user`(`nickname`,`password`,`postcount`,`regdate`,`sessionid`,`deleted`) VALUES('$nickname','$hashPassword','0','$regdate','$session','0')");
-				$user = mysql_real_escape_string($this->getIDbyName($nickname));
-				$confirmID = mysql_real_escape_string($basic->confirmID());
-				$mail = mysql_real_escape_string($mail);
+				$user = $db->escape($this->getIDbyName($nickname));
+				$confirmID = $db->escape($basic->confirmID());
+				$mail = $db->escape($mail);
 				$result = $db->query("SELECT `user` FROM `stdroles`");
-				while ($row = mysql_fetch_array($result)) {
-					$role = mysql_real_escape_string($row['user']);
+				while ($row = $db->fetchArray($result)) {
+					$role = $db->escape($row['user']);
 					$db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`,`primary`) VALUES('$mail','$user','0','$regdate','$confirmID','1')");
 				}
 				$mailer = new Mailer();
@@ -470,9 +470,9 @@ class User {
 		$adminRoles = $role->getAdminRoles();
 		$db = new DB();
 		foreach ($adminRoles as $adminRole) {
-			$roleID = mysql_real_escape_string($adminRole['role']);
+			$roleID = $db->escape($adminRole['role']);
 			$result = $db->query("SELECT `user` FROM `user` WHERE `role`='$roleID' AND `deleted`='0'");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				array_push($admins, $row['user']);
 			}
 		}

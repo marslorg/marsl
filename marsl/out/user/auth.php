@@ -12,14 +12,14 @@ class Authentication {
 	private function moduleRight($module, $roleID) {
 		$role = new Role();
 		$db = new DB();
-		$module = mysql_real_escape_string($module);
+		$module = $db->escape($module);
 		$rights['read'] = 0;
 		$rights['write'] = 0;
 		$rights['extended'] = 0;
 		$rights['admin'] = 0;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = mysql_real_escape_string($roleID);
+			$roleID = $db->escape($roleID);
 			if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `read`='1'")) {
 				$rights['read'] = 1;
 			}
@@ -82,15 +82,15 @@ class Authentication {
 	 */
 	private function locationRight($location, $roleID) {
 		$role = new Role();
-		$location = mysql_real_escape_string($location);
 		$db = new DB();
+		$location = $db->escape($location);
 		$rights['read'] = 0;
 		$rights['write'] = 0;
 		$rights['extended'] = 0;
 		$rights['admin'] = 0;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = mysql_real_escape_string($roleID);
+			$roleID = $db->escape($roleID);
 			if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `read`='1'")) {
 				$rights['read'] = 1;
 			}

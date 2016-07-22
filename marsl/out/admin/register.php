@@ -32,7 +32,7 @@ class RegisterUser {
 					if ($_POST['password']==$_POST['password2']) {
 						if ($basic->checkMail($_POST['email'])) {
 							if($user->register($_POST['nickname'], $_POST['password'], $_POST['email'])) {
-								$email = mysql_real_escape_string($_POST['email']);
+								$email = $db->escape($_POST['email']);
 								$db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 								$registered = true;
 								$userID = $user->getIDbyName($_POST['nickname']);
@@ -64,9 +64,9 @@ class RegisterUser {
 			$roles = array();
 			foreach ($possibleRoles as $possibleRole) {
 				if ($possibleRole!=$role->getRole()) {
-					$possibleRole = mysql_real_escape_string($possibleRole);
+					$possibleRole = $db->escape($possibleRole);
 					$result = $db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
-					while ($row = mysql_fetch_array($result)) {
+					while ($row = $db->fetchArray($result)) {
 						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 					}
 				}
