@@ -8,3 +8,4 @@ INSERT INTO `module`(`name`,`file`,`class`) VALUES('Forum','board','Board');
 INSERT INTO `module`(`name`,`file`,`class`) VALUES('C/B/V-Verzeichnis','cbe','CBE');
 INSERT INTO `module`(`name`,`file`,`class`) VALUES('Registrierung','register','Register');
 INSERT INTO `module`(`name`,`file`,`class`) VALUES('Login','login','Login');
+INSERT INTO `module`(`name`,`file`,`class`) VALUES('Newsletter','newsletter','Newsletter');

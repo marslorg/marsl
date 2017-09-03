@@ -62,63 +62,61 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				$hostname = strtolower(gethostbyaddr($_SERVER['REMOTE_ADDR']));
 				$googlebot = (substr($hostname, -10) == "google.com") || (substr($hostname, -13) == "googlebot.com");
 				?>
+				<?php
+	
+			 	// Konfiguration
+			
+			  	$m_lt_check       = "0";      # Erzeugt beim Wert 1 eine Testausgabe
+			
+			  	$m_lt_res_pre     = "";    # HTML-Code vor der Ausgabe
+			  	$m_lt_res_suf     = "";   # HTML-Code nach der Ausgabe
+			  	$m_lt_res_sep     = "<br />"; # HTML-Code zwichen den Links, falls mehr als ein Link gebucht wurde
+			
+			  	$m_lt_res_charset = "UTF-8";  # Zeichensatz
+			
+			 	// !!! Folgender Code sollte nicht geändert werden !!!
+			
+  			  	$m_lt_url='http://serv7.buywords.de/mod/linktrade/res.html?v=2&account_id=8003&domain='.$_SERVER['HTTP_HOST'].'&url='.urlencode($_SERVER['REQUEST_URI']).'&qs='.urlencode($_SERVER['QUERY_STRING']).'&ip='.$_SERVER['REMOTE_ADDR'].'&charset='.urlencode($m_lt_res_charset).'&res_check='.$m_lt_check.'&res_pre='.urlencode($m_lt_res_pre).'&res_suf='.urlencode($m_lt_res_suf).'&res_sep='.urlencode($m_lt_res_sep); $m_lt_res='';
+			  
+			  	if(function_exists('curl_init')) {
+			
+			   		$m_lt_handle=curl_init();
+			
+				   	curl_setopt($m_lt_handle,CURLOPT_URL,$m_lt_url);
+			   		curl_setopt($m_lt_handle,CURLOPT_RETURNTRANSFER,1);
+			   		curl_setopt($m_lt_handle,CURLOPT_TIMEOUT,3);
+			   		curl_setopt($m_lt_handle,CURLOPT_CONNECTTIMEOUT,3);
+			
+			   		$m_lt_res=curl_exec($m_lt_handle); curl_close($m_lt_handle);
+			
+			  	}
+			  	elseif(@ini_get('allow_url_fopen')) {
+			
+			   		$m_lt_res=@file_get_contents($m_lt_url);
+			
+			  	}
+			  
+			  	if ($googlebot) {
+					$m_lt_res = str_replace('<a', '<a rel="nofollow"', $m_lt_res);
+			  	}
+			  
+			  	$m_lt_res = str_replace('<a', '<a target="_blank"', $m_lt_res);
+			
+			  	if(strpos($m_lt_res,'<m_lt_code>')) {
+			
+			   		echo trim(str_replace('<m_lt_code>','',$m_lt_res));
+			
+			  	}
+			
+			 	//
+			
+				?>
 				<?php if (((!isset($_GET['id']))&&(!isset($_GET['scope'])))||(isset($_GET['id'])&&($_GET['id']=="178"))): ?>
 				<?php endif; ?>
 			</div>
 		</div>
 		<div class="footer">
 			<a href="http://www.music2web.de/index.php?id=469">Jobs</a> | <a href="http://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="http://www.music2web.de/index.php?id=186">Impressum</a>
-		</div>
-		<div class="advertiser">Anzeigen: 
-			<?php
-	
-			 // Konfiguration
-			
-			  $m_lt_check       = "0";      # Erzeugt beim Wert 1 eine Testausgabe
-			
-			  $m_lt_res_pre     = "";    # HTML-Code vor der Ausgabe
-			  $m_lt_res_suf     = "";   # HTML-Code nach der Ausgabe
-			  $m_lt_res_sep     = " | "; # HTML-Code zwichen den Links, falls mehr als ein Link gebucht wurde
-			
-			  $m_lt_res_charset = "UTF-8";  # Zeichensatz
-			
-			 // !!! Folgender Code sollte nicht geändert werden !!!
-			
-			  $m_lt_url='http://serv5.seomate.de/mod/linktrade/res.html?v=2&account_id=993&domain='.$_SERVER['HTTP_HOST'].'&url='.urlencode($_SERVER['REQUEST_URI']).'&qs='.urlencode($_SERVER['QUERY_STRING']).'&ip='.$_SERVER['REMOTE_ADDR'].'&charset='.urlencode($m_lt_res_charset).'&res_check='.$m_lt_check.'&res_pre='.urlencode($m_lt_res_pre).'&res_suf='.urlencode($m_lt_res_suf).'&res_sep='.urlencode($m_lt_res_sep); $m_lt_res='';
-			
-			  if(function_exists('curl_init')) {
-			
-			   $m_lt_handle=curl_init();
-			
-			   curl_setopt($m_lt_handle,CURLOPT_URL,$m_lt_url);
-			   curl_setopt($m_lt_handle,CURLOPT_RETURNTRANSFER,1);
-			   curl_setopt($m_lt_handle,CURLOPT_TIMEOUT,3);
-			   curl_setopt($m_lt_handle,CURLOPT_CONNECTTIMEOUT,3);
-			
-			   $m_lt_res=curl_exec($m_lt_handle); curl_close($m_lt_handle);
-			
-			  }
-			  elseif(@ini_get('allow_url_fopen')) {
-			
-			   $m_lt_res=@file_get_contents($m_lt_url);
-			
-			  }
-			  
-			  if ($googlebot) {
-				$m_lt_res = str_replace('<a', '<a rel="nofollow"', $m_lt_res);
-			  }
-			  
-			  $m_lt_res = str_replace('<a', '<a target="_blank"', $m_lt_res);
-			
-			  if(strpos($m_lt_res,'<m_lt_code>')) {
-			
-			   echo trim(str_replace('<m_lt_code>','',$m_lt_res));
-			
-			  }
-			
-			 //
-			
-			?>
 		</div>
 		<!-- PowerPhlogger Code START -->
 		<script language="JavaScript" type="text/javascript" src="pphlogger.js"></script>
