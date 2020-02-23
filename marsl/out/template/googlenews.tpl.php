@@ -8,12 +8,11 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		<loc><?php echo $item['link']; ?></loc>
 		<news:news>
 		<news:publication>
-			<news:name><?php echo $feedtitle; ?></news:name>
+			<news:name>Music2Web's Musikportal</news:name>
 			<news:language>de</news:language>
 		</news:publication>
-		<news:genres>PressRelease, Blog</news:genres>
 		<news:publication_date><?php echo $item['date']; ?></news:publication_date>
-		<news:title>Un<?php echo $item['title']; ?></news:title>
+		<news:title><?php echo $item['title']; ?></news:title>
 		<news:keywords>entertainment, music, celebrities, arts, lifestyle, culture</news:keywords>
 		</news:news>
 	</url>

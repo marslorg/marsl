@@ -6,10 +6,10 @@ class Configuration {
 	/***
 	 * Database variables
 	 */
-	private $dbname = "music2test";
+	private $dbname = "marsl";
 	private $dbuser = "root";
 	private $dbhost = "localhost";
-	private $dbpass = "123";
+	private $dbpass = "";
 	
 	/***
 	 * System environment
@@ -24,6 +24,12 @@ class Configuration {
 	private $author = "marsl cms";
 	private $keywords = "cms, content, management, system, blog, software, easy, to, use";
 	private $fb_comments = "";
+	private $fbAppID = "";
+	private $fbAppSecret = "";
+	private $fbPageID = "";
+	private $gpAPIKey = "";
+	private $gpPageID = "";
+	private $twitterPageID = "";
 	
 	/***
 	 * Administrative variables
@@ -70,6 +76,30 @@ class Configuration {
 	
 	public function getFBComments() {
 		return $this->fb_comments;
+	}
+	
+	public function getFBAppID() {
+		return $this->fbAppID;
+	}
+	
+	public function getFBAppSecret() {
+		return $this->fbAppSecret;
+	}
+	
+	public function getFBPageID() {
+		return $this->fbPageID;
+	}
+	
+	public function getGPAPIKey() {
+		return $this->gpAPIKey;
+	}
+	
+	public function getGPPageID() {
+		return $this->gpPageID;
+	}
+	
+	public function getTwitterPageID() {
+		return $this->twitterPageID;
 	}
 	
 	public function getDomain() {

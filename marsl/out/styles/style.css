@@ -1,9 +1,17 @@
 body {
-	min-width: 1235px;
-	background: #fafafa;
+	background: #580000;
 	margin: 0px;
 	padding: 0px;
-	padding-bottom: 8px;
+	padding-bottom: 0px;
+}
+
+.body {
+	min-width: 1007px;
+	background: #fafafa;
+	width: 50%;
+	margin-left: auto;
+	margin-right: auto;
+	overflow: hidden;
 }
 
 blockquote {
@@ -29,15 +37,19 @@ a:hover {
 	font-size: 13px;
 	margin-top: 0px;
 	border-width: 1px;
-	margin-left: 4%;
+	margin-left: 2%;
 	/* urspruenglich margin-right: 10%; */
 	float: left;
 	width: 900px;
+	display: flex;
+	flex-direction: column;
+	min-height: calc(100vh - 153px);
 }
 
 .right_box {
+	margin-top: 100px;
 	text-align: right;
-	margin-right: 2%;
+	margin-right: 1%;
 }
 
 .fb-like-box {
@@ -58,10 +70,9 @@ a:hover {
 .mainhead {
     margin: 0px;
     background: #e00000;
-    height: 90px;
+    height: 100px;
     padding: 10px;
     border: none;
-    border-bottom: 20px solid #000000;
     padding-left: 5%;
     background-image: url('../includes/graphics/header.png');
 }
@@ -77,10 +88,6 @@ a:hover {
 	height: 0px;
 	border: none;
 	visibility: hidden;
-}
-
-.menu {
-	margin-left: 2%;
 }
 
 .albumtable, .newstable {
@@ -100,7 +107,7 @@ a:hover {
 
 .newsbottom {
 	position: absolute;
-	bottom: 70px;
+	bottom: 20px;
 }
 
 .albumdescription, .newscontent {
@@ -156,12 +163,20 @@ a:hover {
 .footer {
 	font-family: Verdana, Arial, Helvetica, Sans-Serif;
 	font-size: 11px;
-	color: #e00000;
+	color: #ffffff;
+	background: #580000;
 	text-align: right;
 	position: relative;
 	clear: both;
-	margin-right: 4%;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	padding-right: 10px;
 }
+
+.footer a {
+	color: #fff;
+}
+
 .advertiser {
 	font-family: Verdana, Arial, Helvetica, Sans-Serif;
 	font-size: 11px;

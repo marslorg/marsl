@@ -9,6 +9,11 @@ way to fit your requirements.
 =================================================================== */
 /* common styling */
 
+input#menu_responsive,
+label.menu_responsive_label {
+	display: none;
+}
+
 .menu ul li a, .menu ul li a:visited {
     border: none;
 }
@@ -18,7 +23,9 @@ way to fit your requirements.
 	position:relative;
 	font-size:11px;
 	z-index:100;
-	margin-left: 4%;
+	display: flex;
+	justify-content: center;
+	background: #000;
 }
 
 .menu ul li a, .menu ul li a:visited {
@@ -41,10 +48,9 @@ way to fit your requirements.
 	margin: 0;
 	list-style: none;
 	z-index: 99;
-	width: 100%M
+	width: 100%M;
 	background: #e00000;
-	position: absolute;
-	top: -20px;
+	position: relative;
 }
 
 .menu ul li {
@@ -63,7 +69,7 @@ way to fit your requirements.
 	color: #FFFFFF;
 }
 
-.menu ul li:hover ul {
+.menu ul li.submenu:hover ul {
 	display: block;
 	position: absolute;
 	top: 20px;
@@ -105,4 +111,17 @@ way to fit your requirements.
 
 .menu ul li:hover ul li:hover ul.left {
 	left: -105px;
+}
+
+.menu ul li.submenu > a:after {
+	position: relative;
+  	float: right;
+  	content: '';
+  	margin-left: 10px;
+  	margin-right: 5px;
+  	margin-top: 7px;
+  	border-left: 5px solid transparent;
+  	border-right: 5px solid transparent;
+  	border-top: 5px solid #fff;
+  	border-bottom: 5px solid transparent;
 }
