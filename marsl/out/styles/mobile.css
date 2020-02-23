@@ -1,0 +1,100 @@
+body {
+	min-width: 100%;
+	background: #fafafa;
+	margin: 0px;
+	padding: 0px;
+	padding-bottom: 0px;
+}
+
+.body {
+	min-width: 100%;
+}
+
+.mainhead {
+	padding-left: 5px;
+	border-bottom: 0px;
+}
+
+.searchbox {
+	margin-top: 0px;
+}
+
+label.menu_responsive_label {
+	display: block;
+	background: #000;
+	cursor: pointer;
+	color: #fff;
+	font-size: 20px;
+	font-family: Verdana, Arial, Helvetica, Sans-Serif;
+	font-weight: bold;
+	padding-left: 5px;
+}
+
+label.menu_responsive_label span {
+	margin-right: 10px;
+}
+
+.menu {
+	position: absolute;
+	top: -9999px;
+	justify-content: left;
+}
+
+input#menu_responsive[type=checkbox]:checked ~ .menu {
+	position: relative;
+	top: 0;
+}
+
+.menu ul li {
+	float: none !important;
+	width: 100% !important;
+	border-bottom: none !important;
+	font-size: 15px;
+}
+
+.menu ul li a {
+	padding: 10px 20px !important;
+	font-size: 15px;
+	text-align: left;
+}
+
+.menu ul {
+	top: 0px;
+	box-shadow: 0px 1px 3px #303030;
+	position: absolute;
+}
+
+.menu ul li a, .menu ul li a:visited {
+	background: #000;
+}
+
+.menu ul li:hover a, .menu ul li:hover ul li a:hover {
+	background: #580000;
+}
+
+.menu ul li.submenu:hover ul {
+	top: 0px;
+}
+
+.menu ul li ul {
+	top: 0px;
+	margin-left: 144px;
+}
+
+.content {
+	width: initial;
+	max-width: 100%;
+}
+
+.menu ul li.submenu > a:after {
+	position: relative;
+  	float: right;
+  	content: '';
+  	margin-left: 10px;
+  	margin-right: 5px;
+  	margin-top: 7px;
+  	border-left: 5px solid #fff;
+  	border-right: 5px solid transparent;
+  	border-top: 5px solid transparent;
+  	border-bottom: 5px solid transparent;
+}
