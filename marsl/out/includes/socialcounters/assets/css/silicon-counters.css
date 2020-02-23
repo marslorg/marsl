@@ -1,0 +1,105 @@
+.silicon_counters ul li a, .silicon_counters ul li a:hover { text-decoration: none !important}
+.settings_page_silicon-counters table {
+    margin-top: 0px;
+    margin-bottom: 10px;
+    background: #eaeaea;
+    border: 10px solid #eaeaea;
+}
+.settings_page_silicon-counters table.form-table.active {
+    background: #fff;
+    border: 10px solid #fff
+}
+.settings_page_silicon-counters .wrap h2.nav-tab-wrapper, .settings_page_silicon-counters h1.nav-tab-wrapper, .settings_page_silicon-counters h3.nav-tab-wrapper {
+    border: none
+}
+.settings_page_silicon-counters .nav-tab-wrapper a {
+    margin: 0;
+    border: none !important;
+    margin-right: 5px;
+    margin-bottom: 15px;
+}
+.settings_page_silicon-counters .nav-tab-wrapper .nav-tab-active {
+    background: #fff
+}
+.settings_page_silicon-counters .notice {
+    margin: 15px 0 !important;
+    margin-top: 0px !important
+}
+.settings_page_silicon-counters .form-table th, .settings_page_silicon-counters .form-table td {
+    padding: 5px 0 !important;
+}
+.fa-silicon-settings {
+    margin-right: 15px;
+    font-size: 18px;
+    opacity: 0.2;
+    padding: 10px;
+    background: #000;
+    color: #fff
+}
+.settings_page_silicon-counters table.form-table.active .fa-silicon-settings {
+    opacity: 1
+}
+.silicon_counters:after {
+    clear: both;
+    content: '';
+    display: block;
+}
+.silicon_counters ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    clear: both;
+}
+.silicon_counters ul li {
+    text-align: center;
+    background: #f9f9f9;
+}
+.silicon_counters ul li a {
+    padding: 10px;
+}
+.silicon-counters-per-row-2 ul li {
+    width: 50%;
+    float: left;
+}
+.silicon-counters-per-row-3 ul li {
+    width: 33.333%;
+    float: left;
+}
+.silicon-counters-per-row-4 ul li {
+    width: 25%;
+    float: left;
+}
+.sc_vertical a, .sc_vertical span:not(.fa) {
+    display: block;
+    text-align: center
+}
+.sc_horizontal a {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+.sc_horizontal span {
+    margin-right: 3px;
+}
+.show-labels-No .label {
+    display: none !important;
+}
+.silicon-counters-icons-order {
+    padding: 10px;
+    background: #f6f6f6;
+}
+.silicon-counters-icons-order div {
+    background: #eaeaea;
+    display: inline-block;
+    margin-right: 5px;
+    padding: 10px;
+}
+.silicon-counters-icons-order div:hover {
+    cursor: move;
+}
+mark.yes {
+    padding: 5px;
+    background: #81d742;
+    color: #fff
+}
