@@ -16,7 +16,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		<script type="text/javascript" src="../includes/jscripts/jquery/jquery-ui.js"></script>
 		<script type="text/javascript" src="../includes/jscripts/slimbox/js/slimbox2.js"></script>
 		<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
-		<script type="text/javascript" src="../includes/jscripts/plupload/js/plupload.full.js"></script>
+		<script type="text/javascript" src="../includes/jscripts/plupload/js/plupload.full.min.js"></script>
 		<script type="text/javascript" src="../includes/jscripts/plupload/js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 		<script type="text/javascript" src="../includes/jscripts/plupload/js/i18n/de.js"></script>
 		<script type="text/javascript" src="../includes/jscripts/jcrop/jquery.Jcrop.min.js"></script>
