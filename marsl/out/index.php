@@ -7,6 +7,13 @@ include_once(dirname(__FILE__)."/includes/dbsocket.php");
 include_once(dirname(__FILE__)."/includes/config.inc.php");
 
 class Main {
+
+	private $db;
+
+	public function __construct() {
+		$this->db = new DB();
+		$this->db->connect();
+	}
 	
 	/*
 	 * Initialize the frontend screen.
@@ -17,31 +24,29 @@ class Main {
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$fbcomments = $config->getFBComments();
-		$db = new DB();
-		$db->connect();
 		
-		$basic = new Basic();
+		$basic = new Basic($this->db);
 		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$image = htmlentities($basic->getImage(), null, "ISO-8859-1");
 		$domain = $config->getDomain();
-		$navigation = new Navigation();
-		$urlloader = new URLLoader();
+		$navigation = new Navigation($this->db);
+		$urlloader = new URLLoader($this->db);
 		
 		require_once("template/index.tpl.php");
 		
-		$db->close();
+		$this->db->close();
 		
 	}
 	
 	private function displaySearchBox() {
-		$basic = new Basic();
+		$basic = new Basic($this->db);
 		$searchList = array();
 		$modules = $basic->getModules();
 		foreach ($modules as $module) {
 			$file = $module['file'];
 			$class = $module['class'];
 			include_once(dirname(__FILE__)."/modules/".$file.".php");
-			$searchClass = new $class;
+			$searchClass = new $class($this->db);
 			if ($searchClass->isSearchable()) {
 				$typeArray = $searchClass->getSearchList();
 				foreach ($typeArray as $type) {

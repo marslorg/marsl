@@ -16,8 +16,8 @@ class GoogleNews {
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
-		$auth = new Authentication();
-		$role = new Role();
+		$auth = new Authentication($db);
+		$role = new Role($db);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$feedtitle = $config->getTitle();

@@ -20,7 +20,7 @@ include_once (dirname(__FILE__)."/../../user/user.php");
 // See http://kcfinder.sunhater.com/install for setting descriptions
 $db = new DB();
 $db->connect();
-$user = new User();
+$user = new User($db);
 $admin = !$user->isAdmin();
 $db->close();
 

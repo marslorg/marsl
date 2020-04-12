@@ -5,6 +5,12 @@ include_once(dirname(__FILE__)."/htmlpurifier/library/HTMLPurifier.auto.php");
 include_once(dirname(__FILE__)."/../modules/urlloader.php");
 
 class Basic {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	/*
 	 * Cleans the HTML output of tinymce to prevent XSS attacks.
@@ -44,9 +50,8 @@ class Basic {
 	 */
 	public function getHomeLocation() {
 		$homepage = -1;
-		$db = new DB();
-		$result = $db->query("SELECT `homepage` FROM `homepage`");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `homepage` FROM `homepage`");
+		while ($row = $this->db->fetchArray($result)) {
 			$homepage = $row['homepage'];
 		}
 		return $homepage;
@@ -57,7 +62,7 @@ class Basic {
 	 */
 	public function getTitle() {
 		$config = new Configuration();
-		$urlloader = new URLLoader();
+		$urlloader = new URLLoader($this->db);
 		$title = $urlloader->getTitle();
 		if ($title!=null) {
 			return $urlloader->getTitle().$config->getTitle();
@@ -71,7 +76,7 @@ class Basic {
 	 * Gets the page corresponding thumbnail.
 	 */
 	public function getImage() {
-		$urlloader = new URLLoader();
+		$urlloader = new URLLoader($this->db);
 		return $urlloader->getImage();
 	}
 	
@@ -90,11 +95,10 @@ class Basic {
 	 * Get module information for a given unique file name.
 	 */
 	public function getModule($file) {
-		$db = new DB();
 		$module = false;
-		$file = $db->escape($file);
-		$result = $db->query("SELECT * FROM `module` WHERE `file`='$file'");
-		while ($row = $db->fetchArray($result)) {
+		$file = $this->db->escapeString($file);
+		$result = $this->db->query("SELECT * FROM `module` WHERE `file`='$file'");
+		while ($row = $this->db->fetchArray($result)) {
 			$module['name'] = $row['name'];
 			$module['class']  = $row['class'];
 			$module['file'] = $row['file'];
@@ -106,10 +110,9 @@ class Basic {
 	 * Get all modules.
 	 */
 	public function getModules() {
-		$db = new DB();
 		$modules = array();
-		$result = $db->query("SELECT * FROM `module`");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT * FROM `module`");
+		while ($row = $this->db->fetchArray($result)) {
 			array_push($modules, array('name' => $row['name'],'file' => $row['file'],'class' => $row['class']));
 		}
 		return $modules;
@@ -121,10 +124,10 @@ class Basic {
 	public function session() {
 		$db = new DB();
 		$session = $this->randomHash();
-		$session = $db->escape($session);
-		while ($db->isExisting("SELECT * FROM `user` WHERE `sessionid`='$session'")) {
+		$session = $this->db->escapeString($session);
+		while ($this->db->isExisting("SELECT * FROM `user` WHERE `sessionid`='$session'")) {
 			$session = $this->randomHash();
-			$session = $db->escape($session);
+			$session = $this->db->escapeString($session);
 		}
 		return $session;
 	}
@@ -135,10 +138,10 @@ class Basic {
 	public function confirmID() {
 		$db = new DB();
 		$confirmID = $this->randomHash();
-		$confirmID = $db->escape($confirmID);
-		while ($db->isExisting("SELECT * FROM `email` WHERE `confirm_id`='$confirmID'")) {
+		$confirmID = $this->db->escapeString($confirmID);
+		while ($this->db->isExisting("SELECT * FROM `email` WHERE `confirm_id`='$confirmID'")) {
 			$confirmID = $this->randomHash();
-			$confirmID = $db->escape($confirmID);
+			$confirmID = $this->db->escapeString($confirmID);
 		}
 		return $confirmID;
 	}
@@ -332,10 +335,9 @@ class Basic {
 	}
 	
 	public function tempFileKey() {
-		$db = new DB();
-		$tempKey = $db->escape($this->randomHash());
-		while($db->isExisting("SELECT * FROM `attachment` WHERE `temporary`='$tempKey'")) {
-			$tempKey = $db->escape($this->randomHash());
+		$tempKey = $this->db->escapeString($this->randomHash());
+		while($this->db->isExisting("SELECT * FROM `attachment` WHERE `temporary`='$tempKey'")) {
+			$tempKey = $this->db->escapeString($this->randomHash());
 		}
 		return $tempKey;
 	}

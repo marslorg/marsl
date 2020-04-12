@@ -9,28 +9,33 @@ include_once (dirname(__FILE__)."/../user/auth.php");
 
 class Tags {
 	
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+
 	public function admin() {
-		$auth = new Authentication();
-		$role = new Role();
-		$user = new User();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$user = new User($this->db);
 		if ($user->isHead()) {
 			if (isset($_GET['action'])) {
 				if ($_GET['action']=="edit") {
-					$id = $db->escape($_GET['tagid']);
+					$id = $this->db->escapeString($_GET['tagid']);
 					$this->edit($id);
 				}
 			}
 			else {
-				$db = new DB();
 				$newEntry = false;
 				$entrySuccessful = false;
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="newTag") {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$newEntry = true;
-							$entry = $db->escape($_POST['entry']);
-							if (!$db->isExisting("SELECT * FROM `general` WHERE `tag`='$entry'")) {
-								$db->query("INSERT INTO `general`(`tag`) VALUES('$entry')");
+							$entry = $this->db->escapeString($_POST['entry']);
+							if (!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$entry'")) {
+								$this->db->query("INSERT INTO `general`(`tag`) VALUES('$entry')");
 								$entrySuccessful = true;
 							}
 						}
@@ -40,9 +45,9 @@ class Tags {
 				if (isset($_GET['action2'])) {
 					if ($_GET['action2']=="delete") {
 						if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-							$tagID = $db->escape($_GET['tagid']);
-							$db->query("DELETE FROM `news_tag` WHERE `tag`='$tagID' AND `type`='general'");
-							$db->query("DELETE FROM `general` WHERE `id`='$tagID'");
+							$tagID = $this->db->escapeString($_GET['tagid']);
+							$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$tagID' AND `type`='general'");
+							$this->db->query("DELETE FROM `general` WHERE `id`='$tagID'");
 							$deletionSuccessful = true;
 						}
 					}
@@ -50,9 +55,9 @@ class Tags {
 				$authTime = time();
 				$authToken = $auth->getToken($authTime);
 				$tags = array();
-				$search = $db->escape($_GET['search']);
-				$result = $db->query("SELECT `id`, `tag` FROM `general` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
-				while ($row = $db->fetchArray($result)) {
+				$search = $this->db->escapeString($_GET['search']);
+				$result = $this->db->query("SELECT `id`, `tag` FROM `general` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
+				while ($row = $this->db->fetchArray($result)) {
 					$id = $row['id'];
 					$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 					array_push($tags, array('id'=>$id, 'tag'=>$tag));
@@ -63,14 +68,13 @@ class Tags {
 	}
 	
 	private function edit($id) {
-		$role = new Role();
-		$auth = new Authentication();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
-		$user = new User();
+		$user = new User($this->db);
 		if ($user->isHead()) {
-			$db = new DB();
-			$id = $db->escape($id);
+			$id = $this->db->escapeString($id);
 			$nameconvertion = false;
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="name") {
@@ -84,25 +88,25 @@ class Tags {
 			if ($nameconvertion) {
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if (isset($_POST['tag'])) {
-						$tag = $db->escape($_POST['tag']);
+						$tag = $this->db->escapeString($_POST['tag']);
 					}
 					if (isset($_POST['do'])) {
 						if ($_POST['do']=="autoRename") {
-							$tag = $db->escape($_POST['autoTag']);
+							$tag = $this->db->escapeString($_POST['autoTag']);
 						}
 					}
-					if (($_POST['action']=="tagExists")||$db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+					if (($_POST['action']=="tagExists")||$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
 						if ($_POST['action']=="tagExists") {
-							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
-								$result = $db->query("SELECT `id` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')");
-								while ($row = $db->fetchArray($result)) {
+							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+								$result = $this->db->query("SELECT `id` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')");
+								while ($row = $this->db->fetchArray($result)) {
 									$duplicateID = $row['id'];
-									$result2 = $db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
-									while ($row2 = $db->fetchArray($result2)) {
+									$result2 = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
+									while ($row2 = $this->db->fetchArray($result2)) {
 										$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
-										while ($db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+										while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
 											$i++;
 											$autoTag = $tag." (".$i.")";
 										}
@@ -112,50 +116,50 @@ class Tags {
 							}
 							else {
 								if ($_POST['do']=="saveDuplicate") {
-									$duplicateID = $db->escape($_POST['duplicateID']);
-									$result = $db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$duplicateID' AND `type`='general'");
-									while ($row = $db->fetchArray($result)) {
+									$duplicateID = $this->db->escapeString($_POST['duplicateID']);
+									$result = $this->db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$duplicateID' AND `type`='general'");
+									while ($row = $this->db->fetchArray($result)) {
 										$newsID = $row['news'];
-										$db->query("DELETE FROM `news_tag` WHERE `tag`='$id' AND `news`='$newsID' AND `type`='general'");
+										$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$id' AND `news`='$newsID' AND `type`='general'");
 									}
-									$db->query("UPDATE `news_tag` SET `tag`='$duplicateID' WHERE `type`='general' AND `tag`='$id'");
-									$db->query("DELETE FROM `general` WHERE `id`='$id'");
+									$this->db->query("UPDATE `news_tag` SET `tag`='$duplicateID' WHERE `type`='general' AND `tag`='$id'");
+									$this->db->query("DELETE FROM `general` WHERE `id`='$id'");
 									$id = $duplicateID;
 									require_once("template/tags.edit.success.tpl.php");
 								}
 								if ($_POST['do']=="moveToDuplicate") {
-									$targetTag = $db->escape($_POST['targetTag']);
-									$duplicateID = $db->escape($_POST['duplicateID']);
-									$result = $db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$id' AND `type`='general'");
-									while ($row = $db->fetchArray($result)) {
+									$targetTag = $this->db->escapeString($_POST['targetTag']);
+									$duplicateID = $this->db->escapeString($_POST['duplicateID']);
+									$result = $this->db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$id' AND `type`='general'");
+									while ($row = $this->db->fetchArray($result)) {
 										$newsID = $row['news'];
-										$db->query("DELETE FROM `news_tag` WHERE `tag`='$duplicateID' AND `news`='$newsID' AND `type`='general'");
+										$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$duplicateID' AND `news`='$newsID' AND `type`='general'");
 									}
-									$db->query("UPDATE `news_tag` SET `tag`='$id' WHERE `type`='general' AND `tag`='$duplicateID'");
-									$db->query("DELETE FROM `general` WHERE `id`='$duplicateID'");
-									$db->query("UPDATE `general` SET `tag`='$targetTag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `news_tag` SET `tag`='$id' WHERE `type`='general' AND `tag`='$duplicateID'");
+									$this->db->query("DELETE FROM `general` WHERE `id`='$duplicateID'");
+									$this->db->query("UPDATE `general` SET `tag`='$targetTag' WHERE `id`='$id'");
 									require_once("template/tags.edit.success.tpl.php");
 								}
 								if ($_POST['do']=="autoRename") {
-									$db->query("UPDATE `general` SET `tag`='$tag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `general` SET `tag`='$tag' WHERE `id`='$id'");
 									$this->buildEditingForm($id);
 								}
 								if ($_POST['do']=="rename") {
-									$db->query("UPDATE `general` SET `tag`='$tag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `general` SET `tag`='$tag' WHERE `id`='$id'");
 									$this->buildEditingForm($id);
 								}
 							}
 						}
 						else {
-							$result = $db->query("SELECT `id` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')");
-							while ($row = $db->fetchArray($result)) {
+							$result = $this->db->query("SELECT `id` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')");
+							while ($row = $this->db->fetchArray($result)) {
 								$duplicateID = $row['id'];
-								$result2 = $db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
-								while ($row2 = $db->fetchArray($result2)) {
+								$result2 = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
+								while ($row2 = $this->db->fetchArray($result2)) {
 									$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
-									while ($db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+									while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
 										$i++;
 										$autoTag = $tag." (".$i.")";
 									}
@@ -165,7 +169,7 @@ class Tags {
 						}
 					}
 					else {
-						$db->query("UPDATE `general` SET `tag`='$tag' WHERE `id`='$id'");
+						$this->db->query("UPDATE `general` SET `tag`='$tag' WHERE `id`='$id'");
 						require_once("template/tags.edit.success.tpl.php");
 					}
 				}
@@ -177,21 +181,20 @@ class Tags {
 	}
 	
 	private function buildEditingForm($id) {
-		$auth = new Authentication();
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
-		$db = new DB();
-		$id = $db->escape($id);
+		$id = $this->db->escapeString($id);
 		$news = array();
-		$result = $db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='general' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='general' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
+		while ($row = $this->db->fetchArray($result)) {
 			$newsID = $row['news'];
 			$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 			$title = htmlentities($row['title'], null, "ISO-8859-1");
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
-		$result = $db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
+		while ($row = $this->db->fetchArray($result)) {
 			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 			require_once("template/tags.edit.tpl.php");
 		}

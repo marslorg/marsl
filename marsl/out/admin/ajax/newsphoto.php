@@ -7,15 +7,18 @@ include_once(dirname(__FILE__)."/../../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../../includes/basic.php");
 
 class NewsPhoto {
+
+	private $db;
+
+	public function __construct() {
+		$this->db = new DB();
+		$this->db->connect();
+	}
 	
-	public function display() {
-		
-		$db = new DB();
-		$db->connect();
-		
-		$auth = new Authentication();
-		$role = new Role();
-		$user = new User();
+	public function display() {		
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$user = new User($this->db);
 		
 		if ($auth->moduleAdminAllowed("news", $role->getRole())) {
 			
@@ -38,20 +41,20 @@ class NewsPhoto {
 					if (getimagesize($fileLink)) {
 						$width = $picinfo[0];
 						$height = $picinfo[1];
-						$fileName = $db->escape($fileName);
-						$photograph = $db->escape(urldecode($_POST['photograph']));
+						$fileName = $this->db->escapeString($fileName);
+						$photograph = $this->db->escapeString(urldecode($_POST['photograph']));
 						if ($_POST['type']=="teaser") {
 							if (($width>200)||($height>200)) {
 								$this->thumb($fileLink, $fileLink, 200, 200, TRUE);
 							}
-							$db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$fileName', '$photograph')");
-							$pictureID = $db->getLastID();
+							$this->db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$fileName', '$photograph')");
+							$pictureID = $this->db->lastInsertedID();
 							$result = array('type'=>"success", 'id'=>$pictureID, 'file'=>$fileName);
 							echo json_encode($result);
 						}
 						
 						if ($_POST['type']=="text") {
-							$subtitle = $db->escape(urldecode($_POST['subtitle']));
+							$subtitle = $this->db->escapeString(urldecode($_POST['subtitle']));
 							if (($width>1280)||($height>1280)) {
 								$this->thumb($fileLink, $fileLink, 1280, 1280, TRUE);
 							}
@@ -61,8 +64,8 @@ class NewsPhoto {
 								echo json_encode($result);
 							}
 							else {
-								$db->query("INSERT INTO `news_picture`(`url`, `photograph`,`subtitle`) VALUES('$fileName', '$photograph','$subtitle')");
-								$pictureID = $db->getLastID();
+								$this->db->query("INSERT INTO `news_picture`(`url`, `photograph`,`subtitle`) VALUES('$fileName', '$photograph','$subtitle')");
+								$pictureID = $this->db->lastInsertedID();
 								$result = array('type'=>"success", 'id'=>$pictureID, 'file'=>$fileName);
 								echo json_encode($result);
 							}
@@ -84,7 +87,7 @@ class NewsPhoto {
 			
 		}
 		
-		$db->close();
+		$this->db->close();
 		
 	}
 	

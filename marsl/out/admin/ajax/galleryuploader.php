@@ -7,6 +7,13 @@ include_once(dirname(__FILE__)."/../../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../../includes/basic.php");
 
 class GalleryUploader {
+
+	private $db;
+
+	public function __construct() {
+		$this->db = new DB();
+		$this->db->connect();
+	}
 	
 	/*
 	 * The backend for the PLUploader.
@@ -14,23 +21,21 @@ class GalleryUploader {
 	public function display() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-		$db = new DB();
-		$db->connect();
 		$directory = 0;
 		$album = 0;
 		if (isset($_GET['dir'])) {
 			$directory = $_GET['dir'];
 		}
 		if (isset($_GET['id'])) {
-			$album = $db->escape($_GET['id']);
-			$result = $db->query("SELECT `folder` FROM `album` WHERE `album`='$album'");
-			while ($row = $db->fetchArray($result)) {
+			$album = $this->db->escapeString($_GET['id']);
+			$result = $this->db->query("SELECT `folder` FROM `album` WHERE `album`='$album'");
+			while ($row = $this->db->fetchArray($result)) {
 				$directory = $row['folder'];
 			}
 		}
-		$auth = new Authentication();
-		$role = new Role();
-		$basic = new Basic();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$basic = new Basic($this->db);
 		$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 		if ($moduleAdmin) {
 			$uploadResult = $this->upload();
@@ -51,7 +56,7 @@ class GalleryUploader {
 						@rmdir(ini_get("upload_tmp_dir") . $directory);
 						if (isset($_GET['id'])) {
 							$this->thumb("../../albums/".$directory."/".$fileName, "../../albums/".$directory."thumb_".$fileName, 200, 200, TRUE);
-							$db->query("INSERT INTO `picture`(`album`,`filename`,`deleted`,`visible`) VALUES('$album','$fileName','0','0')");
+							$this->db->query("INSERT INTO `picture`(`album`,`filename`,`deleted`,`visible`) VALUES('$album','$fileName','0','0')");
 						}
 					}
 					else {
@@ -62,7 +67,7 @@ class GalleryUploader {
 			}
 			echo json_encode($uploadResult);
 		}
-		$db->close();
+		$this->db->close();
 	}
 	
 	/**
@@ -74,15 +79,14 @@ class GalleryUploader {
 	 * Contributing: http://www.plupload.com/contributing
 	 */
 	private function upload() {
-		$db = new DB();
 		$directory = 0;
 		if (isset($_GET['dir'])) {
 			$directory = $_GET['dir'];
 		}
 		if (isset($_GET['id'])) {
-			$album = $db->escape($_GET['id']);
-			$result = $db->query("SELECT `folder` FROM `album` WHERE `album`='$album'");
-			while ($row = $db->fetchArray($result)) {
+			$album = $this->db->escapeString($_GET['id']);
+			$result = $this->db->query("SELECT `folder` FROM `album` WHERE `album`='$album'");
+			while ($row = $this->db->fetchArray($result)) {
 				$directory = $row['folder'];
 			}
 		}

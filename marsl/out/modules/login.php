@@ -7,11 +7,17 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 
 class Login implements Module {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	public function display() {
-		$user = new User();
-		$auth = new Authentication();
-		$role = new Role();
+		$user = new User($this->db);
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
 		$location = "";
 		if (isset($_GET['id'])) {
 			$location = $_GET['id'];
@@ -132,7 +138,7 @@ class Login implements Module {
 			$init = false;
 			$success = true;
 			$recover = true;
-			$basic = new Basic();
+			$basic = new Basic($this->db);
 			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 			require_once("template/recover.tpl.php");
 		}
@@ -142,7 +148,7 @@ class Login implements Module {
 					$time = $_GET['time'];
 					if ($time+172800 >= time()) {
 						$uid = $_GET['uid'];
-						$user = new User();
+						$user = new User($this->db);
 						$password = $user->getPassbyID($uid);
 						$auth_code = md5("admin".$uid.$time.$password);
 						$auth = $_GET['auth'];
@@ -186,7 +192,7 @@ class Login implements Module {
 			$location = $basic->getHomeLocation();
 		}
 		
-		$basic = new Basic();
+		$basic = new Basic($this->db);
 		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$time = $_GET['time'];
 		$recover = false;
@@ -202,7 +208,7 @@ class Login implements Module {
 		}
 		if ($time+172800 >= time()) {
 			$uid = $_GET['uid'];
-			$user = new User();
+			$user = new User($this->db);
 			$password = $user->getPassbyID($uid);
 			$auth_code = md5("admin".$uid.$time.$password);
 			$auth = $_GET['auth'];

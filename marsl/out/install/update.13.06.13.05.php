@@ -21,7 +21,7 @@ class Install {
 		
 		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('Registrierung','register','Register')");
 		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('Login','login','Login');");
-		$role = new Role();
+		$role = new Role($db);
 		
 		$roleID = $role->getIDbyName("root");
 		$role->setModuleRights($roleID, "register", "1", "1", "1", "1");

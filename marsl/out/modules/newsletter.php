@@ -7,6 +7,13 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/module.php");
 
 class Newsletter implements Module {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+
 	/*
 	 * Initiate the module's frontend view.
 	 */
@@ -18,12 +25,11 @@ class Newsletter implements Module {
 	 * Initiate the module's admin view.
 	 */
 	public function admin() {
-		$db = new DB();
-		$auth = new Authentication();
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
-		$role = new Role();
-		$basic = new Basic();
+		$role = new Role($this->db);
+		$basic = new Basic($this->db);
 		
 		if ($auth->moduleAdminAllowed("newsletter", $role->getRole()) && $auth->moduleExtendedAllowed("newsletter", $role->getRole())) {
 		
