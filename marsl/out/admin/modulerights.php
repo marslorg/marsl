@@ -9,21 +9,25 @@ include_once (dirname(__FILE__)."/../user/auth.php");
 
 class ModuleRights {
 	
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+
 	/*
 	 * The dialog to set up and change the module rights.
 	 */
 	public function admin() {
-		$user = new User();
-		$basic = new Basic();
-		$role = new Role();
-		$auth = new Authentication();
+		$user = new User($this->db);
+		$basic = new Basic($this->db);
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		if ($user->isAdmin()) {
-			$db = new DB();
-			$auth = new Authentication();
 			if (!isset($_GET['action'])) {
 				$modules = array();
-				$result = $db->query("SELECT * FROM `module`");
-				while ($row = $db->fetchArray($result)) {
+				$result = $this->db->query("SELECT * FROM `module`");
+				while ($row = $this->db->fetchArray($result)) {
 					if ($auth->moduleAdminAllowed($row['file'], $role->getRole())&&$auth->moduleExtendedAllowed($row['file'], $role->getRole())
 					&&$auth->moduleWriteAllowed($row['file'], $role->getRole())&&$auth->moduleReadAllowed($row['file'], $role->getRole())) {
 						array_push($modules,array('file'=>$row['file'],'name'=>$row['name']));
@@ -33,7 +37,7 @@ class ModuleRights {
 			}
 			else if ($_GET['action']=="role") {
 				$module = $basic->getModule($_GET['module']);
-				$moduleID = $db->escape($module['file']);
+				$moduleID = $this->db->escapeString($module['file']);
 				$name = htmlentities($module['name'], null, "ISO-8859-1");
 				if ($auth->moduleAdminAllowed($moduleID, $role->getRole())&&$auth->moduleExtendedAllowed($moduleID, $role->getRole())
 				&&$auth->moduleWriteAllowed($moduleID, $role->getRole())&&$auth->moduleReadAllowed($moduleID, $role->getRole())) {
@@ -54,10 +58,10 @@ class ModuleRights {
 					$rights = array();
 					foreach ($roles as $roleID) {
 						if ($roleID!=$role->getRole()) {
-							$roleID = $db->escape($roleID);
-							if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'")) {
-								$result = $db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
-								while ($row = $db->fetchArray($result)) {
+							$roleID = $this->db->escapeString($roleID);
+							if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'")) {
+								$result = $this->db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
+								while ($row = $this->db->fetchArray($result)) {
 									$roleName = htmlentities($role->getNamebyID($row['role']), null, "ISO-8859-1");
 									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}

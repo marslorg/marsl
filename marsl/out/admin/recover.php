@@ -9,6 +9,12 @@ include_once (dirname(__FILE__)."/../includes/basic.php");
  */
 class Recover {
 	
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+
 	/*
 	 * Loads the initial password/user recovery dialog or the further steps.
 	 */
@@ -17,7 +23,7 @@ class Recover {
 			$init = false;
 			$success = true;
 			$recover = true;
-			$basic = new Basic();
+			$basic = new Basic($this->db);
 			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 			require_once("template/recover.tpl.php");
 		}
@@ -27,7 +33,7 @@ class Recover {
 					$time = $_GET['time'];
 					if ($time+172800 >= time()) {
 						$uid = $_GET['uid'];
-						$user = new User();
+						$user = new User($this->db);
 						$password = $user->getPassbyID($uid);
 						$auth_code = md5("admin".$uid.$time.$password);
 						$auth = $_GET['auth'];
@@ -65,7 +71,7 @@ class Recover {
 	 * Loads the box to set a new password.
 	 */
 	private function recoverBox() {
-		$basic = new Basic();
+		$basic = new Basic($this->db);
 		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$time = $_GET['time'];
 		$recover = false;
@@ -81,7 +87,7 @@ class Recover {
 		}
 		if ($time+172800 >= time()) {
 			$uid = $_GET['uid'];
-			$user = new User();
+			$user = new User($this->db);
 			$password = $user->getPassbyID($uid);
 			$auth_code = md5("admin".$uid.$time.$password);
 			$auth = $_GET['auth'];

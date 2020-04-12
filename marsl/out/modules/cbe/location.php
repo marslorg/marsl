@@ -7,25 +7,30 @@ include_once(dirname(__FILE__)."/../../user/user.php");
 include_once(dirname(__FILE__)."/../../user/role.php");
 
 class Location {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	public function display() {
 		
 	}
 	
 	public function admin() {
-		$role = new Role();
-		$auth = new Authentication();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
-			$db = new DB();
 			$newEntry = false;
 			$entrySuccessful = false;
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="newClub") {
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$newEntry = true;
-						$entry = $db->escape($_POST['entry']);
-						if (!$db->isExisting("SELECT * FROM `location` WHERE `tag`='$entry'")) {
-							$db->query("INSERT INTO `location`(`tag`) VALUES('$entry')");
+						$entry = $this->db->escapeString($_POST['entry']);
+						if (!$this->db->isExisting("SELECT * FROM `location` WHERE `tag`='$entry'")) {
+							$this->db->query("INSERT INTO `location`(`tag`) VALUES('$entry')");
 							$entrySuccessful = true;
 						}
 					}
@@ -35,9 +40,9 @@ class Location {
 			if (isset($_GET['action2'])) {
 				if ($_GET['action2']=="delete") {
 					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-						$clubID = $db->escape($_GET['club']);
-						$db->query("DELETE FROM `news_tag` WHERE `tag`='$clubID' AND `type`='cbe_location'");
-						$db->query("DELETE FROM `location` WHERE `id`='$clubID'");
+						$clubID = $this->db->escapeString($_GET['club']);
+						$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$clubID' AND `type`='cbe_location'");
+						$this->db->query("DELETE FROM `location` WHERE `id`='$clubID'");
 						$deletionSuccessful = true;
 					}
 				}
@@ -45,9 +50,9 @@ class Location {
 			$authTime = time();
 			$authToken = $auth->getToken($authTime);
 			$clubs = array();
-			$search = $db->escape($_GET['search']);
-			$result = $db->query("SELECT `id`, `tag` FROM `location` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
-			while ($row = $db->fetchArray($result)) {
+			$search = $this->db->escapeString($_GET['search']);
+			$result = $this->db->query("SELECT `id`, `tag` FROM `location` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
+			while ($row = $this->db->fetchArray($result)) {
 				$id = $row['id'];
 				$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 				array_push($clubs, array('id'=>$id, 'tag'=>$tag));
@@ -57,13 +62,12 @@ class Location {
 	}
 	
 	public function edit($id) {
-		$role = new Role();
-		$auth = new Authentication();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
 		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
-			$db = new DB();
-			$id = $db->escape($id);
+			$id = $this->db->escapeString($id);
 			$nameconvertion = false;
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="name") {
@@ -77,25 +81,25 @@ class Location {
 			if ($nameconvertion) {
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if (isset($_POST['tag'])) {
-						$tag = $db->escape($_POST['tag']);
+						$tag = $this->db->escapeString($_POST['tag']);
 					}
 					if (isset($_POST['do'])) {
 						if ($_POST['do']=="autoRename") {
-							$tag = $db->escape($_POST['autoTag']);
+							$tag = $this->db->escapeString($_POST['autoTag']);
 						}
 					}
-					if (($_POST['action']=="tagExists")||$db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+					if (($_POST['action']=="tagExists")||$this->db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
 						if ($_POST['action']=="tagExists") {
-							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
-								$result = $db->query("SELECT `id` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')");
-								while ($row = $db->fetchArray($result)) {
+							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$this->db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+								$result = $this->db->query("SELECT `id` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')");
+								while ($row = $this->db->fetchArray($result)) {
 									$duplicateID = $row['id'];
-									$result2 = $db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
-									while ($row2 = $db->fetchArray($result2)) {
+									$result2 = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
+									while ($row2 = $this->db->fetchArray($result2)) {
 										$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
-										while ($db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+										while ($this->db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
 											$i++;
 											$autoTag = $tag." (".$i.")";
 										}
@@ -105,50 +109,50 @@ class Location {
 							}
 							else {
 								if ($_POST['do']=="saveDuplicate") {
-									$duplicateID = $db->escape($_POST['duplicateID']);
-									$result = $db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$duplicateID' AND `type`='cbe_location'");
-									while ($row = $db->fetchArray($result)) {
+									$duplicateID = $this->db->escapeString($_POST['duplicateID']);
+									$result = $this->db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$duplicateID' AND `type`='cbe_location'");
+									while ($row = $this->db->fetchArray($result)) {
 										$newsID = $row['news'];
-										$db->query("DELETE FROM `news_tag` WHERE `tag`='$id' AND `news`='$newsID' AND `type`='cbe_location'");
+										$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$id' AND `news`='$newsID' AND `type`='cbe_location'");
 									}
-									$db->query("UPDATE `news_tag` SET `tag`='$duplicateID' WHERE `type`='cbe_location' AND `tag`='$id'");
-									$db->query("DELETE FROM `location` WHERE `id`='$id'");
+									$this->db->query("UPDATE `news_tag` SET `tag`='$duplicateID' WHERE `type`='cbe_location' AND `tag`='$id'");
+									$this->db->query("DELETE FROM `location` WHERE `id`='$id'");
 									$id = $duplicateID;
 									require_once("template/cbe.clubs.edit.success.tpl.php");
 								}
 								if ($_POST['do']=="moveToDuplicate") {
-									$targetTag = $db->escape($_POST['targetTag']);
-									$duplicateID = $db->escape($_POST['duplicateID']);
-									$result = $db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$id' AND `type`='cbe_location'");
-									while ($row = $db->fetchArray($result)) {
+									$targetTag = $this->db->escapeString($_POST['targetTag']);
+									$duplicateID = $this->db->escapeString($_POST['duplicateID']);
+									$result = $this->db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$id' AND `type`='cbe_location'");
+									while ($row = $this->db->fetchArray($result)) {
 										$newsID = $row['news'];
-										$db->query("DELETE FROM `news_tag` WHERE `tag`='$duplicateID' AND `news`='$newsID' AND `type`='cbe_location'");
+										$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$duplicateID' AND `news`='$newsID' AND `type`='cbe_location'");
 									}
-									$db->query("UPDATE `news_tag` SET `tag`='$id' WHERE `type`='cbe_location' AND `tag`='$duplicateID'");
-									$db->query("DELETE FROM `location` WHERE `id`='$duplicateID'");
-									$db->query("UPDATE `location` SET `tag`='$targetTag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `news_tag` SET `tag`='$id' WHERE `type`='cbe_location' AND `tag`='$duplicateID'");
+									$this->db->query("DELETE FROM `location` WHERE `id`='$duplicateID'");
+									$this->db->query("UPDATE `location` SET `tag`='$targetTag' WHERE `id`='$id'");
 									require_once("template/cbe.clubs.edit.success.tpl.php");
 								}
 								if ($_POST['do']=="autoRename") {
-									$db->query("UPDATE `location` SET `tag`='$tag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `location` SET `tag`='$tag' WHERE `id`='$id'");
 									$this->buildEditingForm($id);
 								}
 								if ($_POST['do']=="rename") {
-									$db->query("UPDATE `location` SET `tag`='$tag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `location` SET `tag`='$tag' WHERE `id`='$id'");
 									$this->buildEditingForm($id);
 								}
 							}
 						}
 						else {
-							$result = $db->query("SELECT `id` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')");
-							while ($row = $db->fetchArray($result)) {
+							$result = $this->db->query("SELECT `id` FROM `location` WHERE `tag`='$tag' AND NOT(`id`='$id')");
+							while ($row = $this->db->fetchArray($result)) {
 								$duplicateID = $row['id'];
-								$result2 = $db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
-								while ($row2 = $db->fetchArray($result2)) {
+								$result2 = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
+								while ($row2 = $this->db->fetchArray($result2)) {
 									$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
-									while ($db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+									while ($this->db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
 										$i++;
 										$autoTag = $tag." (".$i.")";
 									}
@@ -158,7 +162,7 @@ class Location {
 						}
 					}
 					else {
-						$db->query("UPDATE `location` SET `tag`='$tag' WHERE `id`='$id'");
+						$this->db->query("UPDATE `location` SET `tag`='$tag' WHERE `id`='$id'");
 						require_once("template/cbe.clubs.edit.success.tpl.php");
 					}
 				}
@@ -167,15 +171,15 @@ class Location {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="send") {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$basic = new Basic();
-							$street = $db->escape($_POST['street']);
-							$number = $db->escape($_POST['number']);
-							$zip = $db->escape($_POST['zip']);
-							$city = $db->escape($_POST['city']);
-							$country = $db->escape($_POST['country']);
-							$capacity = $db->escape($_POST['capacity']);
-							$info = $db->escape($basic->cleanHTML($_POST['info']));
-							$db->query("UPDATE `location` SET `street`='$street', `number`='$number', `zip`='$zip', `city`='$city', `country`='$country', `capacity`='$capacity', `info`='$info' WHERE `id`='$id'");
+							$basic = new Basic($this->db);
+							$street = $this->db->escapeString($_POST['street']);
+							$number = $this->db->escapeString($_POST['number']);
+							$zip = $this->db->escapeString($_POST['zip']);
+							$city = $this->db->escapeString($_POST['city']);
+							$country = $this->db->escapeString($_POST['country']);
+							$capacity = $this->db->escapeString($_POST['capacity']);
+							$info = $this->db->escapeString($basic->cleanHTML($_POST['info']));
+							$this->db->query("UPDATE `location` SET `street`='$street', `number`='$number', `zip`='$zip', `city`='$city', `country`='$country', `capacity`='$capacity', `info`='$info' WHERE `id`='$id'");
 						}
 					}
 				}
@@ -185,21 +189,20 @@ class Location {
 	}
 	
 	private function buildEditingForm($id) {
-		$auth = new Authentication();
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
-		$db = new DB();
-		$id = $db->escape($id);
+		$id = $this->db->escapeString($id);
 		$news = array();
-		$result = $db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_location' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_location' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
+		while ($row = $this->db->fetchArray($result)) {
 			$newsID = $row['news'];
 			$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 			$title = htmlentities($row['title'], null, "ISO-8859-1");
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
-		$result = $db->query("SELECT `tag`, `street`, `number`, `zip`, `city`, `country`, `capacity`, `info` FROM `location` WHERE `id`='$id'");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `tag`, `street`, `number`, `zip`, `city`, `country`, `capacity`, `info` FROM `location` WHERE `id`='$id'");
+		while ($row = $this->db->fetchArray($result)) {
 			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 			$street = htmlentities($row['street'], null, "ISO-8859-1");
 			$number = htmlentities($row['number'], null, "ISO-8859-1");

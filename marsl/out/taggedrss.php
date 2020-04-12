@@ -17,8 +17,8 @@ class RSS {
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
-		$auth = new Authentication();
-		$role = new Role();
+		$auth = new Authentication($db);
+		$role = new Role($db);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$feedtitle = $config->getTitle()." - RSS Feed";
@@ -38,8 +38,8 @@ class RSS {
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$date = date("D, d M Y H:i:s O", $row['postdate']);
 				
-				$picID1 = $db->escape($row['picture1']);
-				$picID2 = $db->escape($row['picture2']);
+				$picID1 = $db->escapeString($row['picture1']);
+				$picID2 = $db->escapeString($row['picture2']);
 				$teaserPicture = "empty";
 				$newsPicture = "empty";
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID1'");
@@ -51,12 +51,12 @@ class RSS {
 					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				
-				$basic = new Basic();
+				$basic = new Basic($db);
 				$modules = $basic->getModules();
 				$moduleTags = array();
 				foreach ($modules as $module) {
 					include_once(dirname(__FILE__)."/modules/".$module['file'].".php");
-					$class = new $module['class'];
+					$class = new $module['class']($db);
 					if ($class->isTaggable()) {
 						$tagList = $class->getTagList();
 						foreach($tagList as $tagType) {

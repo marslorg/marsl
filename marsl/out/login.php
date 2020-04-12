@@ -9,14 +9,14 @@ class Login {
 	/*
 	 * Login a normal user.
 	 */
-	public function Login() {
+	public function __construct() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();
 		$db->connect();
-		$user = new User();
+		$user = new User($db);
 		if (isset($_SERVER['HTTP_REFERER'])) {
 			$rightpw = $user->login($_POST['nickname'], $_POST['password']);
 			$db->close();

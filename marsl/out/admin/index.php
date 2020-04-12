@@ -17,6 +17,13 @@ include_once(dirname(__FILE__)."/../includes/config.inc.php");
 class Main {
 	
 	private $var;
+
+	private $db;
+
+	public function __construct() {
+		$this->db = new DB();
+		$this->db->connect();
+	}
 	
 	/*
 	 * Loader for the configuration file and the right timezone.
@@ -26,8 +33,6 @@ class Main {
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
-		$db = new DB();
-		$db->connect();
 	}
 	
 	/*
@@ -36,12 +41,11 @@ class Main {
 	 */
 	public function admin() {
 		
-		$user = new User();
-		$basic = new Basic();
-		$urlloader = new URLLoader();
-		$auth = new Authentication();
-		$db = new DB();
-		$role = new Role();
+		$user = new User($this->db);
+		$basic = new Basic($this->db);
+		$urlloader = new URLLoader($this->db);
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
 		$roleID = $role->getRole();
 		
 		$headAdmin = $user->isHead();
@@ -62,7 +66,7 @@ class Main {
 				if ($basic->getModule($_GET['module'])!=false) {
 					$array = $basic->getModule($_GET['module']);
 					include_once(dirname(__FILE__)."/../modules/".$array['file'].".php");
-					$content = new $array['class'];
+					$content = new $array['class']($this->db);
 				}
 				else {
 					include_once(dirname(__FILE__)."/admin.php");
@@ -71,25 +75,25 @@ class Main {
 			}
 			else if ($this->var == "urlloader") {
 				if ($auth->moduleAdminAllowed("urlloader", $roleID)) {
-					$content = new URLLoader();
+					$content = new URLLoader($this->db);
 				}
 			}
 			else if ($this->var == "standards") {
 				if ($headAdmin) {
-					$content = new Standard();
+					$content = new Standard($this->db);
 				}
 			}
 			else if ($this->var == "modulerights") {
-				$content = new ModuleRights();
+				$content = new ModuleRights($this->db);
 			}
 			else if ($this->var == "role") {
-				$content = new RoleAdmin();
+				$content = new RoleAdmin($this->db);
 			}
 			else if ($this->var =="register") {
-				$content = new RegisterUser();
+				$content = new RegisterUser($this->db);
 			}
 			else if ($this->var=="tags") {
-				$content = new Tags();
+				$content = new Tags($this->db);
 			}
 			else {
 				include_once(dirname(__FILE__)."/admin.php");
@@ -104,7 +108,7 @@ class Main {
 				if ($_GET['var']=="forgot") {
 					if (isset($_GET['action'])) {
 						if ($_GET['action']=="recover") {
-							$recover = new Recover();
+							$recover = new Recover($this->db);
 							$recover->admin();
 						}
 						else {
@@ -163,7 +167,7 @@ class Main {
 			$userID = $user->getID();
 			require_once ("template/index.tpl.php");
 		}
-		$db->close();
+		$this->db->close();
 	}
 }
 

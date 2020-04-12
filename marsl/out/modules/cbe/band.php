@@ -7,25 +7,30 @@ include_once(dirname(__FILE__)."/../../user/user.php");
 include_once(dirname(__FILE__)."/../../user/role.php");
 
 class Band {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	public function display() {
 		
 	}
 	
 	public function admin() {
-		$role = new Role();
-		$auth = new Authentication();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
-			$db = new DB();
 			$newEntry = false;
 			$entrySuccessful = false;
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="newBand") {
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$newEntry = true;
-						$entry = $db->escape($_POST['entry']);
-						if (!$db->isExisting("SELECT * FROM `band` WHERE `tag`='$entry'")) {
-							$db->query("INSERT INTO `band`(`tag`) VALUES('$entry')");
+						$entry = $this->db->escapeString($_POST['entry']);
+						if (!$this->db->isExisting("SELECT * FROM `band` WHERE `tag`='$entry'")) {
+							$this->db->query("INSERT INTO `band`(`tag`) VALUES('$entry')");
 							$entrySuccessful = true;
 						}
 					}
@@ -35,9 +40,9 @@ class Band {
 			if (isset($_GET['action2'])) {
 				if ($_GET['action2']=="delete") {
 					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-						$bandID = $db->escape($_GET['band']);
-						$db->query("DELETE FROM `news_tag` WHERE `tag`='$bandID' AND `type`='cbe_band'");
-						$db->query("DELETE FROM `band` WHERE `id`='$bandID'");
+						$bandID = $this->db->escapeString($_GET['band']);
+						$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$bandID' AND `type`='cbe_band'");
+						$this->db->query("DELETE FROM `band` WHERE `id`='$bandID'");
 						$deletionSuccessful = true;
 					}
 				}
@@ -45,9 +50,9 @@ class Band {
 			$authTime = time();
 			$authToken = $auth->getToken($authTime);
 			$bands = array();
-			$search = $db->escape($_GET['search']);
-			$result = $db->query("SELECT `id`, `tag` FROM `band` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
-			while ($row = $db->fetchArray($result)) {
+			$search = $this->db->escapeString($_GET['search']);
+			$result = $this->db->query("SELECT `id`, `tag` FROM `band` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
+			while ($row = $this->db->fetchArray($result)) {
 				$id = $row['id'];
 				$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 				array_push($bands, array('id'=>$id, 'tag'=>$tag));
@@ -57,13 +62,12 @@ class Band {
 	}
 	
 	public function edit($id) {
-		$role = new Role();
-		$auth = new Authentication();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
 		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
-			$db = new DB();
-			$id = $db->escape($id);
+			$id = $this->db->escapeString($id);
 			$nameconvertion = false;
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="name") {
@@ -77,25 +81,25 @@ class Band {
 			if ($nameconvertion) {
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if (isset($_POST['tag'])) {
-						$tag = $db->escape($_POST['tag']);
+						$tag = $this->db->escapeString($_POST['tag']);
 					}
 					if (isset($_POST['do'])) {
 						if ($_POST['do']=="autoRename") {
-							$tag = $db->escape($_POST['autoTag']);
+							$tag = $this->db->escapeString($_POST['autoTag']);
 						}
 					}
-					if (($_POST['action']=="tagExists")||$db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+					if (($_POST['action']=="tagExists")||$this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
 						if ($_POST['action']=="tagExists") {
-							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
-								$result = $db->query("SELECT `id` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')");
-								while ($row = $db->fetchArray($result)) {
+							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+								$result = $this->db->query("SELECT `id` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')");
+								while ($row = $this->db->fetchArray($result)) {
 									$duplicateID = $row['id'];
-									$result2 = $db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
-									while ($row2 = $db->fetchArray($result2)) {
+									$result2 = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
+									while ($row2 = $this->db->fetchArray($result2)) {
 										$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
-										while ($db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+										while ($this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
 											$i++;
 											$autoTag = $tag." (".$i.")";
 										}
@@ -105,50 +109,50 @@ class Band {
 							}
 							else {
 								if ($_POST['do']=="saveDuplicate") {
-									$duplicateID = $db->escape($_POST['duplicateID']);
-									$result = $db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$duplicateID' AND `type`='cbe_band'");
-									while ($row = $db->fetchArray($result)) {
+									$duplicateID = $this->db->escapeString($_POST['duplicateID']);
+									$result = $this->db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$duplicateID' AND `type`='cbe_band'");
+									while ($row = $this->db->fetchArray($result)) {
 										$newsID = $row['news'];
-										$db->query("DELETE FROM `news_tag` WHERE `tag`='$id' AND `news`='$newsID' AND `type`='cbe_band'");
+										$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$id' AND `news`='$newsID' AND `type`='cbe_band'");
 									}
-									$db->query("UPDATE `news_tag` SET `tag`='$duplicateID' WHERE `type`='cbe_band' AND `tag`='$id'");
-									$db->query("DELETE FROM `band` WHERE `id`='$id'");
+									$this->db->query("UPDATE `news_tag` SET `tag`='$duplicateID' WHERE `type`='cbe_band' AND `tag`='$id'");
+									$this->db->query("DELETE FROM `band` WHERE `id`='$id'");
 									$id = $duplicateID;
 									require_once("template/cbe.bands.edit.success.tpl.php");
 								}
 								if ($_POST['do']=="moveToDuplicate") {
-									$targetTag = $db->escape($_POST['targetTag']);
-									$duplicateID = $db->escape($_POST['duplicateID']);
-									$result = $db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$id' AND `type`='cbe_band'");
-									while ($row = $db->fetchArray($result)) {
+									$targetTag = $this->db->escapeString($_POST['targetTag']);
+									$duplicateID = $this->db->escapeString($_POST['duplicateID']);
+									$result = $this->db->query("SELECT `news` FROM `news_tag` WHERE `tag`='$id' AND `type`='cbe_band'");
+									while ($row = $this->db->fetchArray($result)) {
 										$newsID = $row['news'];
-										$db->query("DELETE FROM `news_tag` WHERE `tag`='$duplicateID' AND `news`='$newsID' AND `type`='cbe_band'");
+										$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$duplicateID' AND `news`='$newsID' AND `type`='cbe_band'");
 									}
-									$db->query("UPDATE `news_tag` SET `tag`='$id' WHERE `type`='cbe_band' AND `tag`='$duplicateID'");
-									$db->query("DELETE FROM `band` WHERE `id`='$duplicateID'");
-									$db->query("UPDATE `band` SET `tag`='$targetTag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `news_tag` SET `tag`='$id' WHERE `type`='cbe_band' AND `tag`='$duplicateID'");
+									$this->db->query("DELETE FROM `band` WHERE `id`='$duplicateID'");
+									$this->db->query("UPDATE `band` SET `tag`='$targetTag' WHERE `id`='$id'");
 									require_once("template/cbe.bands.edit.success.tpl.php");
 								}
 								if ($_POST['do']=="autoRename") {
-									$db->query("UPDATE `band` SET `tag`='$tag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `band` SET `tag`='$tag' WHERE `id`='$id'");
 									$this->buildEditingForm($id);
 								}
 								if ($_POST['do']=="rename") {
-									$db->query("UPDATE `band` SET `tag`='$tag' WHERE `id`='$id'");
+									$this->db->query("UPDATE `band` SET `tag`='$tag' WHERE `id`='$id'");
 									$this->buildEditingForm($id);
 								}
 							}
 						}
 						else {
-							$result = $db->query("SELECT `id` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')");
-							while ($row = $db->fetchArray($result)) {
+							$result = $this->db->query("SELECT `id` FROM `band` WHERE `tag`='$tag' AND NOT(`id`='$id')");
+							while ($row = $this->db->fetchArray($result)) {
 								$duplicateID = $row['id'];
-								$result2 = $db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
-								while ($row2 = $db->fetchArray($result2)) {
+								$result2 = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
+								while ($row2 = $this->db->fetchArray($result2)) {
 									$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
-									while ($db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+									while ($this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
 										$i++;
 										$autoTag = $tag." (".$i.")";
 									}
@@ -158,7 +162,7 @@ class Band {
 						}
 					}
 					else {
-						$db->query("UPDATE `band` SET `tag`='$tag' WHERE `id`='$id'");
+						$this->db->query("UPDATE `band` SET `tag`='$tag' WHERE `id`='$id'");
 						require_once("template/cbe.bands.edit.success.tpl.php");
 					}
 				}
@@ -167,11 +171,11 @@ class Band {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="send") {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$basic = new Basic();
-							$founded = $db->escape($_POST['founded']);
-							$ended = $db->escape($_POST['ended']);
-							$info = $db->escape($basic->cleanHTML($_POST['info']));
-							$db->query("UPDATE `band` SET `founded`='$founded', `ended`='$ended', `info`='$info' WHERE `id`='$id'");
+							$basic = new Basic($this->db);
+							$founded = $this->db->escapeString($_POST['founded']);
+							$ended = $this->db->escapeString($_POST['ended']);
+							$info = $this->db->escapeString($basic->cleanHTML($_POST['info']));
+							$this->db->query("UPDATE `band` SET `founded`='$founded', `ended`='$ended', `info`='$info' WHERE `id`='$id'");
 						}
 					}
 				}
@@ -181,21 +185,20 @@ class Band {
 	}
 	
 	private function buildEditingForm($id) {
-		$auth = new Authentication();
+		$auth = new Authentication($this->db);
 		$authTime = time();
 		$authToken = $auth->getToken($authTime);
-		$db = new DB();
-		$id = $db->escape($id);
+		$id = $this->db->escapeString($id);
 		$news = array();
-		$result = $db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_band' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_band' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
+		while ($row = $this->db->fetchArray($result)) {
 			$newsID = $row['news'];
 			$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 			$title = htmlentities($row['title'], null, "ISO-8859-1");
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
-		$result = $db->query("SELECT `tag`, `founded`, `ended`, `info` FROM `band` WHERE `id`='$id'");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `tag`, `founded`, `ended`, `info` FROM `band` WHERE `id`='$id'");
+		while ($row = $this->db->fetchArray($result)) {
 			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 			$founded = htmlentities($row['founded'], null, "ISO-8859-1");
 			$ended = htmlentities($row['ended'], null, "ISO-8859-1");

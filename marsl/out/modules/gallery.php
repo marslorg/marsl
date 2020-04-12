@@ -9,16 +9,21 @@ include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/module.php");
 
 class Gallery implements Module {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	/*
 	 * Administrator interface for the gallery.
 	 */
 	public function admin() {
-		$user = new User();
-		$db = new DB();
-		$role = new Role();
+		$user = new User($this->db);
+		$role = new Role($this->db);
 		if ($user->isAdmin()) {
-			$auth = new Authentication();
+			$auth = new Authentication($this->db);
 			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 			$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
 			if ($moduleAdmin) {
@@ -70,12 +75,11 @@ class Gallery implements Module {
 	 * Will be called from the admin interface.
 	 */
 	private function albums() {
-		$user = new User();
-		$db = new DB();
-		$role = new Role();
-		$navigation = new Navigation();
+		$user = new User($this->db);
+		$role = new Role($this->db);
+		$navigation = new Navigation($this->db);
 		if ($user->isAdmin()) {
-			$auth = new Authentication();
+			$auth = new Authentication($this->db);
 			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 			$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
 			if ($moduleAdmin) {
@@ -83,14 +87,14 @@ class Gallery implements Module {
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
 				}
-				$result = $db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0'");
-				$pages = $db->getCount($result)/10;
+				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0'");
+				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
 				$galleries = array();
-				$start = $db->escape($start);
-				$result = $db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' ORDER BY `album` DESC LIMIT $start,$end");
-				while ($row = $db->fetchArray($result)) {
+				$start = $this->db->escapeString($start);
+				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' ORDER BY `album` DESC LIMIT $start,$end");
+				while ($row = $this->db->fetchArray($result)) {
 					$id = htmlentities($row['album'], null, "ISO-8859-1");
 					$author = $row['author'];
 					$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
@@ -116,16 +120,15 @@ class Gallery implements Module {
 	 * E.g. deleting uploaded pictures.
 	 */
 	private function details() {
-		$db = new DB();
-		$role = new Role();
-		$auth = new Authentication();
-		$album = $db->escape($_GET['id']);
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
+		$album = $this->db->escapeString($_GET['id']);
 		$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 		$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
 		$locationRead = false;
 		$locationAdmin = false;
-		$result = $db->query("SELECT `location` FROM `album` WHERE `album`='$album'");
-		while ($row = $db->fetchArray($result)) {
+		$result = $this->db->query("SELECT `location` FROM `album` WHERE `album`='$album'");
+		while ($row = $this->db->fetchArray($result)) {
 			$locationRead = $auth->locationReadAllowed($row['location'], $role->getRole());
 			$locationAdmin = $auth->locationAdminAllowed($row['location'], $role->getRole());
 		}
@@ -133,14 +136,14 @@ class Gallery implements Module {
 		if (isset($_POST['action'])&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 			if ($_POST['action']=="send") {
 				if ($moduleExtended&&$moduleAdmin&&$locationAdmin) {
-					$result = $db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0'");
-					while ($row = $db->fetchArray($result)) {
-						$picture = $db->escape($row['picture']);
+					$result = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0'");
+					while ($row = $this->db->fetchArray($result)) {
+						$picture = $this->db->escapeString($row['picture']);
 						if (isset($_POST[$picture.'_delete'])) {
-							$db->query("UPDATE `picture` SET `deleted`='1' WHERE `picture`='$picture'");
+							$this->db->query("UPDATE `picture` SET `deleted`='1' WHERE `picture`='$picture'");
 						}
 						if (isset($_POST[$picture.'_submit'])) {
-							$db->query("UPDATE `picture` SET `visible`='1' WHERE `picture`='$picture'");
+							$this->db->query("UPDATE `picture` SET `visible`='1' WHERE `picture`='$picture'");
 						}
 					}
 				}
@@ -149,8 +152,8 @@ class Gallery implements Module {
 		
 		if ($locationRead) {
 			$pictures = array();
-			$result = $db->query("SELECT `picture`.`visible` AS `visibility`, `folder`, `picture`, `subtitle`, `filename` FROM `picture` JOIN `album` USING(`album`) WHERE `album`='$album' AND `picture`.`deleted`='0' ORDER BY `filename`");
-			while ($row = $db->fetchArray($result)) {
+			$result = $this->db->query("SELECT `picture`.`visible` AS `visibility`, `folder`, `picture`, `subtitle`, `filename` FROM `picture` JOIN `album` USING(`album`) WHERE `album`='$album' AND `picture`.`deleted`='0' ORDER BY `filename`");
+			while ($row = $this->db->fetchArray($result)) {
 				$picture = htmlentities($row['picture'], null, "ISO-8859-1");
 				$subtitle = htmlentities($row['subtitle'], null, "ISO-8859-1");
 				$filename = htmlentities($row['filename'], null, "ISO-8859-1");
@@ -173,13 +176,12 @@ class Gallery implements Module {
 	 * Shows the add photo dialog.
 	 */
 	private function addPhoto() {
-		$db = new DB();
-		$role = new Role();
-		$auth = new Authentication();
-		$album = $db->escape($_GET['id']);
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
+		$album = $this->db->escapeString($_GET['id']);
 		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())&&$auth->moduleAdminAllowed("gallery", $role->getRole())) {
-			$result = $db->query("SELECT * FROM `album` WHERE `album`='$album' AND `deleted`='0'");
-			while ($row = $db->fetchArray($result)) {
+			$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album' AND `deleted`='0'");
+			while ($row = $this->db->fetchArray($result)) {
 				$location = $row['location'];
 				if ($auth->locationAdminAllowed($location, $role->getRole())) {
 					$album = htmlentities($row['album'], null, "ISO-8859-1");
@@ -193,29 +195,28 @@ class Gallery implements Module {
 	 * Changes the meta-information of an album.
 	 */
 	private function edit() {
-		$db = new DB();
-		$role = new Role();
-		$auth = new Authentication();
-		$album = $db->escape($_GET['id']);
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
+		$album = $this->db->escapeString($_GET['id']);
 		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send") {
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-						$result = $db->query("SELECT * FROM `album` WHERE `album`='$album'");
-						while ($row = $db->fetchArray($result)) {
+						$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album'");
+						while ($row = $this->db->fetchArray($result)) {
 							$category = $row['location'];
 							if ($auth->locationAdminAllowed($category, $role->getRole())&&$auth->locationAdminAllowed($_POST['category'], $role->getRole())) {
-								$photograph = $db->escape($_POST['photograph']);
-								$category = $db->escape($_POST['category']);
+								$photograph = $this->db->escapeString($_POST['photograph']);
+								$category = $this->db->escapeString($_POST['category']);
 								if (checkdate($_POST['month'], $_POST['day'], $_POST['year'])) {
 									$date = mktime(0,0,0,$_POST['month'],$_POST['day'],$_POST['year']);
 								}
 								else {
 									$date = time();
 								}
-								$basic = new Basic();
-								$description = $db->escape($basic->cleanHTML($_POST['description']));
-								$db->query("UPDATE `album` SET `photograph`='$photograph', `location`='$category', `date`='$date', `description`='$description' WHERE `album`='$album'");
+								$basic = new Basic($this->db);
+								$description = $this->db->escapeString($basic->cleanHTML($_POST['description']));
+								$this->db->query("UPDATE `album` SET `photograph`='$photograph', `location`='$category', `date`='$date', `description`='$description' WHERE `album`='$album'");
 							}
 						}
 						
@@ -223,14 +224,14 @@ class Gallery implements Module {
 				}
 			}
 			$locations = array();
-			$result = $db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
-			while ($row = $db->fetchArray($result)) {
+			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
+			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 				}
 			}
-			$result = $db->query("SELECT * FROM `album` WHERE `album`='$album'");
-			while ($row = $db->fetchArray($result)) {
+			$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album'");
+			while ($row = $this->db->fetchArray($result)) {
 				$category = $row['location'];
 				if ($auth->locationAdminAllowed($category, $role->getRole())) {
 					$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
@@ -254,24 +255,23 @@ class Gallery implements Module {
 	 */
 	private function doThings() {
 		if (isset($_GET['do'])) {
-			$user = new User();
+			$user = new User($this->db);
 			if ($user->isAdmin()) {
-				$db = new DB();
-				$role = new Role();
-				$auth = new Authentication();
+				$role = new Role($this->db);
+				$auth = new Authentication($this->db);
 				$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 				$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
 				if ($_GET['do']=="submit") {
 					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 						if ($moduleExtended&&$moduleAdmin) {
-							$id = $db->escape($_GET['id']);
-							$result = $db->query("SELECT * FROM `album` WHERE `album`='$id'");
-							while ($row = $db->fetchArray($result)) {
+							$id = $this->db->escapeString($_GET['id']);
+							$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$id'");
+							while ($row = $this->db->fetchArray($result)) {
 								if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-									$admin = $db->escape($user->getID());
-									$adminIP = $db->escape($_SERVER['REMOTE_ADDR']);
-									$db->query("UPDATE `album` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `album`='$id'");
-									$db->query("UPDATE `picture` SET `visible`='1' WHERE `album`='$id'");
+									$admin = $this->db->escapeString($user->getID());
+									$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
+									$this->db->query("UPDATE `album` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `album`='$id'");
+									$this->db->query("UPDATE `picture` SET `visible`='1' WHERE `album`='$id'");
 								}
 							}
 						}
@@ -280,12 +280,12 @@ class Gallery implements Module {
 				if ($_GET['do']=="del") {
 					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 						if ($moduleExtended&&$moduleAdmin) {
-							$id = $db->escape($_GET['id']);
-							$result = $db->query("SELECT * FROM `album` WHERE `album`='$id'");
-							while ($row = $db->fetchArray($result)) {
+							$id = $this->db->escapeString($_GET['id']);
+							$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$id'");
+							while ($row = $this->db->fetchArray($result)) {
 								if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-									$db->query("UPDATE `album` SET `deleted`='1' WHERE `album`='$id'");
-									$db->query("UPDATE `picture` SET `deleted`='1' WHERE `album`='$id'");
+									$this->db->query("UPDATE `album` SET `deleted`='1' WHERE `album`='$id'");
+									$this->db->query("UPDATE `picture` SET `deleted`='1' WHERE `album`='$id'");
 								}
 							}
 						}
@@ -299,18 +299,17 @@ class Gallery implements Module {
 	 * Shows all unreleased albums.
 	 */
 	private function queue() {
-		$user = new User();
-		$db = new DB();
-		$role = new Role();
-		$navigation = new Navigation();
+		$user = new User($this->db);
+		$role = new Role($this->db);
+		$navigation = new Navigation($this->db);
 		if ($user->isAdmin()) {
-			$auth = new Authentication();
+			$auth = new Authentication($this->db);
 			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 			$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
 			if ($moduleAdmin&&$moduleExtended) {
 				$galleries = array();
-				$result = $db->query("SELECT * FROM `album` WHERE `visible`='0' AND `deleted`='0'");
-				while ($row = $db->fetchArray($result)) {
+				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='0' AND `deleted`='0'");
+				while ($row = $this->db->fetchArray($result)) {
 					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 						$id = htmlentities($row['album'], null, "ISO-8859-1");
 						$author = $row['author'];
@@ -339,15 +338,14 @@ class Gallery implements Module {
 		if (isset($_GET['success'])) {
 			$success = $_GET['success'];
 		}
-		$db = new DB();
-		$role = new Role();
-		$auth = new Authentication();
-		$basic = new Basic();
-		$user = new User();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
+		$basic = new Basic($this->db);
+		$user = new User($this->db);
 		if ($auth->moduleAdminAllowed("gallery", $role->getRole())) {
 			$locations = array();
-			$result = $db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
-			while ($row = $db->fetchArray($result)) {
+			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
+			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
 					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"), 'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 				}
@@ -375,13 +373,12 @@ class Gallery implements Module {
 	 * Shows the FTP dialog.
 	 */
 	private function ftp() {
-		$db = new DB();
-		$role = new Role();
-		$auth = new Authentication();
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
 		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())) {
 			$locations = array();
-			$result = $db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
-			while ($row = $db->fetchArray($result)) {
+			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
+			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
 					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 				}
@@ -396,43 +393,42 @@ class Gallery implements Module {
 	 * Shows the frontend of the gallery.
 	 */
 	public function display() {
-		$auth = new Authentication();
-		$basic = new Basic();
-		$db = new DB();
-		$role = new Role();
+		$auth = new Authentication($this->db);
+		$basic = new Basic($this->db);
+		$role = new Role($this->db);
 		if ($auth->moduleReadAllowed("gallery", $role->getRole())) {
 			if (!isset($_GET['action'])) {
 				$location = "";
 				if (isset($_GET['id'])) {
-					$location = $db->escape($_GET['id']);
+					$location = $this->db->escapeString($_GET['id']);
 				}
 				else {
-					$location = $db->escape($basic->getHomeLocation());
+					$location = $this->db->escapeString($basic->getHomeLocation());
 				}
-				$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
-				while ($row = $db->fetchArray($result)) {
-					$location = $db->escape($row['maps_to']);
+				$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
+				while ($row = $this->db->fetchArray($result)) {
+					$location = $this->db->escapeString($row['maps_to']);
 				}
 				$page = 1;
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
 				}
-				$location = $db->escape($location);
-				$result = $db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
-				$pages = $db->getCount($result)/10;
+				$location = $this->db->escapeString($location);
+				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
+				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
-				$start = $db->escape($start);
+				$start = $this->db->escapeString($start);
 				$galleries = array();
-				$result = $db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `album` DESC LIMIT $start,$end");
-				while ($row = $db->fetchArray($result)) {
-					$album = $db->escape($row['album']);
+				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `album` DESC LIMIT $start,$end");
+				while ($row = $this->db->fetchArray($result)) {
+					$album = $this->db->escapeString($row['album']);
 					$folder = htmlentities($row['folder'], null, "ISO-8859-1");
 					$photograph = $row['photograph'];
 					$date = date("d\.m\.Y", $row['date']);
 					$description = $row['description'];
-					$result2 = $db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY RAND() LIMIT 1");
-					while ($row2 = $db->fetchArray($result2)) {
+					$result2 = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY RAND() LIMIT 1");
+					while ($row2 = $this->db->fetchArray($result2)) {
 						$file = htmlentities($row2['filename'], null, "ISO-8859-1");
 						$picture = "albums/".$folder."thumb_".$file;
 						$picSize = getimagesize($picture);
@@ -443,19 +439,19 @@ class Gallery implements Module {
 			}
 			else {
 				if ($_GET['action']=="thumb") {
-					$location = $db->escape($_GET['id']);
-					$result = $db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
-					while ($row = $db->fetchArray($result)) {
-						$location = $db->escape($row['maps_to']);
+					$location = $this->db->escapeString($_GET['id']);
+					$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
+					while ($row = $this->db->fetchArray($result)) {
+						$location = $this->db->escapeString($row['maps_to']);
 					}
-					$album = $db->escape($_GET['show']);
+					$album = $this->db->escapeString($_GET['show']);
 					$pictures = array();
-					$result = $db->query("SELECT * FROM `album` WHERE `album`='$album' AND `location`='$location' AND `visible`='1' AND `deleted`='0'");
-					while ($row = $db->fetchArray($result)) {
+					$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album' AND `location`='$location' AND `visible`='1' AND `deleted`='0'");
+					while ($row = $this->db->fetchArray($result)) {
 						$folder = htmlentities($row['folder'], null, "ISO-8859-1");
 						$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
-						$result2 = $db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY `filename`");
-						while ($row2 = $db->fetchArray($result2)) {
+						$result2 = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY `filename`");
+						while ($row2 = $this->db->fetchArray($result2)) {
 							$file = htmlentities($row2['filename'], null, "ISO-8859-1");
 							$id = htmlentities($row2['picture'], null, "ISO-8859-1");
 							$thumb = "albums/".$folder."thumb_".$file;
