@@ -5,29 +5,35 @@ include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
 
 class Mailer {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+
 	public function sendConfirmationMail($userID, $mail) {
-		$db = new DB();
 		$config = new Configuration();
-		$user = new User();
+		$user = new User($this->db);
 		$nickname = $user->getNickbyId($userID);
-		$userID = mysql_real_escape_string($userID);
-		$mail = mysql_real_escape_string($mail);
-		$result = $db->query("SELECT `confirm_id` FROM `email` WHERE `confirmed`='0' AND `user`='$userID' AND `email`='$mail'");
-		while ($row = mysql_fetch_array($result)) {
+		$userID = $this->db->escapeString($userID);
+		$mail = $this->db->escapeString($mail);
+		$result = $this->db->query("SELECT `confirm_id` FROM `email` WHERE `confirmed`='0' AND `user`='$userID' AND `email`='$mail'");
+		while ($row = $this->db->fetchArray($result)) {
 			$confirm_id = $row['confirm_id'];
 			$link = $config->getDomain()."/confirm.php?mail=".$mail."&code=".$confirm_id;
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";
 			$msg .= "du hast auf ".$config->getTitle()." eine neue E-Mail-Adresse eingetragen.\n";
 			$msg .= "Es ist jetzt noch ein Schritt, damit diese verwendet werden kann.\n";
-			$msg .= "Bitte klicke auf den Link unten, um zu zeigen, dass die E-Mail-Adresse wirklich dir gehört.\n";
+			$msg .= "Bitte klicke auf den Link unten, um zu zeigen, dass die E-Mail-Adresse wirklich dir gehï¿½rt.\n";
 			$msg .= "\n";
 			$msg .= $link."\n";
 			$msg .= "\n";
-			$msg .= "Falls du mit dieser E-Mail nichts anfangen kannst, lösch sie einfach. Du wirst keine weitere Post mehr von uns bekommen.\n";
+			$msg .= "Falls du mit dieser E-Mail nichts anfangen kannst, lï¿½sch sie einfach. Du wirst keine weitere Post mehr von uns bekommen.\n";
 			$msg .= "\n";
 			$msg .= "Dein ".$config->getTitle()."-Team";
-			mail($mail, "Bestätige deine E-Mail-Adresse", $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
+			mail($mail, "Bestï¿½tige deine E-Mail-Adresse", $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 		}
 	}
 	
@@ -35,14 +41,14 @@ class Mailer {
 	 * Send a mail when a new news article was posted to the news correcture system.
 	 */
 	public function sendNewArticleMail($userID) {
-		$user = new User();
+		$user = new User($this->db);
 		$config = new Configuration();
 		$mail = $user->getMailbyID($userID);
 		$nickname = $user->getNickbyID($userID);
 		$link = $config->getDomain()."/admin/index.php?var=module&module=news&action=queue";
 		$msg = "Hallo ".$nickname.",\n";
 		$msg .= "\n";
-		$msg .= "es wurde eine neue Nachricht ins System eingestellt. Da Du einer unserer Lektoren bist wurdest du ausgewählt diese Nachricht freizuschalten.\n";
+		$msg .= "es wurde eine neue Nachricht ins System eingestellt. Da Du einer unserer Lektoren bist wurdest du ausgewï¿½hlt diese Nachricht freizuschalten.\n";
 		$msg .= "Bitte logg dich ins Administrationssystem ein und besuche folgende Seite: ".$link."\n";
 		$msg .= "\n";
 		$msg .= "Bitte lies den Artikel gegen und schalte ihn ggf. frei. Sollten noch andere Artikel vorhanden sein, lies diese bitte auch gegen und schalte sie ggf. frei.\n";
@@ -55,7 +61,7 @@ class Mailer {
 	 * Send out a password reset mail.
 	 */
 	public function sendPasswordMail($page, $nickname) {
-		$user = new User();
+		$user = new User($this->db);
 		$id = $user->getIDbyName($nickname);
 		$mail = $user->getMailbyID($id);
 		if (!empty($id)&&!empty($mail)) {
@@ -74,19 +80,19 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= "diese E-Mail bekommst du, weil du dein Passwort auf ".$config->getTitle()." angefordert hast.\n";
 			$msg .= "\n";
-			$msg .= "Aus Sicherheitsgründen speichern wir die Passwörter nur mit einer Einweg-Verschlüsselung ab. Du kannst aber ein neues Passwort setzen, um dich wieder einloggen zu können.\n";
+			$msg .= "Aus Sicherheitsgrï¿½nden speichern wir die Passwï¿½rter nur mit einer Einweg-Verschlï¿½sselung ab. Du kannst aber ein neues Passwort setzen, um dich wieder einloggen zu kï¿½nnen.\n";
 			$msg .= "\n";
 			$msg .= "Klicke auf folgenden Link um dein Passwort neu zu setzen: ".$link."\n";
 			$msg .= "\n";
-			$msg .= "Der Link ist 48 Stunden lang gültig. Sollte der Link nicht funktionieren, kopiere ihn bitte in deinen Browser.\n";
+			$msg .= "Der Link ist 48 Stunden lang gï¿½ltig. Sollte der Link nicht funktionieren, kopiere ihn bitte in deinen Browser.\n";
 			$msg .= "\n";
-			$msg .= "Wir wünschen dir noch viel Spaß auf unserer Internetseite.\n";
+			$msg .= "Wir wï¿½nschen dir noch viel Spaï¿½ auf unserer Internetseite.\n";
 			$msg .= "Dein ".$config->getTitle()."-Team";
 			$msg .= "\n";
 			$msg .= "\n";
 			$msg .= "--\n";
-			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
-			$msg .= "Sollte dir die E-Mail fälschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kümmern uns dann um den Fehler.";
+			$msg .= "Um zum gï¿½ltigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
+			$msg .= "Sollte dir die E-Mail fï¿½lschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kï¿½mmern uns dann um den Fehler.";
 			mail($mail, "Erinnerungsmail: Dein Passwort bei ".$config->getTitle(), $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 			return true;
 		}
@@ -99,7 +105,7 @@ class Mailer {
 	 * Send out a mail with the user name.
 	 */
 	public function sendNicknameMail($mail) {
-		$user = new User();
+		$user = new User($this->db);
 		$nickname = $user->getNickbyMail($mail);
 		if (!empty($nickname)) {
 			$config = new Configuration();
@@ -109,13 +115,13 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= "Dein Benutzername lautet ".$nickname.".\n";
 			$msg .= "\n";
-			$msg .= "Wir wünschen dir noch viel Spaß auf unserer Internetseite.\n";
+			$msg .= "Wir wï¿½nschen dir noch viel Spaï¿½ auf unserer Internetseite.\n";
 			$msg .= "Dein ".$config->getTitle()."-Team";
 			$msg .= "\n";
 			$msg .= "\n";
 			$msg .= "--\n";
-			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
-			$msg .= "Sollte dir die E-Mail fälschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kümmern uns dann um den Fehler.";
+			$msg .= "Um zum gï¿½ltigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
+			$msg .= "Sollte dir die E-Mail fï¿½lschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kï¿½mmern uns dann um den Fehler.";
 			mail($mail, "Erinnerungsmail: Dein Benutzername bei ".$config->getTitle(), $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 			return true;
 		}

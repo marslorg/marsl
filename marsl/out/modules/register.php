@@ -10,14 +10,19 @@ include_once(dirname(__FILE__)."/../includes/recaptcha.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 
 class Register implements Module {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	public function display() {
-		$db = new DB();
-		$auth = new Authentication();
-		$role = new Role();
-		$user = new User();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$user = new User($this->db);
 		$recaptcha = new Recaptcha();
-		$basic = new Basic();
+		$basic = new Basic($this->db);
 		$location = "";
 		if (isset($_GET['id'])) {
 			$location = $_GET['id'];
@@ -39,13 +44,13 @@ class Register implements Module {
 					if (isset($_POST['action'])) {
 						if ($_POST['action']=="send") {
 							if ($recaptcha->checkRecaptcha()) {
-								$mail = mysql_real_escape_string($_POST['mail']);
-								$mail2 = mysql_real_escape_string($_POST['mail2']);
+								$mail = $this->db->escapeString($_POST['mail']);
+								$mail2 = $this->db->escapeString($_POST['mail2']);
 								if (($mail==$mail2)&&($basic->checkMail($mail))) {
-									$password = mysql_real_escape_string($_POST['password']);
-									$password2 = mysql_real_escape_string($_POST['password2']);
+									$password = $this->db->escapeString($_POST['password']);
+									$password2 = $this->db->escapeString($_POST['password2']);
 									if ($password==$password2) {
-										$nickname = mysql_real_escape_string($_POST['nickname']);
+										$nickname = $this->db->escapeString($_POST['nickname']);
 										if ($user->register($nickname, $password, $mail)) {
 											$success = true;
 										}
@@ -84,31 +89,30 @@ class Register implements Module {
 	}
 	
 	public function admin() {
-		$db = new DB();
-		$auth = new Authentication();
-		$role = new Role();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
 		if ($auth->moduleAdminAllowed("register", $role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send"&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-					$newID = mysql_real_escape_string($_POST['location']);
-					if ($db->isExisting("SELECT `id` FROM `registration_tos`")) {
-						$db->query("UPDATE `registration_tos` SET `id`='$newID'");
+					$newID = $this->db->escapeString($_POST['location']);
+					if ($this->db->isExisting("SELECT `id` FROM `registration_tos`")) {
+						$this->db->query("UPDATE `registration_tos` SET `id`='$newID'");
 					}
 					else {
-						$db->query("INSERT INTO `registration_tos`(`id`) VALUES('$newID')");
+						$this->db->query("INSERT INTO `registration_tos`(`id`) VALUES('$newID')");
 					}
 				}
 			}
 			$id = "";
-			$result = $db->query("SELECT `id` FROM `registration_tos`");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `id` FROM `registration_tos`");
+			while ($row = $this->db->fetchArray($result)) {
 				$id = $row['id'];
 			}
 			
 			$links = array();
 			
-			$result = $db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='1' OR `type`='2'");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='1' OR `type`='2'");
+			while ($row = $this->db->fetchArray($result)) {
 				$guestRole = $role->getGuestRole();
 				$location = $row['id'];
 				if ($auth->locationReadAllowed($location, $guestRole)) {

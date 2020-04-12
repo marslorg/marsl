@@ -18,7 +18,7 @@ class Install {
 		
 		}
 		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('C/B/V-Verzeichnis','cbe','CBE')");
-		$role = new Role();
+		$role = new Role($db);
 		
 		$roleID = $role->getIDbyName("root");
 		$role->setModuleRights($roleID, "cbe", "1", "1", "1", "1");

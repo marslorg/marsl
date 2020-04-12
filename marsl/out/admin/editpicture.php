@@ -8,34 +8,39 @@ include_once(dirname(__FILE__)."/../includes/basic.php");
 
 class EditPicture {
 	
+	private $db;
+
+	public function __construct() {
+		$this->db = new DB();
+		$this->db->connect();
+	}
+
 	/*
 	 * Runs the edit picture dialog for changing the subtitles of a gallery picture.
 	 */
 	public function admin() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-		$db = new DB();
-		$db->connect();
-		$user = new User();
-		$auth = new Authentication();
-		$role = new Role();
-		$basic = new Basic();
+		$user = new User($this->db);
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$basic = new Basic($this->db);
 		$title = $basic->getTitle();
 		$new = true;
 		if ($user->isAdmin()&&$auth->moduleAdminAllowed("gallery", $role->getRole())&&$auth->moduleExtendedAllowed("gallery", $role->getRole())) {
-			$picture = mysql_real_escape_string($_GET['id']);
+			$picture = $this->db->escapeString($_GET['id']);
 			if (isset($_POST['action'])) {
 				$new = false;
 				if ($_POST['action']=="send"&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-					$result = $db->query("SELECT `location` FROM `picture` JOIN `album` USING(`album`) WHERE `picture`='$picture'");
-					while ($row = mysql_fetch_array($result)) {
-						$subtitle = mysql_real_escape_string($basic->cleanHTML($_POST['subtitle']));
-						$db->query("UPDATE `picture` SET `subtitle`='$subtitle' WHERE `picture`='$picture'");
+					$result = $this->db->query("SELECT `location` FROM `picture` JOIN `album` USING(`album`) WHERE `picture`='$picture'");
+					while ($row = $this->db->fetchArray($result)) {
+						$subtitle = $this->db->escapeString($basic->cleanHTML($_POST['subtitle']));
+						$this->db->query("UPDATE `picture` SET `subtitle`='$subtitle' WHERE `picture`='$picture'");
 					}
 				}
 			}
-			$result = $db->query("SELECT `subtitle`, `location`, `folder`, `filename`, `picture` FROM `picture` JOIN `album` USING(`album`) WHERE `picture`='$picture'");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `subtitle`, `location`, `folder`, `filename`, `picture` FROM `picture` JOIN `album` USING(`album`) WHERE `picture`='$picture'");
+			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 					$subtitle = $row['subtitle'];
 					$path = "../albums/".htmlentities($row['folder'], null, "ISO-8859-1").htmlentities($row['filename'], null, "ISO-8859-1");
@@ -47,7 +52,7 @@ class EditPicture {
 			}
 						
 		}
-		$db->close();
+		$this->db->close();
 	}
 }
 

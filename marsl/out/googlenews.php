@@ -16,8 +16,8 @@ class GoogleNews {
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
-		$auth = new Authentication();
-		$role = new Role();
+		$auth = new Authentication($db);
+		$role = new Role($db);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$feedtitle = $config->getTitle();
@@ -28,7 +28,7 @@ class GoogleNews {
 					JOIN `rights` ON (`rights`.`location` = `news`.`location`)
 					JOIN `stdroles` ON (`rights`.`role` = `stdroles`.`guest`)
 					WHERE `rights`.`read` = '1' AND `news`.`deleted` = '0' AND `news`.`visible` = '1' ORDER BY `postdate` DESC LIMIT 0,1000");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$domain = $config->getDomain();
 				$location = htmlentities($row['location'], null, "ISO-8859-1");
 				$news = htmlentities($row['news'], null, "ISO-8859-1");

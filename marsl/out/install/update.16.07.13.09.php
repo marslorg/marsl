@@ -19,7 +19,7 @@ class Install {
 		$db->query("INSERT INTO `newsletter_configuration`(`allow_anon_registration`) VALUES('1')");
 		$db->query("INSERT INTO `module`(`name`,`file`,`class`) VALUES('Newsletter','newsletter','Newsletter')");
 		
-		$role = new Role();
+		$role = new Role($db);
 		
 		$roleID = $role->getIDbyName("root");
 		$role->setModuleRights($roleID, "newsletter", "1", "1", "1", "1");

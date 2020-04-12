@@ -10,17 +10,17 @@ class Forgot {
 	/*
 	 * Initialize the mailer for the administrative password recovery function.
 	 */
-	public function Forgot() {
+	public function __construct() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();
 		$db->connect();
-		$user = new User();
+		$user = new User($db);
 		if ($user->isGuest()) {
 			if (isset($_POST['action'])) {
-				$mailer = new Mailer();
+				$mailer = new Mailer($db);
 				if ($_POST['action']=="password") {
 					if (!empty($_POST['nickname'])) {
 						if($mailer->sendPasswordMail("admin", $_POST['nickname'])) {

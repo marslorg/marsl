@@ -34,15 +34,15 @@ class Install {
 			$statement = strtok(";");
 		}
 		
-		$role = new Role();
+		$role = new Role($db);
 		
 		$role->createRole("root");
 		
 		$roleID = $role->getIDbyName("root");
 		
 		$result = $db->query("SELECT `file` FROM `module`");
-		while ($row = mysql_fetch_array($result)) {
-			$module = mysql_real_escape_string($row['file']);
+		while ($row = $db->fetchArray($result)) {
+			$module = $db->escapeString($row['file']);
 			$role->setModuleRights($roleID, $module, "1", "1", "1", "1");
 		}
 		
@@ -56,6 +56,6 @@ $install->startInstall();
 ?>
 </font>
 <br>
-<a href="root.php">Nächster Schritt</a>
+<a href="root.php">Nï¿½chster Schritt</a>
 </body>
 </html>

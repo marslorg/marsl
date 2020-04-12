@@ -8,27 +8,33 @@ include_once(dirname(__FILE__)."/../../user/role.php");
 include_once(dirname(__FILE__)."/../../user/user.php");
 
 class FileUploader {
+
+	private $db;
+
+	public function __construct() {
+		$this->db = new DB();
+		$this->db->connect();
+	}
+
 	public function display() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-		$db = new DB();
-		$db->connect();
 		
-		$auth = new Authentication();
-		$role = new Role();
-		$user = new User();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$user = new User($this->db);
 		
 		$authToken = $_GET['token'];
 		$authTime = $_GET['time'];
 		
 		if ($auth->checkToken($authTime, $authToken)) {
 			if (!$user->isGuest()) {
-				$directory = mysql_real_escape_string($_GET['temporary']);
+				$directory = $this->db->escapeString($_GET['temporary']);
 				
 				$uploadResult = $this->upload();
 				
 				if (isset($uploadResult['filename'])) {
-					$fileName = mysql_real_escape_string($uploadResult['filename']);
+					$fileName = $this->db->escapeString($uploadResult['filename']);
 					$filePath = ini_get("upload_tmp_dir") . $directory . DIRECTORY_SEPARATOR . $fileName;
 					if (file_exists($filePath)) {
 						$fileContent = file_get_contents($filePath);
@@ -39,14 +45,14 @@ class FileUploader {
 						file_put_contents("../../files/".$newFile, $cryptedContent);
 						@unlink($filePath);
 						@rmdir(ini_get("upload_tmp_dir") . $directory);
-						$db->query("INSERT INTO `attachment`(`servername`, `realname`, `key`, `temporary`) VALUES('$newFile', '$fileName', '$key', '$directory')");
+						$this->db->query("INSERT INTO `attachment`(`servername`, `realname`, `key`, `temporary`) VALUES('$newFile', '$fileName', '$key', '$directory')");
 					}
 				}
 				echo json_encode($uploadResult);
 			}
 		}
 		
-		$db->close();
+		$this->db->close();
 	}
 	
 	/**
@@ -58,7 +64,6 @@ class FileUploader {
 	 * Contributing: http://www.plupload.com/contributing
 	 */
 	private function upload() {
-		$db = new DB();
 		$directory = $_GET['temporary'];
 		// Settings
 		$targetDir = ini_get("upload_tmp_dir") . $directory;
@@ -188,21 +193,19 @@ class FileUploader {
 	}
 	
 	private function generateFileName() {
-		$db = new DB();
-		$basic = new Basic();
-		$filename = mysql_real_escape_string($basic->randomHash());
-		while ($db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename'")) {
-			$filename = mysql_real_escape_string($basic->randomHash());
+		$basic = new Basic($this->db);
+		$filename = $this->db->escapeString($basic->randomHash());
+		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename'")) {
+			$filename = $this->db->escapeString($basic->randomHash());
 		}
 		return $filename;
 	}
 	
 	private function generateKey() {
-		$db = new DB();
-		$basic = new Basic();
-		$key = mysql_real_escape_string($basic->randomHash());
-		while ($db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key'")) {
-			$key = mysql_real_escape_string($basic->randomHash());
+		$basic = new Basic($this->db);
+		$key = $this->db->escapeString($basic->randomHash());
+		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key'")) {
+			$key = $this->db->escapeString($basic->randomHash());
 		}
 		return $key;
 	}

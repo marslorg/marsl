@@ -12,12 +12,14 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 
 class Root {
+
+	private $db;
 	
-	public function Root() {
+	public function __construct() {
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
-		$db = new DB();
-		$db->connect();
+		$this->db = new DB();
+		$this->db->connect();
 	}
 	
 	public function makeRoot() {
@@ -25,23 +27,22 @@ class Root {
 			if ($_POST['action'] == "send") {
 				if (!empty($_POST['password'])) {
 					if ($_POST['password']!=$_POST['proof']) {
-						echo "Die Passwörter stimmen nicht überein.<br><br>";
+						echo "Die Passwï¿½rter stimmen nicht ï¿½berein.<br><br>";
 					}
 					else {
-						$basic = new Basic();
+						$basic = new Basic($this->db);
 						if ($basic->checkMail($_POST['email'])) {
-							$user = new User();
+							$user = new User($this->db);
 							$user->register("root", $_POST['password'], $_POST['email']);
 							$userID = $user->getIDbyName("root");
-							$role = new Role();
+							$role = new Role($this->db);
 							$roleID = $role->getIDbyName("root");
 							$user->changeRole($userID, $roleID);
-							$email = mysql_real_escape_string($_POST['email']);
-							$db = new DB();
-							$db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
+							$email = $this->db->escapeString($_POST['email']);
+							$this->db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 						}
 						else {
-							echo "Die E-Mail-Adresse ist nicht gültig.<br><br>";
+							echo "Die E-Mail-Adresse ist nicht gï¿½ltig.<br><br>";
 						}
 					}
 				}
@@ -50,8 +51,7 @@ class Root {
 	}
 	
 	public function closeDB() {
-		$db = new DB();
-		$db->close();
+		$this->db->close();
 	}
 }
 

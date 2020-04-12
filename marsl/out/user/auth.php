@@ -6,30 +6,35 @@ include_once(dirname(__FILE__)."/user.php");
 
 class Authentication {
 	
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+	
 	/*
 	 * Gets the rights matrix for a given module and role.
 	 */
 	private function moduleRight($module, $roleID) {
-		$role = new Role();
-		$db = new DB();
-		$module = mysql_real_escape_string($module);
+		$role = new Role($this->db);
+		$module = $this->db->escapeString($module);
 		$rights['read'] = 0;
 		$rights['write'] = 0;
 		$rights['extended'] = 0;
 		$rights['admin'] = 0;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = mysql_real_escape_string($roleID);
-			if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `read`='1'")) {
+			$roleID = $this->db->escapeString($roleID);
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `read`='1'")) {
 				$rights['read'] = 1;
 			}
-			if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `write`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `write`='1'")) {
 				$rights['write'] = 1;
 			}
-			if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `extended`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `extended`='1'")) {
 				$rights['extended'] = 1;
 			}
-			if ($db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `admin`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `admin`='1'")) {
 				$rights['admin'] = 1;
 			}
 		}
@@ -81,26 +86,25 @@ class Authentication {
 	 * Gets the rights matrix for a given location and role.
 	 */
 	private function locationRight($location, $roleID) {
-		$role = new Role();
-		$location = mysql_real_escape_string($location);
-		$db = new DB();
+		$role = new Role($this->db);
+		$location = $this->db->escapeString($location);
 		$rights['read'] = 0;
 		$rights['write'] = 0;
 		$rights['extended'] = 0;
 		$rights['admin'] = 0;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = mysql_real_escape_string($roleID);
-			if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `read`='1'")) {
+			$roleID = $this->db->escapeString($roleID);
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `read`='1'")) {
 				$rights['read'] = 1;
 			}
-			if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `write`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `write`='1'")) {
 				$rights['write'] = 1;
 			}
-			if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `extended`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `extended`='1'")) {
 				$rights['extended'] = 1;
 			}
-			if ($db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `admin`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `admin`='1'")) {
 				$rights['admin'] = 1;
 			}
 		}
@@ -152,7 +156,7 @@ class Authentication {
 	 * Get a token to prevent CSRF attacks.
 	 */
 	public function getToken($time) {
-		$user = new User();
+		$user = new User($this->db);
 		$session = $user->getSession();
 		$userID = $user->getID();
 		$password = $user->getPassbyID($userID);
@@ -164,7 +168,7 @@ class Authentication {
 	 * Check a token to prevent CSRF attacks.
 	 */
 	public function checkToken($time, $token) {
-		$user = new User();
+		$user = new User($this->db);
 		$session = $user->getSession();
 		$userID = $user->getID();
 		$password = $user->getPassbyID($userID);

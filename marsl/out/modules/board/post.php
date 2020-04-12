@@ -9,25 +9,30 @@ include_once(dirname(__FILE__)."/../../user/auth.php");
 include_once(dirname(__FILE__)."/../../includes/dbsocket.php");
 
 class Post {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	/*
 	 * Displays the content of a thread.
 	 */
 	public function display() {
 		$location = $_GET['id'];
-		$auth = new Authentication();
-		$role = new Role();
-		$user = new User();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$user = new User($this->db);
 		if ($auth->moduleReadAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
-			$thread = new Thread();
-			$board = new Board();
-			$threadID = mysql_real_escape_string($_GET['thread']);
+			$thread = new Thread($this->db);
+			$board = new Board($this->db);
+			$threadID = $this->db->escapeString($_GET['thread']);
 			$boardID = $thread->getBoard($threadID);
 			if (($location==$board->getLocation($boardID))&&($board->readAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($board->getLocation($boardID), $role->getRole()))) {
 				if (isset($_GET['do'])||isset($_POST['do'])) {
 					$this->doThings();
 				}
-				$db = new DB();
 				$posts = array();
 				$page = 0;
 				if (!isset($_GET['page'])) {
@@ -36,22 +41,22 @@ class Post {
 				else {
 					$page = $_GET['page'];
 				}
-				if (!$db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'")) {
-					$result = $db->query("SELECT `post` FROM `post` WHERE `thread`='$threadID' AND `deleted`='0'");
-					$pages = mysql_num_rows($result)/10;
+				if (!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'")) {
+					$result = $this->db->query("SELECT `post` FROM `post` WHERE `thread`='$threadID' AND `deleted`='0'");
+					$pages = $this->db->getRowCount($result)/10;
 					$start = $page*10-10;
 					$end = 10;
 					$isAuthor = (($thread->getType($threadID)!=3)&&($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$auth->locationWriteAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())));
 					$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 					$isAdmin = $board->isAdmin($boardID, $user->getID());
 					$isGlobalAdmin = ($auth->moduleAdminAllowed("board", $role->getRole())&&$auth->locationAdminAllowed($location, $role->getRole()));
-					$result = $db->query("SELECT `viewcount` FROM `thread` WHERE `thread`='$threadID'");
-					while ($row = mysql_fetch_array($result)) {
+					$result = $this->db->query("SELECT `viewcount` FROM `thread` WHERE `thread`='$threadID'");
+					while ($row = $this->db->fetchArray($result)) {
 						$viewcount = $row['viewcount']+1;
-						$db->query("UPDATE `thread` SET `viewcount`='$viewcount' WHERE `thread`='$threadID'");
+						$this->db->query("UPDATE `thread` SET `viewcount`='$viewcount' WHERE `thread`='$threadID'");
 					}
-					$result = $db->query("SELECT `post`, `date`, `operator`, `lastedit`, `content`, `ip`, `author` FROM `post` WHERE `deleted`='0' AND `thread`='$threadID' ORDER BY `date` LIMIT $start,$end");
-					while ($row = mysql_fetch_array($result)) {
+					$result = $this->db->query("SELECT `post`, `date`, `operator`, `lastedit`, `content`, `ip`, `author` FROM `post` WHERE `deleted`='0' AND `thread`='$threadID' ORDER BY `date` LIMIT $start,$end");
+					while ($row = $this->db->fetchArray($result)) {
 						$post = $row['post'];
 						$date = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['date']);
 						$operator = $row['operator'];
@@ -63,8 +68,8 @@ class Post {
 						$authorNickname = htmlentities($user->getNickbyID($author), null, "ISO-8859-1");
 						$editable = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole())))));
 						$files = array();
-						$result2 = $db->query("SELECT `file`, `realname` FROM `post_attachment` NATURAL JOIN `attachment` WHERE `post`='$post'");
-						while ($row2 = mysql_fetch_array($result2)) {
+						$result2 = $this->db->query("SELECT `file`, `realname` FROM `post_attachment` NATURAL JOIN `attachment` WHERE `post`='$post'");
+						while ($row2 = $this->db->fetchArray($result2)) {
 							$filename = htmlentities($row2['realname'], null, "ISO-8859-1");
 							$file = $row2['file'];
 							array_push($files, array('filename'=>$filename, 'file'=>$file));
@@ -83,31 +88,30 @@ class Post {
 	 * Do small functions which can be applied to a post.
 	 */
 	private function doThings() {
-		$auth = new Authentication();
-		$board = new Board();
-		$thread = new Thread();
-		$user = new User();
-		$role = new Role();
-		$db = new DB();
+		$auth = new Authentication($this->db);
+		$board = new Board($this->db);
+		$thread = new Thread($this->db);
+		$user = new User($this->db);
+		$role = new Role($this->db);
 		if (isset($_GET['do'])) {
 			if ($_GET['do']=="del") {
 				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
-					$postID = mysql_real_escape_string($_GET['post']);
+					$postID = $this->db->escapeString($_GET['post']);
 					$threadID = $this->getThread($postID);
-					if ($threadID == $_GET['thread']&&(!$db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'"))) {
+					if ($threadID == $_GET['thread']&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'"))) {
 						$boardID = $thread->getBoard($threadID);
 						if ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())) {
-							$db->query("UPDATE `post` SET `deleted`='1' WHERE `post`='$postID'");
-							if ($db->isExisting("SELECT `post` FROM `post` WHERE `deleted`='1' AND `post`='$postID'")) {
-								$result = $db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
-								while ($row = mysql_fetch_array($result)) {
+							$this->db->query("UPDATE `post` SET `deleted`='1' WHERE `post`='$postID'");
+							if ($this->db->isExisting("SELECT `post` FROM `post` WHERE `deleted`='1' AND `post`='$postID'")) {
+								$result = $this->db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
+								while ($row = $this->db->fetchArray($result)) {
 									$postcount = $row['postcount']-1;
-									$db->query("UPDATE `thread` SET `postcount`='$postcount' WHERE `thread`='$threadID'");
+									$this->db->query("UPDATE `thread` SET `postcount`='$postcount' WHERE `thread`='$threadID'");
 								}
-								$result = $db->query("SELECT `postcount` FROM `board` WHERE `board`='$boardID'");
-								while ($row = mysql_fetch_array($result)) {
+								$result = $this->db->query("SELECT `postcount` FROM `board` WHERE `board`='$boardID'");
+								while ($row = $this->db->fetchArray($result)) {
 									$postcount = $row['postcount']-1;
-									$db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
+									$this->db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
 								}
 								echo "<div class=\"success\">Der Post wurde erfolgreich gel&ouml;scht!</div>";
 							}
@@ -125,11 +129,10 @@ class Post {
 	 * Get the thread ID of a post.
 	 */
 	public function getThread($post) {
-		$db = new DB();
-		$post = mysql_real_escape_string($post);
+		$post = $this->db->escapeString($post);
 		$thread = -1;
-		$result = $db->query("SELECT `thread` FROM `post` WHERE `post`='$post'");
-		while ($row = mysql_fetch_array($result)) {
+		$result = $this->db->query("SELECT `thread` FROM `post` WHERE `post`='$post'");
+		while ($row = $this->db->fetchArray($result)) {
 			$thread = $row['thread'];
 		}
 		return $thread;
@@ -139,11 +142,10 @@ class Post {
 	 * Get the author of a post.
 	 */
 	public function getAuthor($post) {
-		$db = new DB();
-		$post = mysql_real_escape_string($post);
+		$post = $this->db->escapeString($post);
 		$author = -1;
-		$result = $db->query("SELECT `author` FROM `post` WHERE `post`='$post'");
-		while ($row = mysql_fetch_array($result)) {
+		$result = $this->db->query("SELECT `author` FROM `post` WHERE `post`='$post'");
+		while ($row = $this->db->fetchArray($result)) {
 			$author = $row['author'];
 		}
 		return $author;
@@ -153,46 +155,45 @@ class Post {
 	 * Dialog to insert a new post.
 	 */
 	public function answer() {
-		$db = new DB();
-		$board = new Board();
-		$thread = new Thread();
-		$auth = new Authentication();
-		$role = new Role();
-		$user = new User();
-		$threadID = mysql_real_escape_string($_GET['thread']);
+		$board = new Board($this->db);
+		$thread = new Thread($this->db);
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$user = new User($this->db);
+		$threadID = $this->db->escapeString($_GET['thread']);
 		$boardID = $thread->getBoard($threadID);
-		$basic = new Basic();
-		$location = mysql_real_escape_string($_GET['id']);
+		$basic = new Basic($this->db);
+		$location = $this->db->escapeString($_GET['id']);
 		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$auth->moduleAdminAllowed("board", $role->getRole())||$auth->locationAdminAllowed($location, $role->getRole()));
-		if (($location==$board->getLocation($boardID))&&(!$db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND (`type`='4' OR `type`='3')"))) {
+		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND (`type`='4' OR `type`='3')"))) {
 			if ($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$auth->locationWriteAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())) {
 				if (isset($_POST['do'])) {
 					if ($_POST['do']=="answer") {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$content = mysql_real_escape_string($basic->cleanStrict($_POST['content']));
-							$author = mysql_real_escape_string($user->getID());
-							$time = mysql_real_escape_string(time());
-							$ip = mysql_real_escape_string($_SERVER['REMOTE_ADDR']);
-							$db->query("INSERT INTO `post`(`author`, `thread`, `date`, `operator`, `lastedit`, `content`, `ip`, `deleted`) VALUES('$author','$threadID','$time','0','0','$content','$ip','0')");
-							$postID = mysql_insert_id();
-							$result = $db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
-							while ($row = mysql_fetch_array($result)) {
+							$content = $this->db->escapeString($basic->cleanStrict($_POST['content']));
+							$author = $this->db->escapeString($user->getID());
+							$time = $this->db->escapeString(time());
+							$ip = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
+							$this->db->query("INSERT INTO `post`(`author`, `thread`, `date`, `operator`, `lastedit`, `content`, `ip`, `deleted`) VALUES('$author','$threadID','$time','0','0','$content','$ip','0')");
+							$postID = $this->db->lastInsertedID();
+							$result = $this->db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
+							while ($row = $this->db->fetchArray($result)) {
 								$postcount = $row['postcount']+1;
-								$db->query("UPDATE `thread` SET `postcount`='$postcount', `lastpost`='$postID' WHERE `thread`='$threadID'");
+								$this->db->query("UPDATE `thread` SET `postcount`='$postcount', `lastpost`='$postID' WHERE `thread`='$threadID'");
 							}
-							$result = $db->query("SELECT `postcount` FROM `board` WHERE `board`='$boardID'");
-							while ($row = mysql_fetch_array($result)) {
+							$result = $this->db->query("SELECT `postcount` FROM `board` WHERE `board`='$boardID'");
+							while ($row = $this->db->fetchArray($result)) {
 								$postcount = $row['postcount']+1;
-								$db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
+								$this->db->query("UPDATE `board` SET `postcount`='$postcount' WHERE `board`='$boardID'");
 							}
 							
-							$temporary = mysql_real_escape_string($_POST['temporary']);
-							$result = $db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
-							while ($row = mysql_fetch_array($result)) {
+							$temporary = $this->db->escapeString($_POST['temporary']);
+							$result = $this->db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
+							while ($row = $this->db->fetchArray($result)) {
 								$newTemporary = $basic->tempFileKey();
 								$file = $row['file'];
-								$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
-								$db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
+								$this->db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
+								$this->db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
 							}
 							
 							$page = $thread->getPageNumber($threadID);
@@ -204,11 +205,11 @@ class Post {
 				else {
 					$quote = "";
 					if (isset($_GET['quote'])) {
-						$postID = mysql_real_escape_string($_GET['quote']);
-						$page = mysql_real_escape_string($_GET['page']);
+						$postID = $this->db->escapeString($_GET['quote']);
+						$page = $this->db->escapeString($_GET['page']);
 						if ($threadID==$this->getThread($postID)) {
-							$result = $db->query("SELECT `content`, `author` FROM `post` WHERE `post`='$postID' AND `deleted`='0'");
-							while ($row = mysql_fetch_array($result)) {
+							$result = $this->db->query("SELECT `content`, `author` FROM `post` WHERE `post`='$postID' AND `deleted`='0'");
+							while ($row = $this->db->fetchArray($result)) {
 								$authorNickname = $user->getNickbyID($row['author']);
 								$content = $row['content'];
 								$quote = "<blockquote>".$authorNickname." <a href=\"index.php?id=".$location."&amp;action=posts&amp;thread=".$threadID."&amp;page=".$page."#".$postID."\">schrieb</a>:<br /><br />".$content."</blockquote><br />";
@@ -229,38 +230,37 @@ class Post {
 	 * Dialog to edit a post.
 	 */
 	public function edit() {
-		$db = new DB();
-		$board = new Board();
-		$thread = new Thread();
-		$auth = new Authentication();
-		$role = new Role();
-		$postID = mysql_real_escape_string($_GET['post']);
+		$board = new Board($this->db);
+		$thread = new Thread($this->db);
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
+		$postID = $this->db->escapeString($_GET['post']);
 		$author = $this->getAuthor($postID);
-		$location = mysql_real_escape_string($_GET['id']);
-		$user = new User();
+		$location = $this->db->escapeString($_GET['id']);
+		$user = new User($this->db);
 		$threadID = $this->getThread($postID);
 		$boardID = $thread->getBoard($threadID);
 		$page = $_GET['page'];
-		$basic = new Basic();
-		if (($location==$board->getLocation($boardID))&&(!$db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'"))) {
+		$basic = new Basic($this->db);
+		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'"))) {
 			if ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole()))))) {
 				if (isset($_POST['do'])) {
 					if ($_POST['do']=="edit") {
 						if ($auth->checkToken($_POST['authTime'],$_POST['authToken'])) {
-							$content = mysql_real_escape_string($basic->cleanStrict($_POST['content']));
+							$content = $this->db->escapeString($basic->cleanStrict($_POST['content']));
 							$operator = $user->getID();
 							$time = time();
 							$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
-							$db->query("UPDATE `post` SET `content`='$content', `operator`='$operator', `lastedit`='$time' WHERE `post`='$postID'");
-							if ($db->isExisting("SELECT `post` FROM `post` WHERE `post`='$postID' AND `content`='$content' AND `operator`='$operator' AND `lastedit`='$time'")) {
+							$this->db->query("UPDATE `post` SET `content`='$content', `operator`='$operator', `lastedit`='$time' WHERE `post`='$postID'");
+							if ($this->db->isExisting("SELECT `post` FROM `post` WHERE `post`='$postID' AND `content`='$content' AND `operator`='$operator' AND `lastedit`='$time'")) {
 								
-								$temporary = mysql_real_escape_string($_POST['temporary']);
-								$result = $db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
-								while ($row = mysql_fetch_array($result)) {
+								$temporary = $this->db->escapeString($_POST['temporary']);
+								$result = $this->db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
+								while ($row = $this->db->fetchArray($result)) {
 									$newTemporary = $basic->tempFileKey();
 									$file = $row['file'];
-									$db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
-									$db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
+									$this->db->query("INSERT INTO `post_attachment`(`post`,`file`) VALUES('$postID', '$file')");
+									$this->db->query("UPDATE `attachment` SET `temporary`='$newTemporary' WHERE `file`='$file'");
 								}
 								
 								echo "<div class=\"success\">Der Post wurde erfolgreich ge&auml;ndert! Du wirst gleich zur&uuml;ck geleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
@@ -274,8 +274,8 @@ class Post {
 				else {
 					$isAdmin = ($board->isAdmin($boardID, $user->getID())||$auth->moduleAdminAllowed("board", $role->getRole())||$auth->locationAdminAllowed($location, $role->getRole()));
 					$content = "";
-					$result = $db->query("SELECT `content` FROM `post` WHERE `post`='$postID' AND `deleted`='0'");
-					while ($row = mysql_fetch_array($result)) {
+					$result = $this->db->query("SELECT `content` FROM `post` WHERE `post`='$postID' AND `deleted`='0'");
+					while ($row = $this->db->fetchArray($result)) {
 						$content = $row['content'];
 						$authTime = time();
 						$authToken = $auth->getToken($authTime);

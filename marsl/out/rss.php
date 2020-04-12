@@ -17,8 +17,8 @@ class RSS {
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
-		$auth = new Authentication();
-		$role = new Role();
+		$auth = new Authentication($db);
+		$role = new Role($db);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$feedtitle = $config->getTitle()." - RSS Feed";
@@ -29,7 +29,7 @@ class RSS {
 					JOIN `rights` ON (`rights`.`location` = `news`.`location`)
 					JOIN `stdroles` ON (`rights`.`role` = `stdroles`.`guest`)
 					WHERE `rights`.`read` = '1' AND `news`.`deleted` = '0' AND `news`.`visible` = '1' ORDER BY `postdate` DESC LIMIT 0,10");
-			while ($row = mysql_fetch_array($result)) {
+			while ($row = $db->fetchArray($result)) {
 				$domain = $config->getDomain();
 				$location = htmlentities($row['location'], null, "ISO-8859-1");
 				$news = htmlentities($row['news'], null, "ISO-8859-1");
@@ -38,25 +38,25 @@ class RSS {
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$date = date("D, d M Y H:i:s O", $row['postdate']);
 				
-				$picID1 = mysql_real_escape_string($row['picture1']);
-				$picID2 = mysql_real_escape_string($row['picture2']);
+				$picID1 = $db->escapeString($row['picture1']);
+				$picID2 = $db->escapeString($row['picture2']);
 				$teaserPicture = "empty";
 				$newsPicture = "empty";
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID1'");
-				while ($row2 = mysql_fetch_array($result2)) {
+				while ($row2 = $db->fetchArray($result2)) {
 					$teaserPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID2'");
-				while ($row2 = mysql_fetch_array($result2)) {
+				while ($row2 = $db->fetchArray($result2)) {
 					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				
-				$basic = new Basic();
+				$basic = new Basic($db);
 				$modules = $basic->getModules();
 				$moduleTags = array();
 				foreach ($modules as $module) {
 					include_once(dirname(__FILE__)."/modules/".$module['file'].".php");
-					$class = new $module['class'];
+					$class = new $module['class']($db);
 					if ($class->isTaggable()) {
 						$tagList = $class->getTagList();
 						foreach($tagList as $tagType) {

@@ -8,19 +8,25 @@ include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 
 class CBE implements Module {
+
+	private $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
 	
 	public function display() {
 		
 	}
 	
 	public function admin() {
-		$auth = new Authentication();
-		$role = new Role();
+		$auth = new Authentication($this->db);
+		$role = new Role($this->db);
 		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
 			require_once("template/cbe.main.tpl.php");
 			if (isset($_GET['action'])) {
-				$band = new Band();
-				$club = new Location();
+				$band = new Band($this->db);
+				$club = new Location($this->db);
 				if ($_GET['action']=="bands") {
 					$band->admin();
 				}
@@ -28,11 +34,11 @@ class CBE implements Module {
 					$club->admin();
 				}
 				if ($_GET['action']=="editband") {
-					$id = mysql_real_escape_string($_GET['band']);
+					$id = $this->db->escapeString($_GET['band']);
 					$band->edit($id);
 				}
 				if ($_GET['action']=="editclub") {
-					$id = mysql_real_escape_string($_GET['club']);
+					$id = $this->db->escapeString($_GET['club']);
 					$club->edit($id);
 				}
 			}
@@ -72,64 +78,61 @@ class CBE implements Module {
 	}
 	
 	public function addTags($tagString, $type, $news) {
-		$db = new DB();
 		$tags = array_filter(explode(";", $tagString));
-		$news = mysql_real_escape_string($news);
+		$news = $this->db->escapeString($news);
 		if ($type=="band") {
-			$db->query("DELETE FROM `news_tag` WHERE `type`='cbe_band' AND `news`='$news'");
+			$this->db->query("DELETE FROM `news_tag` WHERE `type`='cbe_band' AND `news`='$news'");
 		}
 		if ($type=="location") {
-			$db->query("DELETE FROM `news_tag` WHERE `type`='cbe_location' AND `news`='$news'");
+			$this->db->query("DELETE FROM `news_tag` WHERE `type`='cbe_location' AND `news`='$news'");
 		}
 		foreach ($tags as $tag) {
-			$tag = mysql_real_escape_string($tag);
+			$tag = $this->db->escapeString($tag);
 			$tag = trim($tag);
 			if ($type=="band") {
 				$bandID = "";
 				
-				if ((strlen($tag)>0)&&(!$db->isExisting("SELECT * FROM `band` WHERE `tag`='$tag'"))) {
-					$db->query("INSERT INTO `band`(`tag`) VALUES('$tag')");
+				if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `band` WHERE `tag`='$tag'"))) {
+					$this->db->query("INSERT INTO `band`(`tag`) VALUES('$tag')");
 				}
 
-				$result = $db->query("SELECT `id` FROM `band` WHERE `tag`='$tag'");
-				while ($row = mysql_fetch_array($result)) {
+				$result = $this->db->query("SELECT `id` FROM `band` WHERE `tag`='$tag'");
+				while ($row = $this->db->fetchArray($result)) {
 					$bandID = $row['id'];
 				}
-				$db->query("INSERT INTO `news_tag`(`tag`,`news`,`type`) VALUES('$bandID','$news','cbe_band')");
+				$this->db->query("INSERT INTO `news_tag`(`tag`,`news`,`type`) VALUES('$bandID','$news','cbe_band')");
 			}
 			if ($type=="location") {
 				$locationID = "";
 				
-				if ((strlen($tag)>0)&&(!$db->isExisting("SELECT * FROM `location` WHERE `tag`='$tag'"))) {
-					$db->query("INSERT INTO `location`(`tag`) VALUES('$tag')");
+				if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `location` WHERE `tag`='$tag'"))) {
+					$this->db->query("INSERT INTO `location`(`tag`) VALUES('$tag')");
 				}
 				
-				$result = $db->query("SELECT `id` FROM `location` WHERE `tag`='$tag'");
-				while ($row = mysql_fetch_array($result)) {
+				$result = $this->db->query("SELECT `id` FROM `location` WHERE `tag`='$tag'");
+				while ($row = $this->db->fetchArray($result)) {
 					$locationID = $row['id'];
 				}
 				
-				$db->query("INSERT INTO `news_tag`(`tag`,`news`,`type`) VALUES('$locationID','$news','cbe_location')");
+				$this->db->query("INSERT INTO `news_tag`(`tag`,`news`,`type`) VALUES('$locationID','$news','cbe_location')");
 			}
 		}
 	}
 	
 	public function getTagString($type, $news) {
-		
-		$db = new DB();
 		$retString = array();
-		$news = mysql_real_escape_string($news);
+		$news = $this->db->escapeString($news);
 		
 		if ($type=="band") {
-			$result = $db->query("SELECT `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
+			while ($row = $this->db->fetchArray($result)) {
 				array_push($retString, $row['tagname']);
 			}
 		}
 		
 		if ($type=="location") {
-			$result = $db->query("SELECT `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
+			while ($row = $this->db->fetchArray($result)) {
 				array_push($retString, $row['tagname']);
 			}
 		}
@@ -139,20 +142,19 @@ class CBE implements Module {
 	}
 	
 	public function getTags($type, $news) {
-		$db = new DB();
 		$ret = array();
-		$news = mysql_real_escape_string($news);
+		$news = $this->db->escapeString($news);
 		
 		if ($type=="band") {
-			$result = $db->query("SELECT `id`, `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `id`, `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
+			while ($row = $this->db->fetchArray($result)) {
 				array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
 			}
 		}
 		
 		if ($type=="location") {
-			$result = $db->query("SELECT `id`, `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `id`, `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
+			while ($row = $this->db->fetchArray($result)) {
 				array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
 			}
 		}
@@ -161,19 +163,18 @@ class CBE implements Module {
 	}
 	
 	public function displayTag($tagID, $type) {
-		$db = new DB();
-		$role = new Role();
-		$auth = new Authentication();
-		$tagID = mysql_real_escape_string($tagID);
+		$role = new Role($this->db);
+		$auth = new Authentication($this->db);
+		$tagID = $this->db->escapeString($tagID);
 		if ($type=="location") {
 			$articles = array();
 			$tagName = "";
-			$result = $db->query("SELECT `tag` FROM `location` WHERE `id`='$tagID'");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$tagID'");
+			while ($row = $this->db->fetchArray($result)) {
 				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
 			}
-			$result = $db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_location' ORDER BY `date` DESC");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_location' ORDER BY `date` DESC");
+			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
 					$news = $row['news'];
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
@@ -190,12 +191,12 @@ class CBE implements Module {
 		if ($type=="band") {
 			$articles = array();
 			$tagName = "";
-			$result = $db->query("SELECT `tag` FROM `band` WHERE `id`='$tagID'");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$tagID'");
+			while ($row = $this->db->fetchArray($result)) {
 				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
 			}
-			$result = $db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_band' ORDER BY `date` DESC");
-			while ($row = mysql_fetch_array($result)) {
+			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_band' ORDER BY `date` DESC");
+			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
 					$news = $row['news'];
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
