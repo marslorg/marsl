@@ -187,6 +187,6 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 	}
 
 	.newsblock, .newsblock2 {
-		width: 320px;
+		width: 300px;
 	}
 }

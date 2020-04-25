@@ -27,7 +27,7 @@ include_once (dirname(__FILE__)."/../includes/tracking.php");
 		<link rel="stylesheet" href="styles/style.css?v=26" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=6" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
-		<link rel="stylesheet" href="styles/mobile.css?v=8" type="text/css" media="all and (max-width: 1023px)" />
+		<link rel="stylesheet" href="styles/mobile.css?v=9" type="text/css" media="all and (max-width: 1023px)" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 	</head>
