@@ -27,28 +27,30 @@ include_once (dirname(__FILE__)."/../includes/tracking.php");
 		<link rel="stylesheet" href="styles/style.css?v=26" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=6" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
-		<link rel="stylesheet" href="styles/mobile.css?v=7" type="text/css" media="all and (max-width: 1023px)" />
+		<link rel="stylesheet" href="styles/mobile.css?v=8" type="text/css" media="all and (max-width: 1023px)" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 	</head>
 	<body>
-		<div class="mainhead">
-			<a href="https://www.music2web.de">
-				<img src="includes/graphics/logo.png" alt="Home" />
-			</a>
-			<?php $this->displaySearchBox(); ?>
+		<div class="head">
+			<div class="mainhead">
+				<a href="https://www.music2web.de">
+					<img src="includes/graphics/logo.png" alt="Home" />
+				</a>
+				<?php $this->displaySearchBox(); ?>
+			</div>
+			<input type="checkbox" id="menu_responsive" />
+			<label for="menu_responsive" class="menu_responsive_label">
+				<span>&#9776;</span>
+				Navigation
+			</label>
+			<div class="menu">
+				<ul>
+					<?php $navigation->display(); ?>
+				</ul>
+			</div>
+			<hr class="naviseparator" />
 		</div>
-		<input type="checkbox" id="menu_responsive" />
-		<label for="menu_responsive" class="menu_responsive_label">
-			<span>&#9776;</span>
-			Navigation
-		</label>
-		<div class="menu">
-			<ul>
-				<?php $navigation->display(); ?>
-			</ul>
-		</div>
-		<hr class="naviseparator" />
 		<div class="body">
 			<div class="content">
 				<?php $urlloader->display(); ?>
@@ -74,7 +76,7 @@ include_once (dirname(__FILE__)."/../includes/tracking.php");
 				
 				  	$m_lt_res_charset = "UTF-8";  # Zeichensatz
 				
-				 	// !!! Folgender Code sollte nicht geändert werden !!!
+				 	// !!! Folgender Code sollte nicht geï¿½ndert werden !!!
 				
 	  			  	$m_lt_url='http://serv7.buywords.de/mod/linktrade/res.html?v=2&account_id=8003&domain='.$_SERVER['HTTP_HOST'].'&url='.urlencode($_SERVER['REQUEST_URI']).'&qs='.urlencode($_SERVER['QUERY_STRING']).'&ip='.$_SERVER['REMOTE_ADDR'].'&charset='.urlencode($m_lt_res_charset).'&res_check='.$m_lt_check.'&res_pre='.urlencode($m_lt_res_pre).'&res_suf='.urlencode($m_lt_res_suf).'&res_sep='.urlencode($m_lt_res_sep); $m_lt_res='';
 				  
@@ -122,7 +124,7 @@ include_once (dirname(__FILE__)."/../includes/tracking.php");
 				</div>
 			</div>
 			<div class="footer">
-				<a href="https://www.music2web.de/index.php?id=469">Jobs</a> | <a href="https://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="https://www.music2web.de/index.php?id=738">Datenschutzerklärung</a> | <a href="https://www.music2web.de/index.php?id=186">Impressum</a>
+				<a href="https://www.music2web.de/index.php?id=469">Jobs</a> | <a href="https://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="https://www.music2web.de/index.php?id=738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/index.php?id=186">Impressum</a>
 			</div>
 		</div>
 		<!--  immediately before </body> -->
