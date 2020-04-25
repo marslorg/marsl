@@ -29,6 +29,10 @@ class News implements Module {
 		$role = new Role($this->db);
 		$modules = $basic->getModules();
 		$moduleTags = array();
+
+		$config = new Configuration();
+		$domain = $config->getDomain();
+
 		foreach ($modules as $module) {
 			include_once(dirname(__FILE__)."/".$module['file'].".php");
 			$class = new $module['class']($this->db);
