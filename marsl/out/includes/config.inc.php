@@ -36,13 +36,14 @@ class Configuration {
 	 */
 	private $sysMail = "noreply@mustermail.de";
 	private $errMail = "bugs@mlrecords.de";
-	private $domain = "http://www.musterdomain.de";
+	private $domain = "http://localhost"; // Domain must not end with a slash. Domain must start with either http:// or https://
+	private $basePath = "/dev/marsl/out"; // If base directory is directly under the domain leave this field empty. Field must begin with a slash and must not end with a slash.
 	
 	/***
 	 * Last.fm event importer
 	 */
 	private $lastfmKey = "";
-	private $cities = "Arnsberg;Oeynhausen;Balve;Barsinghausen;Bestwig;Berlin;Bielefeld;Bochum;Bonn;Braunschweig;Bremen;Dieburg;Diepholz;Dortmund;Duisburg;Düren;Düsseldorf;Eschwege;Essen;Eupen;Frankfurt;Friedrichshafen;Gelsenkirchen;Gütersloh;Hamburg;Hannover;Haßfurt;Hemer;Herford;Hiddenhausen;Karlsruhe;Köln;Konstanz;Liedolsheim;Lüdinghausen;Lünen;Lüttich;Magdeburg;Mannheim;Münster;Nideggen;Nürnberg;Ochtrup;Osnabrück;Paderborn;Recklinghausen;Rodgau;Scheeßel;Stukenbrock;Soest;Stuttgart;Trier;Vlotho;Wien;Witten;Wuppertal;Würzburg";
+	private $cities = "Arnsberg;Oeynhausen;Balve;Barsinghausen;Bestwig;Berlin;Bielefeld;Bochum;Bonn;Braunschweig;Bremen;Dieburg;Diepholz;Dortmund;Duisburg;Dï¿½ren;Dï¿½sseldorf;Eschwege;Essen;Eupen;Frankfurt;Friedrichshafen;Gelsenkirchen;Gï¿½tersloh;Hamburg;Hannover;Haï¿½furt;Hemer;Herford;Hiddenhausen;Karlsruhe;Kï¿½ln;Konstanz;Liedolsheim;Lï¿½dinghausen;Lï¿½nen;Lï¿½ttich;Magdeburg;Mannheim;Mï¿½nster;Nideggen;Nï¿½rnberg;Ochtrup;Osnabrï¿½ck;Paderborn;Recklinghausen;Rodgau;Scheeï¿½el;Stukenbrock;Soest;Stuttgart;Trier;Vlotho;Wien;Witten;Wuppertal;Wï¿½rzburg";
 	
 	/***
 	 * Recaptcha Codes
@@ -104,6 +105,10 @@ class Configuration {
 	
 	public function getDomain() {
 		return $this->domain;
+	}
+
+	public function getBasePath() {
+		return $this->basePath;
 	}
 	
 	public function getTitle() {
