@@ -95,7 +95,7 @@ a:hover {
 	display: table;
 }
 
-.newsrow {
+.newsrow, .albumrow {
 	display: table-row;
 }
 

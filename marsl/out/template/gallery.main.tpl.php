@@ -10,17 +10,20 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<?php endfor; ?>
 	</h4>
 	<?php foreach($galleries as $gallery): ?>
-	<table class="albumtable">
-		<tr>
-			<td class="albuminformation">
+	<span class="albumtable">
+		<div class="albumrow">
+			<div class="albuminformation">
 				<img src="includes/graphics/square.gif" /> Fotos: <?php echo $gallery['photograph']; ?> | <?php echo $gallery['date']; ?>
-			</td>
-			<td class="albumdescription">
+			</div>
+			<div class="albumdescription">
 				<img src="<?php echo $gallery['picture']; ?>" class="albumpicture" /><?php echo $gallery['description']; ?> 
 				<br /><br /><strong><a href="index.php?id=<?php echo $location; ?>&amp;show=<?php echo $gallery['album']; ?>&amp;action=thumb">Hier geht es weiter</a></strong>
-			</td>
-		</tr>
-	</table>
+			</div>
+		</div>
+	</span>
+	<div class="albuminformationmobile">
+		<img src="includes/graphics/square.gif" /> Fotos: <?php echo $gallery['photograph']; ?> | <?php echo $gallery['date']; ?>
+	</div>
 	<hr class="albumseparator" />
 	<?php endforeach; ?>
 	<h4 class="center">
