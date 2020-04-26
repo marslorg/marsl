@@ -2,9 +2,9 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <div class="news">
-	<table>
-		<tr>
-			<td class="newsinformation">
+	<span class="newstable">
+		<div class="newsrow">
+			<div class="newsinformation">
 				<h3>Taglist:</h3>
 				<?php foreach($moduleTags as $moduleTag):
 				$tags = $moduleTag['tags'];
@@ -20,8 +20,8 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;,&quot;twitter&quot;]" data-theme="standard" data-orientation="vertical"></div>
 					<br /><img src="includes/graphics/square.gif" /> Datum: <?php echo $date; ?>
 				</div>
-			</td>
-			<td class="newscontent">
+			</div>
+			<div class="newscontent">
 				<h3 class="headline"><?php echo $headline; ?></h3>
 				<h2><?php echo $title; ?></h2>
 				<?php if (($picture2=="empty")&&($picture1!="empty")): ?>
@@ -41,8 +41,25 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				</span>
 				<?php endif; ?>
 				<br /><?php echo $text; ?>
-			</td>
-		</tr>
-	</table>
+			</div>
+			<div class="newsinformationmobile">
+				<br /><div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;,&quot;twitter&quot;]" data-theme="standard" data-orientation="horizontal"></div>
+				<b>Taglist:</b><br />
+				<?php foreach($moduleTags as $moduleTag):
+				$tags = $moduleTag['tags'];
+				?>
+				<b><?php echo $moduleTag['name']; ?>: </b>
+				<?php foreach($tags as $tag): ?>
+				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo htmlentities($tag['tag'], null, "ISO-8859-1"); ?></a> 
+				<?php endforeach; ?>
+				<br />
+				<?php endforeach; ?>
+				<br />
+				<div class="newsbottom">
+					<img src="includes/graphics/square.gif" /> Datum: <?php echo $date; ?>
+				</div>
+			</div>
+		</div>
+	</span>
 	<hr class="newsseparator" />
 </div>

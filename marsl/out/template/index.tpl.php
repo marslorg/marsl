@@ -24,10 +24,10 @@ include_once (dirname(__FILE__)."/../includes/tracking.php");
 		<link rel="alternate" type="application/rss+xml" title="<?php echo $title; ?> - RSS Feed" href="<?php echo $domain; ?>/rss.php" />
 		<link rel="icon" href="includes/graphics/favicon.ico" type="image/x-icon" />
 		<link rel="stylesheet" href="includes/jscripts/slimbox/css/slimbox2.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="styles/style.css?v=26" type="text/css" />
+		<link rel="stylesheet" href="styles/style.css?v=27" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=6" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
-		<link rel="stylesheet" href="styles/mobile.css?v=9" type="text/css" media="all and (max-width: 1023px)" />
+		<link rel="stylesheet" href="styles/mobile.css?v=15" type="text/css" media="all and (max-width: 1023px)" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 	</head>

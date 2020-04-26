@@ -13,6 +13,19 @@ body {
 .head {
 	position: fixed;
 	z-index: 10;
+	width: 100%;
+}
+
+.footer {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	text-size-adjust: none;
+	-ms-text-size-adjust: none;
+  	-moz-text-size-adjust: none;
+  	-o-text-size-adjust: none;
+  	-webkit-text-size-adjust: none;
 }
 
 .mainhead {
@@ -87,9 +100,8 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 }
 
 .content {
-	width: initial;
-	max-width: 100%;
 	margin-top: 148px;
+	margin-right: 2%;
 }
 
 .menu ul li.submenu > a:after {
@@ -129,6 +141,27 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 	.newsblock {
 		margin-right: 10px;
 	}
+
+	.content {
+		width: initial;
+		max-width: 100%;
+	}
+
+	.textpicture {
+		width: 98%;
+		max-width: 650px;
+	}
+
+	.textpicture img {
+		width: 98%;
+		height: auto;
+		max-width: 640px;
+	}
+
+	.subtitle {
+		width: 98%;
+		max-width: 640px;
+	}
 }
 
 @media all and (max-width: 840px) {
@@ -138,6 +171,34 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 
 	.newsblock, .newsblock2 {
 		display: block;
+	}
+
+	.news {
+		position: relative;
+	}
+
+	.albumtable, .newstable, .newsrow, .albumdescription, .newscontent, .albuminformation {
+		display: inline;
+	}
+
+	.albuminformation, .newsinformation {
+		display: none;
+	}
+
+	.albuminformationmobile, .newsinformationmobile {
+		clear: both;
+		display: block;
+	}
+
+	.albuminformationmobile {
+		text-align: right;
+	}
+
+	.newsbottom {
+		position: relative;
+		width: 100%;
+		text-align: right;
+		bottom: 0px;
 	}
 }
 
@@ -164,6 +225,11 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 
 	.newsblock, .newsblock2 {
 		width: 350px;
+	}
+
+	.teaserpicture img {
+		width: 125px;
+		height: auto;
 	}
 }
 

@@ -92,6 +92,11 @@ a:hover {
 
 .albumtable, .newstable {
 	width: 100%;
+	display: table;
+}
+
+.newsrow {
+	display: table-row;
 }
 
 .newsinformation, .albuminformation {
@@ -99,6 +104,11 @@ a:hover {
 	vertical-align: top;
 	padding-top: 70px;
 	text-align: justify;
+	display: table-cell;
+}
+
+.albuminformationmobile, .newsinformationmobile {
+	display: none;
 }
 
 .albuminformation {
@@ -114,6 +124,7 @@ a:hover {
 	width: 70%;
 	vertical-align: top;
 	text-align: justify;
+	display: table-cell;
 }
 
 .albumpicture, .teaserpicture {

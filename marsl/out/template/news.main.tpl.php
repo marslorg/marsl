@@ -10,12 +10,12 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<?php endfor; ?>
 	</h4>
 	<?php foreach($news as $article): ?>
-	<table class="newstable">
-		<tr>
-			<td class="albuminformation">
+	<span class="newstable">
+		<div class="newsrow">
+			<div class="albuminformation">
 				<img src="includes/graphics/square.gif" /> Datum: <?php echo $article['date']; ?>
-			</td>
-			<td class="newscontent">
+			</div>
+			<div class="newscontent">
 				<h3 class="headline"><?php echo $article['headline']; ?></h3>
 				<h2><?php echo $article['title']; ?></h2>
 				<?php if ($article['picture1']!="empty"): ?>
@@ -28,9 +28,12 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<?php if (!empty($article['text'])): ?>
 				<br /><br /><strong><a href="index.php?id=<?php echo $location; ?>&amp;show=<?php echo $article['id']; ?>&amp;action=read">Hier geht es weiter</a></strong>
 				<?php endif; ?>				
-			</td>
-		</tr>
-	</table>
+			</div>
+		</div>
+	</span>
+	<div class="albuminformationmobile">
+		<img src="includes/graphics/square.gif" /> Datum: <?php echo $article['date']; ?>
+	</div>
 	<hr class="newsseparator" />
 	<?php endforeach; ?>
 	<h4 class="center">
