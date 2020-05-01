@@ -238,6 +238,24 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 	}
 }
 
+@media all and (max-width: 435px) {
+	.gallerydetails img {
+		width: 150px;
+	}
+	.gallerydetails figure {
+		width: 150px;
+	}
+}
+
+@media all and (max-width: 330px) {
+	.gallerydetails img {
+		width: 125px;
+	}
+	.gallerydetails figure {
+		width: 125px;
+	}
+}
+
 @media all and (max-width: 320px) {
 	#featured {
 		width: 300px;
