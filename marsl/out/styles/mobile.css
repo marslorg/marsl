@@ -98,3 +98,166 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
   	border-top: 5px solid transparent;
   	border-bottom: 5px solid transparent;
 }
+
+@media all and (max-width: 1005px) {
+	.right_box br {
+		display: none;
+	}
+
+	.right_box {
+		width: 100%;
+		text-align: center;
+	}
+}
+
+@media all and (max-width: 925px) {
+	.ui-tabs-nav {
+		display: none;
+	}
+
+	#featured {
+		padding-right: 0px;
+		width: 640px;
+	}
+
+	.newsblock {
+		margin-right: 10px;
+	}
+
+	.content {
+		width: initial;
+		max-width: 100%;
+	}
+
+	.textpicture {
+		width: 98%;
+		max-width: 650px;
+	}
+
+	.textpicture img {
+		width: 98%;
+		height: auto;
+		max-width: 640px;
+	}
+
+	.subtitle {
+		width: 98%;
+		max-width: 640px;
+	}
+}
+
+@media all and (max-width: 840px) {
+	.newsblock {
+		margin-right: 0px;
+	}
+
+	.newsblock, .newsblock2 {
+		display: block;
+	}
+
+	.news, .gallery {
+		position: relative;
+	}
+
+	.albumtable, .newstable, .newsrow, .albumdescription, .newscontent, .albuminformation {
+		display: inline;
+	}
+
+	.albuminformation, .newsinformation {
+		display: none;
+	}
+
+	.albuminformationmobile, .newsinformationmobile {
+		clear: both;
+		display: block;
+	}
+
+	.albuminformationmobile {
+		text-align: right;
+	}
+
+	.newsbottom {
+		position: relative;
+		width: 100%;
+		text-align: right;
+		bottom: 0px;
+	}
+}
+
+@media all and (max-width: 665px) {
+	#featured {
+		width: 350px;
+		height: 175px;
+	}
+
+	#featured .ui-tabs-panel .info {
+		top: 130px;
+		height: 45px;
+		width: 350px;
+	}
+	
+	#featured .info p, #featured .info a, #featured .info a:hover{  
+		display: none;
+	}
+
+	#featured img {
+		width: 350px;
+		height: 175px;
+	}
+
+	.newsblock, .newsblock2 {
+		width: 350px;
+	}
+
+	.teaserpicture img {
+		width: 125px;
+		height: auto;
+	}
+
+	.albumpicture {
+		width: 125px;
+		height: auto;
+	}
+}
+
+@media all and (max-width: 435px) {
+	.gallerydetails img {
+		width: 150px;
+	}
+	.gallerydetails figure {
+		width: 150px;
+	}
+}
+
+@media all and (max-width: 330px) {
+	.gallerydetails img {
+		width: 125px;
+	}
+	.gallerydetails figure {
+		width: 125px;
+	}
+}
+
+@media all and (max-width: 320px) {
+	#featured {
+		width: 300px;
+		height: 150px;
+	}
+	#featured .ui-tabs-panel .info {
+		top: 110px;
+		height: 40px;
+		width: 300px;
+	}
+
+	#featured .info h3 {
+		font-size: 11px;
+	}
+
+	#featured .info h2 {
+		font-size: 14px;
+	}
+
+	.newsblock, .newsblock2 {
+		width: 300px;
+	}
+}

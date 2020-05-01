@@ -458,7 +458,7 @@ class Gallery implements Module {
 							$picture = "albums/".$folder.$file;
 							$picSize = getimagesize($picture);
 							$subtitle = htmlentities($row2['subtitle'], null, "ISO-8859-1");
-							array_push($pictures,array('subtitle'=>$subtitle, 'id'=>$id,'thumb'=>$thumb,'picture'=>$picture,'picSize'=>$picSize));
+							array_push($pictures,array('subtitle'=>$subtitle, 'id'=>$id,'thumb'=>$thumb,'picture'=>$picture,'picSize'=>$picSize, 'width'=>$picSize[0], 'height'=>$picSize[1]));
 						}
 						require_once("template/gallery.thumbs.tpl.php");
 					}
