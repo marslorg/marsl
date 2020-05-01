@@ -14,16 +14,18 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<?php endif; ?>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery.js"></script>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery-ui.js"></script>
-		<script type="text/javascript" src="includes/jscripts/slimbox/js/slimbox2.js"></script>
+		<script type="text/javascript" src="includes/jscripts/photoswipe/photoswipe.min.js"></script>
+		<script type="text/javascript" src="includes/jscripts/photoswipe/photoswipe-ui-default.min.js"></script>
 		<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 		<script type="text/javascript" src="includes/jscripts/plupload/js/plupload.full.min.js"></script>
 		<script type="text/javascript" src="includes/jscripts/plupload/js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 		<script type="text/javascript" src="includes/jscripts/plupload/js/i18n/de.js"></script>
 		<link rel="alternate" type="application/rss+xml" title="<?php echo $title; ?> - RSS Feed" href="<?php echo $domain; ?>/rss.php" />
-		<link rel="stylesheet" href="includes/jscripts/slimbox/css/slimbox2.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="styles/style.css" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
+		<link rel="stylesheet" href="includes/jscripts/photoswipe/photoswipe.css" type="text/css" />
+		<link rel="stylesheet" href="includes/jscripts/photoswipe/default-skin/default-skin.css" type="text/css" />
 	</head>
 	<body id="top">
 	

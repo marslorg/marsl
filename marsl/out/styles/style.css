@@ -773,6 +773,23 @@ ul.tabbed a {
 	width: 100%;
 }
 
+.gallerydetails {
+	width: 100%;
+	float: left;
+}
+.gallerydetails img {
+	height: auto;
+}
+.gallerydetails figure {
+	display: inline-block;
+	margin: 0 5px 5px 0;
+	width: 200px;
+}
+
+.gallerydetails figcaption {
+	display: none;
+}
+
 .boardtable {
 	width: 100%;
 	border-width: 1px;
