@@ -721,6 +721,20 @@ class News implements Module {
 		$roleID = $role->getRole();
 		if ($auth->moduleReadAllowed("news", $roleID)) {
 			$query = $this->db->escapeString($query);
+			$queryWords = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY);
+			$queryWordCount = 1;
+			$queryString = "";
+			foreach ($queryWords as $queryWord) {
+				$queryWordClean = $this->db->escapeString($queryWord);
+				if ($queryWordCount == 1) {
+					$queryString = "(`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
+				}
+				else {
+					$queryString = $queryString." AND (`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
+				}
+				$queryWordCount++;
+			}
+
 			if ($type=="standard") {
 			}
 			else {
@@ -739,14 +753,12 @@ class News implements Module {
 				
 				if ($type=="all") {
 					$topic = "Alle Nachrichten";
-					$result = $this->db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
-							JOIN `rights` ON (`rights`.`location`=`news`.`location`)
-							WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC");
+					$result = $this->db->query("SELECT * FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC");
 					$pages = $this->db->getRowCount($result)/10;
 					
-					$result = $this->db->query("SELECT *, ((1.5 * (MATCH(`title`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.4 * (MATCH(`headline`) AGAINST ('$query' IN BOOLEAN MODE))) + (1.2 * (MATCH(`teaser`) AGAINST ('$query' IN BOOLEAN MODE))) + (0.8 * (MATCH(`text`) AGAINST ('$query' IN BOOLEAN MODE))) ) AS relevance FROM `news`
-							JOIN `rights` ON (`rights`.`location`=`news`.`location`)
-							WHERE (MATCH(`title`,`headline`,`teaser`,`text`) AGAINST ('$query' IN BOOLEAN MODE)) AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' HAVING relevance > 0 ORDER BY relevance DESC LIMIT $start,$end");
+					$result = $this->db->query("SELECT * FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC LIMIT $start,$end");
 					while ($row = $this->db->fetchArray($result)) {
 						$teaser = $row['teaser'];
 						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
