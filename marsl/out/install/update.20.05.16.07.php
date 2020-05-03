@@ -9,12 +9,12 @@ class Install {
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();
 		$db->connect();
-		$content = file_get_contents("update.13.01.12.11.sql");
+		$content = file_get_contents("update.20.05.16.07.sql");
 		$statement = strtok($content, ";");
 		while ($statement) {
 			$db->query($statement);
-			$statement = strtok(";");
-		
+            $statement = strtok(";");	
+            echo $statement."<br />";
 		}
 		$db->close();
 	}
