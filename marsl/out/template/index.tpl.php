@@ -1,6 +1,5 @@
 <?php 
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
-include_once (dirname(__FILE__)."/../includes/tracking.php");
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -131,9 +130,5 @@ include_once (dirname(__FILE__)."/../includes/tracking.php");
 		</div>
 		<!--  immediately before </body> -->
 		<script src="includes/shariff/shariff.complete.js"></script>
-		<?php
-			$tracking = new Tracking();
-			$tracking->doTrack($title);
-		?>
 	</body>
 </html>
