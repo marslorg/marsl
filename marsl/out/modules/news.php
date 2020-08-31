@@ -97,7 +97,10 @@ class News implements Module {
 							$headline = $this->db->escapeString($_POST['headline']);
 							$title = $this->db->escapeString($_POST['title']);
 							$location = $this->db->escapeString($_POST['category']);
-							$corrected = isset($_POST['corrected']);
+							$corrected = 0;
+							if (isset($_POST['corrected'])) {
+								$corrected = 1;
+							}
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
 								$moduleTag['tags'] = $_POST[$moduleTag['type']];
@@ -117,12 +120,12 @@ class News implements Module {
 							$text = $this->db->escapeString($basic->cleanHTML($_POST['text']));
 							if ($auth->locationAdminAllowed($location, $role->getRole())||$auth->locationExtendedAllowed($location, $role->getRole())) {
 
-								$picture1 = "";
+								$picture1 = 0;
 								if (isset($_POST['picture1'])) {
 									$picture1 = $this->db->escapeString($_POST['picture1']);
 								}
 								
-								$picture2 = "";
+								$picture2 = 0;
 								if (isset($_POST['picture2'])) {
 									$picture2 = $this->db->escapeString($_POST['picture2']);
 									$result = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
