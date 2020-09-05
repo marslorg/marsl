@@ -13,7 +13,7 @@ $(function() {
 		unique_names : true,
 
 		// Resize images on clientside if we can
-		resize : {width : 900, height : 900, quality : 100},
+		resize : {width : 2500, height : 2500, quality : 100},
 
 		// Specify what files to browse for
 		filters : [
