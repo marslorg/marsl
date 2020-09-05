@@ -51,7 +51,7 @@ class GalleryUploader {
 						$length = strlen($fileName) - 4;
 						$sub2 = substr($fileName, 0, $length);
 						$fileName = $sub2."_".$basic->randomHash().$sub;
-						$this->thumb($filePath, "../../albums/".$directory."/".$fileName, 640, 640, TRUE);
+						$this->thumb($filePath, "../../albums/".$directory."/".$fileName, 1920, 1920, TRUE);
 						@unlink($filePath);
 						@rmdir(ini_get("upload_tmp_dir") . $directory);
 						if (isset($_GET['id'])) {
