@@ -84,6 +84,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		<br />
 		<div class="content">
 			<?php $content->admin(); ?>
+			<br /><br />Verbunden mit <?php echo $clusterServer; ?>
 		</div>
 	</body>
 </html>

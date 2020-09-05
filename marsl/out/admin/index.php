@@ -165,6 +165,8 @@ class Main {
 		else if ($user->isAdmin()) {
 			$userdata = $auth->moduleExtendedAllowed("userdata", $role->getRole());
 			$userID = $user->getID();
+			$config = new Configuration();
+			$clusterServer = $config->getClusterServer();
 			require_once ("template/index.tpl.php");
 		}
 		$this->db->close();
