@@ -38,6 +38,7 @@ class Configuration {
 	private $errMail = "bugs@mlrecords.de";
 	private $domain = "http://localhost"; // Domain must not end with a slash. Domain must start with either http:// or https://
 	private $basePath = "/dev/marsl/out"; // If base directory is directly under the domain leave this field empty. Field must begin with a slash and must not end with a slash.
+	private $clusterServer = "";
 	
 	/***
 	 * Last.fm event importer
@@ -145,6 +146,10 @@ class Configuration {
 	
 	public function getPublicRecaptcha() {
 		return $this->publicRecaptcha;
+	}
+
+	public function getClusterServer() {
+		return $this->clusterServer;
 	}
 }
 ?>
