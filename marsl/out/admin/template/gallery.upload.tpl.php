@@ -9,7 +9,7 @@ $(function() {
 		runtimes : 'html5',
 		url : 'ajax/galleryuploader.php?dir=<?php echo $tmpDir; ?>',
 		max_file_size : '30mb',
-		chunk_size : '1mb',
+		chunk_size : '30mb',
 		unique_names : true,
 
 		// Resize images on clientside if we can
