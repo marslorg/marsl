@@ -140,7 +140,7 @@ class Portal implements Module {
 						}
 					}
 				}
-				$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
+				$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
 				$news = array();
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $row['location'];
