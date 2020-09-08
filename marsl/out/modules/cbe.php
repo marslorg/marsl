@@ -171,17 +171,17 @@ class CBE implements Module {
 			$tagName = "";
 			$result = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$tagID'");
 			while ($row = $this->db->fetchArray($result)) {
-				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+				$tagName = htmlentities($row['tag'], null, "UTF-8");
 			}
 			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_location' ORDER BY `date` DESC");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
 					$news = $row['news'];
-					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "UTF-8");
+					$title = htmlentities($row['title'], null, "UTF-8");
 					$date = date("d\.m\.Y", $row['date']);
 					$location = $row['location'];
-					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+					$locationName = htmlentities($row['name'], null, "UTF-8");
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
 				}
 			}
@@ -193,17 +193,17 @@ class CBE implements Module {
 			$tagName = "";
 			$result = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$tagID'");
 			while ($row = $this->db->fetchArray($result)) {
-				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+				$tagName = htmlentities($row['tag'], null, "UTF-8");
 			}
 			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_band' ORDER BY `date` DESC");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
 					$news = $row['news'];
-					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$headline = htmlentities($row['headline'], null, "UTF-8");
+					$title = htmlentities($row['title'], null, "UTF-8");
 					$date = date("d\.m\.Y", $row['date']);
 					$location = $row['location'];
-					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+					$locationName = htmlentities($row['name'], null, "UTF-8");
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
 				}
 			}

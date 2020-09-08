@@ -95,12 +95,12 @@ class Gallery implements Module {
 				$start = $this->db->escapeString($start);
 				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' ORDER BY `album` DESC LIMIT $start,$end");
 				while ($row = $this->db->fetchArray($result)) {
-					$id = htmlentities($row['album'], null, "ISO-8859-1");
+					$id = htmlentities($row['album'], null, "UTF-8");
 					$author = $row['author'];
-					$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
-					$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
-					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
-					$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
+					$authorName = htmlentities($user->getAcronymbyID($author), null, "UTF-8");
+					$photograph = htmlentities($row['photograph'], null, "UTF-8");
+					$authorIP = htmlentities($row['author_ip'], null, "UTF-8");
+					$location = htmlentities($navigation->getNamebyID($row['location']), null, "UTF-8");
 					$locationAdmin = $auth->locationAdminAllowed($row['location'], $role->getRole());
 					$editLink = ($moduleExtended&&$locationAdmin);
 					$description = $row['description'];
@@ -154,12 +154,12 @@ class Gallery implements Module {
 			$pictures = array();
 			$result = $this->db->query("SELECT `picture`.`visible` AS `visibility`, `folder`, `picture`, `subtitle`, `filename` FROM `picture` JOIN `album` USING(`album`) WHERE `album`='$album' AND `picture`.`deleted`='0' ORDER BY `filename`");
 			while ($row = $this->db->fetchArray($result)) {
-				$picture = htmlentities($row['picture'], null, "ISO-8859-1");
-				$subtitle = htmlentities($row['subtitle'], null, "ISO-8859-1");
-				$filename = htmlentities($row['filename'], null, "ISO-8859-1");
+				$picture = htmlentities($row['picture'], null, "UTF-8");
+				$subtitle = htmlentities($row['subtitle'], null, "UTF-8");
+				$filename = htmlentities($row['filename'], null, "UTF-8");
 				$visible = $row['visibility'];
 				$administrator = ($moduleExtended&&$moduleAdmin&&$locationAdmin);
-				$folder = htmlentities($row['folder'], null, "ISO-8859-1");
+				$folder = htmlentities($row['folder'], null, "UTF-8");
 				
 				$thumbPath = "../albums/".$folder."thumb_".$filename;
 				$picPath = "../albums/".$folder.$filename;
@@ -184,7 +184,7 @@ class Gallery implements Module {
 			while ($row = $this->db->fetchArray($result)) {
 				$location = $row['location'];
 				if ($auth->locationAdminAllowed($location, $role->getRole())) {
-					$album = htmlentities($row['album'], null, "ISO-8859-1");
+					$album = htmlentities($row['album'], null, "UTF-8");
 					require_once("template/gallery.addphoto.tpl.php");
 				}
 			}
@@ -227,20 +227,20 @@ class Gallery implements Module {
 			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
+					array_push($locations,array('location'=>htmlentities($row['id'], null, "UTF-8"),'name'=>htmlentities($row['name'], null, "UTF-8")));
 				}
 			}
 			$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album'");
 			while ($row = $this->db->fetchArray($result)) {
 				$category = $row['location'];
 				if ($auth->locationAdminAllowed($category, $role->getRole())) {
-					$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
-					$category = htmlentities($category, null, "ISO-8859-1");
+					$photograph = htmlentities($row['photograph'], null, "UTF-8");
+					$category = htmlentities($category, null, "UTF-8");
 					$day = date("d", $row['date']);
 					$month = date("m", $row['date']);
 					$year = date("Y", $row['date']);
 					$description = $row['description'];
-					$album = htmlentities($_GET['id'], null, "ISO-8859-1");
+					$album = htmlentities($_GET['id'], null, "UTF-8");
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
 					require_once("template/gallery.edit.tpl.php");
@@ -311,12 +311,12 @@ class Gallery implements Module {
 				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
-						$id = htmlentities($row['album'], null, "ISO-8859-1");
+						$id = htmlentities($row['album'], null, "UTF-8");
 						$author = $row['author'];
-						$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
-						$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
-						$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
-						$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
+						$authorName = htmlentities($user->getAcronymbyID($author), null, "UTF-8");
+						$authorIP = htmlentities($row['author_ip'], null, "UTF-8");
+						$photograph = htmlentities($row['photograph'], null, "UTF-8");
+						$location = htmlentities($navigation->getNamebyID($row['location']), null, "UTF-8");
 						$description = $row['description'];
 						$date = date("d\.m\.Y", $row['date']);
 						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
@@ -347,7 +347,7 @@ class Gallery implements Module {
 			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
-					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"), 'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
+					array_push($locations,array('location'=>htmlentities($row['id'], null, "UTF-8"), 'name'=>htmlentities($row['name'], null, "UTF-8")));
 				}
 			}
 			$authTime = time();
@@ -380,7 +380,7 @@ class Gallery implements Module {
 			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
+					array_push($locations,array('location'=>htmlentities($row['id'], null, "UTF-8"),'name'=>htmlentities($row['name'], null, "UTF-8")));
 				}
 			}
 			$authTime = time();
@@ -423,13 +423,13 @@ class Gallery implements Module {
 				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `album` DESC LIMIT $start,$end");
 				while ($row = $this->db->fetchArray($result)) {
 					$album = $this->db->escapeString($row['album']);
-					$folder = htmlentities($row['folder'], null, "ISO-8859-1");
+					$folder = htmlentities($row['folder'], null, "UTF-8");
 					$photograph = $row['photograph'];
 					$date = date("d\.m\.Y", $row['date']);
 					$description = $row['description'];
 					$result2 = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY RAND() LIMIT 1");
 					while ($row2 = $this->db->fetchArray($result2)) {
-						$file = htmlentities($row2['filename'], null, "ISO-8859-1");
+						$file = htmlentities($row2['filename'], null, "UTF-8");
 						$picture = "albums/".$folder."thumb_".$file;
 						$picSize = getimagesize($picture);
 						array_push($galleries,array('album'=>$album,'photograph'=>$photograph,'date'=>$date,'description'=>$description,'picture'=>$picture,'picSize'=>$picSize));
@@ -448,16 +448,16 @@ class Gallery implements Module {
 					$pictures = array();
 					$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album' AND `location`='$location' AND `visible`='1' AND `deleted`='0'");
 					while ($row = $this->db->fetchArray($result)) {
-						$folder = htmlentities($row['folder'], null, "ISO-8859-1");
-						$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
+						$folder = htmlentities($row['folder'], null, "UTF-8");
+						$photograph = htmlentities($row['photograph'], null, "UTF-8");
 						$result2 = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY `filename`");
 						while ($row2 = $this->db->fetchArray($result2)) {
-							$file = htmlentities($row2['filename'], null, "ISO-8859-1");
-							$id = htmlentities($row2['picture'], null, "ISO-8859-1");
+							$file = htmlentities($row2['filename'], null, "UTF-8");
+							$id = htmlentities($row2['picture'], null, "UTF-8");
 							$thumb = "albums/".$folder."thumb_".$file;
 							$picture = "albums/".$folder.$file;
 							$picSize = getimagesize($picture);
-							$subtitle = htmlentities($row2['subtitle'], null, "ISO-8859-1");
+							$subtitle = htmlentities($row2['subtitle'], null, "UTF-8");
 							array_push($pictures,array('subtitle'=>$subtitle, 'id'=>$id,'thumb'=>$thumb,'picture'=>$picture,'picSize'=>$picSize, 'width'=>$picSize[0], 'height'=>$picSize[1]));
 						}
 						require_once("template/gallery.thumbs.tpl.php");

@@ -55,7 +55,7 @@ class Standard {
 					$result = $this->db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {
 						if ($role->getRole()!=$row['role']) {
-							array_push($roles,array('role' => htmlentities($row['role'], null, "ISO-8859-1"), 'name' => htmlentities($row['name'], null, "ISO-8859-1")));
+							array_push($roles,array('role' => htmlentities($row['role'], null, "UTF-8"), 'name' => htmlentities($row['name'], null, "UTF-8")));
 						}
 					}
 				}

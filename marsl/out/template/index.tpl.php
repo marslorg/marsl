@@ -6,7 +6,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <html>
 	<head>
 		<title><?php echo $title; ?></title>
-		<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta property="fb:app_id" content="<?php echo $fbcomments; ?>" />
 		<?php if ($image!=null): ?>
 		<meta property="og:image" content="<?php echo $domain; ?>/<?php echo $image; ?>" />
