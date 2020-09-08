@@ -30,10 +30,10 @@ class GoogleNews {
 					WHERE `rights`.`read` = '1' AND `news`.`deleted` = '0' AND `news`.`visible` = '1' ORDER BY `postdate` DESC LIMIT 0,1000");
 			while ($row = $db->fetchArray($result)) {
 				$domain = $config->getDomain();
-				$location = htmlentities($row['location'], null, "UTF-8");
-				$news = htmlentities($row['news'], null, "UTF-8");
+				$location = htmlentities($row['location'], null, "ISO-8859-1");
+				$news = htmlentities($row['news'], null, "ISO-8859-1");
 				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
-				$teaser = htmlentities($row['teaser'], null, "UTF-8");
+				$teaser = htmlentities($row['teaser'], null, "ISO-8859-1");
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$date = date("Y-m-d", $row['postdate']);
 				array_push($items, array('link'=>$link, 'teaser'=>$teaser, 'title'=>$title, 'date'=>$date));

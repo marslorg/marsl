@@ -38,7 +38,7 @@ class ModuleRights {
 			else if ($_GET['action']=="role") {
 				$module = $basic->getModule($_GET['module']);
 				$moduleID = $this->db->escapeString($module['file']);
-				$name = htmlentities($module['name'], null, "UTF-8");
+				$name = htmlentities($module['name'], null, "ISO-8859-1");
 				if ($auth->moduleAdminAllowed($moduleID, $role->getRole())&&$auth->moduleExtendedAllowed($moduleID, $role->getRole())
 				&&$auth->moduleWriteAllowed($moduleID, $role->getRole())&&$auth->moduleReadAllowed($moduleID, $role->getRole())) {
 					$roles = $role->getPossibleRoles($role->getRole());
@@ -62,13 +62,13 @@ class ModuleRights {
 							if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'")) {
 								$result = $this->db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = $this->db->fetchArray($result)) {
-									$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");
-									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
+									$roleName = htmlentities($role->getNamebyID($row['role']), null, "ISO-8859-1");
+									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}
 							}
 							else {
-								$roleName = htmlentities($role->getNamebyID($roleID), null, "UTF-8");
-								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "UTF-8"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
+								$roleName = htmlentities($role->getNamebyID($roleID), null, "ISO-8859-1");
+								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "ISO-8859-1"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 							}
 						}
 					}

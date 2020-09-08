@@ -5,7 +5,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <html>
 	<head>
 		<title>Passwort vergessen? - <?php echo $title; ?></title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 		<link rel="stylesheet" href="styles/style.css" type="text/css" />
 	</head>
 	<body>

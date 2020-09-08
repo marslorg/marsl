@@ -76,15 +76,15 @@ class Board implements Module {
 				while ($row = $this->db->fetchArray($result)) {
 					$category = $this->db->escapeString($row['board']);
 					if ($this->readAllowed($category, $role->getRole())) {
-						$catTitle = htmlentities($row['title'], null, "UTF-8");
+						$catTitle = htmlentities($row['title'], null, "ISO-8859-1");
 						$boards = array();
 						$result2 = $this->db->query("SELECT `board`, `title`, `threadcount`, `postcount`, `description` FROM `board` WHERE `type`='1' AND `location`='$category' ORDER BY `pos`");
 						while ($row2 = $this->db->fetchArray($result2)) {
 							$board = $this->db->escapeString($row2['board']);
 							if ($this->readAllowed($board, $role->getRole())) {
-								$boardTitle = htmlentities($row2['title'], null, "UTF-8");
-								$threadcount = htmlentities($row2['threadcount'], null, "UTF-8");
-								$postcount = htmlentities($row2['postcount'], null, "UTF-8");
+								$boardTitle = htmlentities($row2['title'], null, "ISO-8859-1");
+								$threadcount = htmlentities($row2['threadcount'], null, "ISO-8859-1");
+								$postcount = htmlentities($row2['postcount'], null, "ISO-8859-1");
 								$description = $row2['description'];
 								$thread = "";
 								$post = "";
@@ -95,12 +95,12 @@ class Board implements Module {
 								$page = "";
 								$result3 = $this->db->query("SELECT `post`, `date`, `post`.`thread` AS `thread`, `title`, `post`.`author` AS postauthor FROM `post` JOIN `thread` ON (`thread`.`thread`=`post`.`thread`) WHERE `deleted`='0' AND `board`='$board' AND (`type`='0' OR `type`='1' OR `type`='2' OR `type`='3') ORDER BY `date` DESC LIMIT 0,1");
 								while ($row3 = $this->db->fetchArray($result3)) {
-									$thread = htmlentities($row3['thread'], null, "UTF-8");
-									$post = htmlentities($row3['post'], null, "UTF-8");
-									$threadTitle = htmlentities($row3['title'], null, "UTF-8");
+									$thread = htmlentities($row3['thread'], null, "ISO-8859-1");
+									$post = htmlentities($row3['post'], null, "ISO-8859-1");
+									$threadTitle = htmlentities($row3['title'], null, "ISO-8859-1");
 									$postTime = date("d\.m\.Y\, H\:i\:s", $row3['date']);
-									$postAuthor = htmlentities($row3['postauthor'], null, "UTF-8");
-									$authorName = htmlentities($user->getNickbyID($postAuthor), null, "UTF-8");
+									$postAuthor = htmlentities($row3['postauthor'], null, "ISO-8859-1");
+									$authorName = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
 									$page = 1;
 									$result4 = $this->db->query("SELECT COUNT(*) AS paging FROM `post` WHERE `thread`='$thread' AND `deleted`='0'");
 									while ($row4 = $this->db->fetchArray($result4)) {
@@ -110,10 +110,10 @@ class Board implements Module {
 								$operators = array();
 								$result3 = $this->db->query("SELECT `user` FROM `board_operator` WHERE `board`='$board'");
 								while ($row3 = $this->db->fetchArray($result3)) {
-									$operator = htmlentities($row3['user'], null, "UTF-8");
+									$operator = htmlentities($row3['user'], null, "ISO-8859-1");
 									$operatorRole = $role->getRolebyUser($operator);
 									if ($auth->moduleReadAllowed("board", $operatorRole)&&$auth->moduleWriteAllowed("board", $operatorRole)&&$auth->locationReadAllowed($location, $operatorRole)&&$auth->locationWriteAllowed($location, $operatorRole)&&$this->readAllowed($board, $operatorRole)&&$this->writeAllowed($board, $operatorRole)&&$this->extendedAllowed($board, $operatorRole)) {
-										$operatorNick = htmlentities($user->getNickbyID($operator), null, "UTF-8");
+										$operatorNick = htmlentities($user->getNickbyID($operator), null, "ISO-8859-1");
 										array_push($operators, array('user'=>$operator, 'nickname'=>$operatorNick));
 									}
 								}
@@ -243,8 +243,8 @@ class Board implements Module {
 				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='board' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-						$id = htmlentities($row['id'], null, "UTF-8");
-						$name = htmlentities($row['name'], null, "UTF-8");
+						$id = htmlentities($row['id'], null, "ISO-8859-1");
+						$name = htmlentities($row['name'], null, "ISO-8859-1");
 						array_push($locations, array('id'=>$id, 'name'=>$name));
 					}
 				}
@@ -253,10 +253,10 @@ class Board implements Module {
 				$result = $this->db->query("SELECT `board`, `pos`, `location`, `title` FROM `board` WHERE `type`='0' ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->adminAllowed($row['board'], $role->getRole())) {
-						$board = htmlentities($row['board'], null, "UTF-8");
-						$pos = htmlentities($row['pos'], null, "UTF-8");
-						$location = htmlentities($row['location'], null, "UTF-8");
-						$title = htmlentities($row['title'], null, "UTF-8");
+						$board = htmlentities($row['board'], null, "ISO-8859-1");
+						$pos = htmlentities($row['pos'], null, "ISO-8859-1");
+						$location = htmlentities($row['location'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$boardAdmin = ($this->adminAllowed($row['board'], $role->getRole())&&$this->extendedAllowed($row['board'], $role->getRole())&&$this->writeAllowed($row['board'], $role->getRole())&&$this->readAllowed($row['board'], $role->getRole()));
 						array_push($categories, array('boardAdmin'=>$boardAdmin, 'board'=>$board, 'pos'=>$pos, 'location'=>$location, 'title'=>$title));
 					}
@@ -267,10 +267,10 @@ class Board implements Module {
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->adminAllowed($row['board'], $role->getRole())) {
 						$location = $this->db->escapeString($row['location']);
-						$board = htmlentities($row['board'], null, "UTF-8");
-						$pos = htmlentities($row['pos'], null, "UTF-8");
-						$location = htmlentities($row['location'], null, "UTF-8");
-						$title = htmlentities($row['title'], null, "UTF-8");
+						$board = htmlentities($row['board'], null, "ISO-8859-1");
+						$pos = htmlentities($row['pos'], null, "ISO-8859-1");
+						$location = htmlentities($row['location'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$boardAdmin = ($this->adminAllowed($row['board'], $role->getRole())&&$this->extendedAllowed($row['board'], $role->getRole())&&$this->writeAllowed($row['board'], $role->getRole())&&$this->readAllowed($row['board'], $role->getRole()));
 						array_push($boards, array('boardAdmin'=>$boardAdmin, 'location'=>$location, 'board'=>$board, 'pos'=>$pos, 'title'=>$title));
 					}
@@ -359,13 +359,13 @@ class Board implements Module {
 					if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'")) {
 						$result = $this->db->query("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'");
 						while ($row = $this->db->fetchArray($result)) {
-							$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");
-							array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
+							$roleName = htmlentities($role->getNamebyID($row['role']), null, "ISO-8859-1");
+							array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 						}
 					}
 					else {
-						$roleName = htmlentities($role->getNamebyID($roleID), null, "UTF-8");
-						array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "UTF-8"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
+						$roleName = htmlentities($role->getNamebyID($roleID), null, "ISO-8859-1");
+						array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "ISO-8859-1"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 					}
 				}
 			}
@@ -405,7 +405,7 @@ class Board implements Module {
 			$result = $this->db->query("SELECT `user`, `nickname` FROM `user` JOIN `rights_board` USING(`role`) WHERE `extended`='1' AND `read`='1' AND `write`='1' AND `admin`='0' AND `board`='$board'");
 			while ($row = $this->db->fetchArray($result)) {
 				$user = $this->db->escapeString($row['user']);
-				$nickname = htmlentities($row['nickname'], null, "UTF-8");
+				$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
 				if ($this->db->isExisting("SELECT * FROM `board_operator` WHERE `user`='$user' AND `board`='$board'")) {
 					array_push($boardOperators, array('user'=>$user, 'nickname'=>$nickname));
 				}

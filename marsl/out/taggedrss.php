@@ -31,10 +31,10 @@ class RSS {
 					WHERE `rights`.`read` = '1' AND `news`.`deleted` = '0' AND `news`.`visible` = '1' ORDER BY `postdate` DESC LIMIT 0,10");
 			while ($row = $db->fetchArray($result)) {
 				$domain = $config->getDomain();
-				$location = htmlentities($row['location'], null, "UTF-8");
-				$news = htmlentities($row['news'], null, "UTF-8");
+				$location = htmlentities($row['location'], null, "ISO-8859-1");
+				$news = htmlentities($row['news'], null, "ISO-8859-1");
 				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
-				$teaser = html_entity_decode($row['teaser'], null, "UTF-8");
+				$teaser = html_entity_decode($row['teaser'], null, "ISO-8859-1");
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$date = date("D, d M Y H:i:s O", $row['postdate']);
 				
@@ -44,11 +44,11 @@ class RSS {
 				$newsPicture = "empty";
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID1'");
 				while ($row2 = $db->fetchArray($result2)) {
-					$teaserPicture = $domain."/news/".htmlentities($row2['url'], null, "UTF-8");
+					$teaserPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID2'");
 				while ($row2 = $db->fetchArray($result2)) {
-					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "UTF-8");
+					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				
 				$basic = new Basic($db);

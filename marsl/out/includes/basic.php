@@ -17,7 +17,7 @@ class Basic {
 	 */
 	public function cleanHTML($dirt) {
 		$config = HTMLPurifier_Config::createDefault();
-		$config->set('Core.Encoding','UTF-8');
+		$config->set('Core.Encoding','ISO-8859-1');
 		$config->set('HTML.Doctype','XHTML 1.1');
 		$config->set('Core.EscapeNonASCIICharacters', true);
 		$def = $config->getHTMLDefinition(true);
@@ -31,7 +31,7 @@ class Basic {
 	 */
 	public function cleanStrict($dirt) {
 		$config = HTMLPurifier_Config::createDefault();
-		$config->set('Core.Encoding', 'UTF-8');
+		$config->set('Core.Encoding', 'ISO-8859-1');
 		$config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
 		$config->set('Core.EscapeNonASCIICharacters', true);
 		$config->set('HTML.AllowedElements', array('a','b','strong','i','em','u','img','blockquote','s','br'));
@@ -220,7 +220,7 @@ class Basic {
 	
 		//Get the XML parser of PHP - PHP must have this module for the parser to work
 		$parser = xml_parser_create('');
-		xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, "UTF-8"); # http://minutillo.com/steve/weblog/2004/6/17/php-xml-and-character-encodings-a-tale-of-sadness-rage-and-data-loss
+		xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, "ISO-8859-1"); # http://minutillo.com/steve/weblog/2004/6/17/php-xml-and-character-encodings-a-tale-of-sadness-rage-and-data-loss
 		xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
 		xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
 		xml_parse_into_struct($parser, trim($contents), $xml_values);

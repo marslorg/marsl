@@ -5,7 +5,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 <html>
 	<head>
 		<title>Admin System - <?php echo $title; ?></title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 		<link rel="stylesheet" href="styles/style.css" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css" type="text/css" />
 		<link rel="stylesheet" href="styles/jquery.css" type="text/css" />

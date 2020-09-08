@@ -1,6 +1,6 @@
 <?php
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>";
 ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
 	<?php foreach($items as $item):?>

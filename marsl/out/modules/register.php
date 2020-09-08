@@ -70,9 +70,9 @@ class Register implements Module {
 								$captcha = true;	
 							}
 							if (!$success) {
-								$nickname = htmlentities($_POST['nickname'], null, "UTF-8");
-								$mail = htmlentities($_POST['mail'], null, "UTF-8");
-								$mail2 = htmlentities($_POST['mail2'], null, "UTF-8");
+								$nickname = htmlentities($_POST['nickname'], null, "ISO-8859-1");
+								$mail = htmlentities($_POST['mail'], null, "ISO-8859-1");
+								$mail2 = htmlentities($_POST['mail2'], null, "ISO-8859-1");
 							}
 							else {
 								$nickname = "";
@@ -116,7 +116,7 @@ class Register implements Module {
 				$guestRole = $role->getGuestRole();
 				$location = $row['id'];
 				if ($auth->locationReadAllowed($location, $guestRole)) {
-					$name = htmlentities($row['name'], null, "UTF-8");
+					$name = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($links, array('id'=>$location, 'name'=>$name));
 				}
 			}

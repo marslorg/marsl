@@ -72,7 +72,7 @@ class RegisterUser {
 					$possibleRole = $this->db->escapeString($possibleRole);
 					$result = $this->db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {
-						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'], null, "UTF-8")));
+						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 					}
 				}
 			}

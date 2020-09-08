@@ -101,7 +101,7 @@ class Main {
 			}
 		}
 		
-		$title = htmlentities($basic->getTitle(), null, "UTF-8");
+		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$modules = $basic->getModules();
 		if ($user->isGuest()) {
 			if (isset($_GET['var'])) {

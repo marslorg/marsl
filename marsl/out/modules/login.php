@@ -139,7 +139,7 @@ class Login implements Module {
 			$success = true;
 			$recover = true;
 			$basic = new Basic($this->db);
-			$title = htmlentities($basic->getTitle(), null, "UTF-8");
+			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 			require_once("template/recover.tpl.php");
 		}
 		else {
@@ -193,7 +193,7 @@ class Login implements Module {
 		}
 		
 		$basic = new Basic($this->db);
-		$title = htmlentities($basic->getTitle(), null, "UTF-8");
+		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$time = $_GET['time'];
 		$recover = false;
 		$uid = "";
