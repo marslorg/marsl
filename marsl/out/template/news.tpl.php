@@ -11,7 +11,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				?>
 				<b><?php echo $moduleTag['name']; ?></b><br />
 				<?php foreach($tags as $tag): ?>
-				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo htmlentities($tag['tag'], null, "ISO-8859-1"); ?></a><br />
+				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo htmlentities($tag['tag'], null, "UTF-8"); ?></a><br />
 				<?php endforeach; ?>
 				<br />
 				<?php endforeach; ?>
@@ -50,7 +50,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				?>
 				<b><?php echo $moduleTag['name']; ?>: </b>
 				<?php foreach($tags as $tag): ?>
-				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo htmlentities($tag['tag'], null, "ISO-8859-1"); ?></a> 
+				<a href="index.php?tag=<?php echo $tag['id']; ?>&amp;scope=<?php echo $moduleTag['type']; ?>"><?php echo htmlentities($tag['tag'], null, "UTF-8"); ?></a> 
 				<?php endforeach; ?>
 				<br />
 				<?php endforeach; ?>

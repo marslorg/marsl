@@ -60,17 +60,17 @@ class Post {
 						$post = $row['post'];
 						$date = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['date']);
 						$operator = $row['operator'];
-						$operatorNickname = htmlentities($user->getNickbyID($operator), null, "ISO-8859-1");
+						$operatorNickname = htmlentities($user->getNickbyID($operator), null, "UTF-8");
 						$lastedit = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['lastedit']);
 						$content = $row['content'];
-						$ip = htmlentities($row['ip'], null, "ISO-8859-1");
+						$ip = htmlentities($row['ip'], null, "UTF-8");
 						$author = $row['author'];
-						$authorNickname = htmlentities($user->getNickbyID($author), null, "ISO-8859-1");
+						$authorNickname = htmlentities($user->getNickbyID($author), null, "UTF-8");
 						$editable = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole())))));
 						$files = array();
 						$result2 = $this->db->query("SELECT `file`, `realname` FROM `post_attachment` NATURAL JOIN `attachment` WHERE `post`='$post'");
 						while ($row2 = $this->db->fetchArray($result2)) {
-							$filename = htmlentities($row2['realname'], null, "ISO-8859-1");
+							$filename = htmlentities($row2['realname'], null, "UTF-8");
 							$file = $row2['file'];
 							array_push($files, array('filename'=>$filename, 'file'=>$file));
 						}

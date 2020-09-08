@@ -100,7 +100,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 				<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
 				<button type="submit" name="action" value="send"> Absenden </button>
-				<button type="reset"> L�schen </button>
+				<button type="reset"> L&ouml;schen </button>
 			</td>
 		</tr>
 	</table>

@@ -5,7 +5,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <html>
 	<head>
 		<title><?php echo $title; ?></title>
-		<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="mobile-web-app-capable" content="yes" />
 		<link rel="icon" sizes="192x192" href="includes/graphics/mobicon.png" />

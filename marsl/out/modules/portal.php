@@ -50,14 +50,14 @@ class Portal implements Module {
 		$news = array();
 		$result = $this->db->query("SELECT * FROM `news` JOIN `news_picture` ON `picture2`=`picture` WHERE `deleted`='0' AND `visible`='1' AND `featured`='1' ORDER BY `postdate` DESC LIMIT 4");
 		while ($row = $this->db->fetchArray($result)) {
-			$location = htmlentities($row['location'], null, "ISO-8859-1");
+			$location = htmlentities($row['location'], null, "UTF-8");
 			$photograph = "";
 			if ($auth->locationReadAllowed($location, $role->getRole())) {
 				$date = date("d\.m\.Y", $row['date']);
 				if (!empty($row['photograph'])) {
-					$photograph = " Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1");
+					$photograph = " Foto: ".htmlentities($row['photograph'], null, "UTF-8");
 				}
-				array_push($news, array('location'=>$location, 'picture'=>htmlentities($row['url'], null, "ISO-8859-1"), 'photograph'=>$photograph, 'date'=>$date, 'news'=>$row['news'], 'headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'title'=>htmlentities($row['title'], null, "ISO-8859-1"), 'teaser'=>$row['teaser']));
+				array_push($news, array('location'=>$location, 'picture'=>htmlentities($row['url'], null, "UTF-8"), 'photograph'=>$photograph, 'date'=>$date, 'news'=>$row['news'], 'headline'=>htmlentities($row['headline'], null, "UTF-8"), 'title'=>htmlentities($row['title'], null, "UTF-8"), 'teaser'=>$row['teaser']));
 			}
 		}
 		require_once("template/portal.featured.tpl.php");
@@ -73,7 +73,7 @@ class Portal implements Module {
 		$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 		while ($row = $this->db->fetchArray($result)) {
 			if ($auth->locationReadAllowed($row['id'], $role->getRole())) {
-				array_push($pages, array('location'=>$row['id'], 'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
+				array_push($pages, array('location'=>$row['id'], 'name'=>htmlentities($row['name'], null, "UTF-8")));
 			}
 		}
 		require_once("template/portal.head.tpl.php");
@@ -88,9 +88,9 @@ class Portal implements Module {
 				$photograph = "";
 				$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID'");
 				while ($row2 = $this->db->fetchArray($result2)) {
-					$picture = htmlentities($row2['url'], null, "ISO-8859-1");
+					$picture = htmlentities($row2['url'], null, "UTF-8");
 					if (!empty($row2['photograph'])) {
-						$photograph = "<br /><b>Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1")."</b><br />";
+						$photograph = "<br /><b>Foto: ".htmlentities($row2['photograph'], null, "UTF-8")."</b><br />";
 					}
 				}
 				$width = 0;
@@ -100,7 +100,7 @@ class Portal implements Module {
 					$width = $picinfo[0]/1.5;
 					$height = $picinfo[1]/1.5;
 				}
-				array_push($news, array('width'=>$width,'height'=>$height,'picture'=>$picture, 'photograph'=>$photograph, 'teaser'=>$row['teaser'],'location'=>$location, 'news'=>$row['news'], 'headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'title'=>htmlentities($row['title'], null, "ISO-8859-1")));
+				array_push($news, array('width'=>$width,'height'=>$height,'picture'=>$picture, 'photograph'=>$photograph, 'teaser'=>$row['teaser'],'location'=>$location, 'news'=>$row['news'], 'headline'=>htmlentities($row['headline'], null, "UTF-8"), 'title'=>htmlentities($row['title'], null, "UTF-8")));
 			}
 			require("template/portal.main.tpl.php");
 			$nb_id++;
@@ -126,7 +126,7 @@ class Portal implements Module {
 							$picID = $this->db->escapeString($row['picture2']);
 							$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID'");
 							while ($row2 = $this->db->fetchArray($result2)) {
-								$picture = htmlentities($row2['url'], null, "ISO-8859-1");
+								$picture = htmlentities($row2['url'], null, "UTF-8");
 							}
 							if ($auth->moduleReadAllowed("news", $role->getGuestRole())&&($picture!="empty")&&$auth->locationReadAllowed($location, $role->getGuestRole())&&$auth->locationAdminAllowed($location, $role->getRole())) {
 								$article = $this->db->escapeString($row['news']);
@@ -152,7 +152,7 @@ class Portal implements Module {
 						$picture = $row2['url'];
 					}
 					if ($auth->moduleReadAllowed("news", $role->getGuestRole())&&($picture!="empty")&&$auth->locationReadAllowed($location, $role->getGuestRole())&&$auth->locationAdminAllowed($location, $role->getRole())) {
-						array_push($news, array('headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'id'=>$row['news'], 'title'=>htmlentities($row['title'], null, "ISO-8859-1"), 'date'=>$date, 'featured'=>$row['featured']));
+						array_push($news, array('headline'=>htmlentities($row['headline'], null, "UTF-8"), 'id'=>$row['news'], 'title'=>htmlentities($row['title'], null, "UTF-8"), 'date'=>$date, 'featured'=>$row['featured']));
 					}
 				}
 				$authTime = time();
