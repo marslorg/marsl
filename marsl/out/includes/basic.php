@@ -17,7 +17,7 @@ class Basic {
 	 */
 	public function cleanHTML($dirt) {
 		$config = HTMLPurifier_Config::createDefault();
-		$config->set('Core.Encoding','ISO-8859-1');
+		$config->set('Core.Encoding','UTF-8');
 		$config->set('HTML.Doctype','XHTML 1.1');
 		$config->set('Core.EscapeNonASCIICharacters', true);
 		$def = $config->getHTMLDefinition(true);
@@ -31,7 +31,7 @@ class Basic {
 	 */
 	public function cleanStrict($dirt) {
 		$config = HTMLPurifier_Config::createDefault();
-		$config->set('Core.Encoding', 'ISO-8859-1');
+		$config->set('Core.Encoding', 'UTF-8');
 		$config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
 		$config->set('Core.EscapeNonASCIICharacters', true);
 		$config->set('HTML.AllowedElements', array('a','b','strong','i','em','u','img','blockquote','s','br'));

@@ -164,7 +164,7 @@ class User {
 		$user = $this->db->escapeString($id);
 		$result = $this->db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1' AND `primary`='1'");
 		while ($row = $this->db->fetchArray($result)) {
-			$mail = htmlentities($row['email'], null, "ISO-8859-1");
+			$mail = htmlentities($row['email'], null, "UTF-8");
 		}
 		return $mail;
 	}
@@ -177,7 +177,7 @@ class User {
 		$user = $this->db->escapeString($id);
 		$result = $this->db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
 		while ($row = $this->db->fetchArray($result)) {
-			$name = htmlentities($row['nickname'], null, "ISO-8859-1");
+			$name = htmlentities($row['nickname'], null, "UTF-8");
 		}
 		return $name;
 	}
@@ -190,7 +190,7 @@ class User {
 		$user = $this->db->escapeString($id);
 		$result = $this->db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
 		while ($row = $this->db->fetchArray($result)) {
-			$name = htmlentities($row['acronym'], null, "ISO-8859-1");
+			$name = htmlentities($row['acronym'], null, "UTF-8");
 			if (empty($name)) {
 				$name = $this->getNickbyID($user);
 			}
@@ -206,7 +206,7 @@ class User {
 		$mail = $this->db->escapeString($mail);
 		$result = $this->db->query("SELECT `nickname` FROM `email` NATURAL JOIN `user` WHERE `email`='$mail' AND `confirmed`='1'");
 		while ($row = $this->db->fetchArray($result)) {
-			$name = htmlentities($row['nickname'], null, "ISO-8859-1");
+			$name = htmlentities($row['nickname'], null, "UTF-8");
 		}
 		return $name;
 	}
