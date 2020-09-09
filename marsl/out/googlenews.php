@@ -20,6 +20,7 @@ class GoogleNews {
 		$role = new Role($db);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
+			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 			$feedtitle = $config->getTitle();
 			$feedlink = $config->getDomain();
 			$feeddescription = "RSS Feed von ".$config->getTitle();
@@ -35,7 +36,8 @@ class GoogleNews {
 				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
 				$teaser = htmlentities($row['teaser'], null, "ISO-8859-1");
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
-				$date = date("Y-m-d", $row['postdate']);
+				$dateTime->setTimestamp($row['postdate']);
+				$date = $dateTime->format("Y-m-d");
 				array_push($items, array('link'=>$link, 'teaser'=>$teaser, 'title'=>$title, 'date'=>$date));
 			}
 			require_once("template/googlenews.tpl.php");

@@ -31,6 +31,8 @@ class News implements Module {
 		$moduleTags = array();
 
 		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+
 		$domain = $config->getDomain();
 
 		foreach ($modules as $module) {
@@ -242,8 +244,10 @@ class News implements Module {
 							}
 						}
 						$city = htmlentities($row['city'], null, "ISO-8859-1");
-						$date = date("d\.m\.Y", $row['date']);
-						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
+						$dateTime->setTimestamp($row['date']);
+						$date = $dateTime->format("d\.m\.Y");
+						$dateTime->setTimestamp($row['postdate']);
+						$postdate = $dateTime->format("d\. M Y \u\m H\:i\:s");
 						array_push($news,array('author'=>$authorName,'authorIP'=>$authorIP,'news'=>$id, 'location'=>$location, 'headline'=>$headline, 'title'=>$title, 'teaser'=>$teaser, 'picture1'=>$picture1, 'photograph1'=>$photograph1, 'city'=>$city, 'date'=>$date, 'postdate'=>$postdate, 'text'=>$text, 'corrected'=>$corrected));
 					}
 				}
@@ -261,9 +265,10 @@ class News implements Module {
 							$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 							$title = htmlentities($row['title'], null, "ISO-8859-1");
 							$category = htmlentities($row['location'], null, "ISO-8859-1");
-							$day = date("d", $row['date']);
-							$month = date("m", $row['date']);
-							$year = date("Y", $row['date']);
+							$dateTime->setTimestamp($row['date']);
+							$day = $dateTime->format("d");
+							$month = $dateTime->format("m");
+							$year = $dateTime->format("Y");
 							$teaser = $row['teaser'];
 							$text = $row['text'];
 							$picture1 = $row['picture1'];
@@ -426,8 +431,10 @@ class News implements Module {
 					$category = $row['location'];
 					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$location = $navigation->getNamebyID($category);
-					$date = date("d\.m\.Y", $row['date']);
-					$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
+					$dateTime->setTimestamp($row['postdate']);
+					$postdate = $dateTime->format("d\. M Y \u\m H\:i\:s");
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$picture1 = "empty";
@@ -489,8 +496,10 @@ class News implements Module {
 						}
 					}
 					$city = htmlentities($row['city'], null, "ISO-8859-1");
-					$date = date("d\.m\.Y", $row['date']);
-					$postdate = date("\a\m d\. M Y \u\m H\:i\:s", $row['postdate']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
+					$dateTime->setTimestamp($row['postdate']);
+					$postdate = $dateTime->format("\a\m d\. M Y \u\m H\:i\:s");
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
 					require_once("template/news.details.tpl.php");
@@ -507,6 +516,9 @@ class News implements Module {
 		$basic = new Basic($this->db);
 		$user = new User($this->db);
 		$role = new Role($this->db);
+
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		
 		if ($auth->moduleReadAllowed("news", $role->getRole())) {
 			if (!isset($_GET['action'])) {
@@ -534,8 +546,10 @@ class News implements Module {
 				$news = array();
 				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row=$this->db->fetchArray($result)) {
-					$date = date("d\.m\.Y", $row['date']);
-					$postdate = date("d\.m\.Y", $row['postdate']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
+					$dateTime->setTimestamp($row['postdate']);
+					$postdate = $dateTime->format("d\.m\.Y");
 					$author = $row['author'];
 					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
 					$picID1 = $this->db->escapeString($row['picture1']);
@@ -567,7 +581,8 @@ class News implements Module {
 				$news = $this->db->escapeString($_GET['show']);
 				$result = $this->db->query("SELECT * FROM `news` WHERE `location`='$location' AND `news`='$news' AND `visible`='1' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
-					$date = date("d\.m\.Y", $row['date']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
 					$author = $row['author'];
 					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
 					$picID1 = $this->db->escapeString($row['picture1']);
@@ -848,6 +863,10 @@ class News implements Module {
 		$articles = array();
 		$tagName = "";
 		$result = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$tagID'");
+
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+
 		while ($row = $this->db->fetchArray($result)) {
 			$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
 		}
@@ -857,7 +876,8 @@ class News implements Module {
 				$news = $row['news'];
 				$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 				$title = htmlentities($row['title'], null, "ISO-8859-1");
-				$date = date("d\.m\.Y", $row['date']);
+				$dateTime->setTimestamp($row['date']);
+				$date = $dateTime->format("d\.m\.Y");
 				$location = $row['location'];
 				$locationName = htmlentities($row['name'], null, "ISO-8859-1");
 				array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));

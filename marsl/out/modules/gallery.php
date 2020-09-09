@@ -78,6 +78,8 @@ class Gallery implements Module {
 		$user = new User($this->db);
 		$role = new Role($this->db);
 		$navigation = new Navigation($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($user->isAdmin()) {
 			$auth = new Authentication($this->db);
 			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
@@ -104,8 +106,10 @@ class Gallery implements Module {
 					$locationAdmin = $auth->locationAdminAllowed($row['location'], $role->getRole());
 					$editLink = ($moduleExtended&&$locationAdmin);
 					$description = $row['description'];
-					$date = date("d\.m\.Y", $row['date']);
-					$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
+					$dateTime->setTimestamp($row['postdate']);
+					$postdate = $dateTime->format("d\. M Y \u\m H\:i\:s");
 					array_push($galleries, array('photograph'=>$photograph, 'album'=>$id, 'authorIP'=>$authorIP, 'author'=>$authorName, 'location'=>$location, 'description'=>$description, 'date'=>$date, 'postdate'=>$postdate, 'editLink'=>$editLink));
 				}
 				$authTime = time();
@@ -198,6 +202,8 @@ class Gallery implements Module {
 		$role = new Role($this->db);
 		$auth = new Authentication($this->db);
 		$album = $this->db->escapeString($_GET['id']);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send") {
@@ -236,9 +242,10 @@ class Gallery implements Module {
 				if ($auth->locationAdminAllowed($category, $role->getRole())) {
 					$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
 					$category = htmlentities($category, null, "ISO-8859-1");
-					$day = date("d", $row['date']);
-					$month = date("m", $row['date']);
-					$year = date("Y", $row['date']);
+					$dateTime->setTimestamp($row['date']);
+					$day = $dateTime->format("d");
+					$month = $dateTime->format("m");
+					$year = $dateTime->format("Y");
 					$description = $row['description'];
 					$album = htmlentities($_GET['id'], null, "ISO-8859-1");
 					$authTime = time();
@@ -302,6 +309,8 @@ class Gallery implements Module {
 		$user = new User($this->db);
 		$role = new Role($this->db);
 		$navigation = new Navigation($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($user->isAdmin()) {
 			$auth = new Authentication($this->db);
 			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
@@ -318,8 +327,10 @@ class Gallery implements Module {
 						$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
 						$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
 						$description = $row['description'];
-						$date = date("d\.m\.Y", $row['date']);
-						$postdate = date("d\. M Y \u\m H\:i\:s", $row['postdate']);
+						$dateTime->setTimestamp($row['date']);
+						$date = $dateTime->format("d\.m\.Y");
+						$dateTime->setTimestamp($row['postdate']);
+						$postdate = $dateTime->format("d\. M Y \u\m H\:i\:s");
 						array_push($galleries, array('photograph'=>$photograph, 'album'=>$id, 'authorIP'=>$authorIP, 'author'=>$authorName, 'location'=>$location, 'description'=>$description, 'date'=>$date, 'postdate'=>$postdate));
 					}
 				}
@@ -396,6 +407,8 @@ class Gallery implements Module {
 		$auth = new Authentication($this->db);
 		$basic = new Basic($this->db);
 		$role = new Role($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($auth->moduleReadAllowed("gallery", $role->getRole())) {
 			if (!isset($_GET['action'])) {
 				$location = "";
@@ -425,7 +438,8 @@ class Gallery implements Module {
 					$album = $this->db->escapeString($row['album']);
 					$folder = htmlentities($row['folder'], null, "ISO-8859-1");
 					$photograph = $row['photograph'];
-					$date = date("d\.m\.Y", $row['date']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
 					$description = $row['description'];
 					$result2 = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0' AND `visible`='1' ORDER BY RAND() LIMIT 1");
 					while ($row2 = $this->db->fetchArray($result2)) {

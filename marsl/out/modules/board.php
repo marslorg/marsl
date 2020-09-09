@@ -25,6 +25,8 @@ class Board implements Module {
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$location = $this->db->escapeString($_GET['id']);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($auth->moduleReadAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
 			if (isset($_GET['action'])) {
 				$threadClass = new Thread($this->db);
@@ -98,7 +100,8 @@ class Board implements Module {
 									$thread = htmlentities($row3['thread'], null, "ISO-8859-1");
 									$post = htmlentities($row3['post'], null, "ISO-8859-1");
 									$threadTitle = htmlentities($row3['title'], null, "ISO-8859-1");
-									$postTime = date("d\.m\.Y\, H\:i\:s", $row3['date']);
+									$dateTime->setTimestamp($row3['date']);
+									$postTime = $dateTime->format("d\.m\.Y\, H\:i\:s");
 									$postAuthor = htmlentities($row3['postauthor'], null, "ISO-8859-1");
 									$authorName = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
 									$page = 1;

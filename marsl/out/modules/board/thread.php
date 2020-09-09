@@ -25,6 +25,8 @@ class Thread {
 		$role = new Role($this->db);
 		$auth = new Authentication($this->db);
 		$board = new Board($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if (($location==$board->getLocation($boardID))&&($auth->moduleReadAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$board->readAllowed($boardID, $role->getRole()))) {
 			$writeAllowed = $auth->moduleWriteAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$board->readAllowed($boardID, $role->getRole());
 			$globals = array();
@@ -57,7 +59,8 @@ class Thread {
 				$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
 				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "ISO-8859-1");
 				$viewcount = $row['viewcount'];
-				$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
+				$dateTime->setTimestamp($row['date']);
+				$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
 				$type = "closed";
 				if ($row['type']=="0") {
 					$type = "open";
@@ -119,6 +122,8 @@ class Thread {
 		$auth = new Authentication($this->db);
 		$board = new Board($this->db);
 		$globals = array();
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		$result = $this->db->query("SELECT `post`, `thread`.`thread` AS `thread`, `board`, `postcount`, `title`, `thread`.`author` AS `threadauthor`, `post`.`author` AS `postauthor`, `viewcount`, `date` FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE `type`='2' ORDER BY `date` DESC");
 		while ($row = $this->db->fetchArray($result)) {
 			if ($auth->locationReadAllowed($board->getLocation($row['board']), $role->getRole())&&$board->readAllowed($row['board'], $role->getRole())) {
@@ -131,7 +136,8 @@ class Thread {
 				$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
 				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "ISO-8859-1");
 				$viewcount = $row['viewcount'];
-				$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
+				$dateTime->setTimestamp($row['date']);
+				$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
 				$page = $this->getPageNumber($thread);
 				array_push($globals, array('page'=>$page, 'post'=>$post, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date));
 			}
@@ -146,6 +152,8 @@ class Thread {
 		$board = $this->db->escapeString($_GET['board']);
 		$user = new User($this->db);
 		$fixeds = array();
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		$result = $this->db->query("SELECT `post`, `thread`.`thread` AS `thread`, `board`, `postcount`, `title`, `thread`.`author` AS `threadauthor`, `post`.`author` AS `postauthor`, `viewcount`, `date` FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE `type`='1' AND `board`='$board' ORDER BY `date` DESC");
 		while ($row = $this->db->fetchArray($result)) {
 			$thread = $row['thread'];
@@ -157,7 +165,8 @@ class Thread {
 			$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "ISO-8859-1");
 			$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "ISO-8859-1");
 			$viewcount = $row['viewcount'];
-			$date = date("d\.m\.Y\, H\:i\:s", $row['date']);
+			$dateTime->setTimestamp($row['date']);
+			$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
 			$page = $this->getPageNumber($thread);
 			array_push($fixeds, array('page'=>$page, 'post'=>$post, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date));
 		}

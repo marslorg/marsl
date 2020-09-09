@@ -166,6 +166,8 @@ class CBE implements Module {
 		$role = new Role($this->db);
 		$auth = new Authentication($this->db);
 		$tagID = $this->db->escapeString($tagID);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($type=="location") {
 			$articles = array();
 			$tagName = "";
@@ -179,7 +181,8 @@ class CBE implements Module {
 					$news = $row['news'];
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
-					$date = date("d\.m\.Y", $row['date']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
 					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
@@ -201,7 +204,8 @@ class CBE implements Module {
 					$news = $row['news'];
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
-					$date = date("d\.m\.Y", $row['date']);
+					$dateTime->setTimestamp($row['date']);
+					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
 					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
