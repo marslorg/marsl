@@ -4,7 +4,8 @@ set_error_handler("sendErrorMail");
 
 function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 	$config = new Configuration();
-	$error = "Zeit: ".date("Y-m-d H:i:s")."\n";
+	$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+	$error = "Zeit: ".$dateTime->format("Y-m-d H:i:s")."\n";
 	$error .= "Meldung: ".$errmsg."\n";
 	$error .= "Datei: ".$filename."\n";
 	$error .= "Zeile: ".$linenum."\n";

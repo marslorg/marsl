@@ -48,12 +48,15 @@ class Portal implements Module {
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$news = array();
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		$result = $this->db->query("SELECT * FROM `news` JOIN `news_picture` ON `picture2`=`picture` WHERE `deleted`='0' AND `visible`='1' AND `featured`='1' ORDER BY `postdate` DESC LIMIT 4");
 		while ($row = $this->db->fetchArray($result)) {
 			$location = htmlentities($row['location'], null, "UTF-8");
 			$photograph = "";
 			if ($auth->locationReadAllowed($location, $role->getRole())) {
-				$date = date("d\.m\.Y", $row['date']);
+				$dateTime->setTimestamp($row['date']);
+				$date = $dateTime->format("d\.m\.Y");
 				if (!empty($row['photograph'])) {
 					$photograph = " Foto: ".htmlentities($row['photograph'], null, "UTF-8");
 				}
@@ -115,11 +118,13 @@ class Portal implements Module {
 		$user = new User($this->db);
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($user->isAdmin()) {
 			if ($auth->moduleAdminAllowed("portal", $role->getRole())) {
 				if (isset($_POST['action'])) {
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-						$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
+						$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
 						while ($row = $this->db->fetchArray($result)) {
 							$location = $row['location'];
 							$picture = "empty";
@@ -144,7 +149,8 @@ class Portal implements Module {
 				$news = array();
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $row['location'];
-					$date = date("d\.m\.Y", $row['postdate']);
+					$dateTime->setTimestamp($row['postdate']);
+					$date = $dateTime->format("d\.m\.Y");
 					$picture = "empty";
 					$picID = $this->db->escapeString($row['picture2']);
 					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID'");

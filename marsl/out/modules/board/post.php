@@ -24,6 +24,8 @@ class Post {
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$user = new User($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($auth->moduleReadAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
 			$thread = new Thread($this->db);
 			$board = new Board($this->db);
@@ -58,10 +60,12 @@ class Post {
 					$result = $this->db->query("SELECT `post`, `date`, `operator`, `lastedit`, `content`, `ip`, `author` FROM `post` WHERE `deleted`='0' AND `thread`='$threadID' ORDER BY `date` LIMIT $start,$end");
 					while ($row = $this->db->fetchArray($result)) {
 						$post = $row['post'];
-						$date = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['date']);
+						$dateTime->setTimestamp($row['date']);
+						$date = $dateTime->format("\a\m d\.m\.Y\ \u\m H\:i\:s");
 						$operator = $row['operator'];
 						$operatorNickname = htmlentities($user->getNickbyID($operator), null, "UTF-8");
-						$lastedit = date("\a\m d\.m\.Y\ \u\m H\:i\:s", $row['lastedit']);
+						$dateTime->setTimestamp($row['lastedit']);
+						$lastedit = $dateTime->format("\a\m d\.m\.Y\ \u\m H\:i\:s");
 						$content = $row['content'];
 						$ip = htmlentities($row['ip'], null, "UTF-8");
 						$author = $row['author'];
