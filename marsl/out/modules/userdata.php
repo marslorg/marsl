@@ -25,6 +25,8 @@ class UserData implements Module {
 		$role = new Role($this->db);
 		$mailer = new Mailer($this->db);
 		$basic = new Basic($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($auth->moduleAdminAllowed("userdata", $role->getRole())||$auth->moduleExtendedAllowed("userdata", $role->getRole())) {
 			if ($auth->moduleAdminAllowed("userdata", $role->getRole())) {
 				require_once("template/userdata.alphabet.tpl.php");
@@ -41,7 +43,8 @@ class UserData implements Module {
 						$nickname = htmlentities($row['nickname'], null, "UTF-8");
 						$prename = htmlentities($row['prename'], null, "UTF-8");
 						$acronym = htmlentities($row['acronym'], null, "UTF-8");
-						$regdate = date("d\. M Y\; H\:i\:s", $row['regdate']);
+						$dateTime->setTimestamp($row['regdate']);
+						$regdate = $dateTime->format("d\. M Y\; H\:i\:s");
 						$email = htmlentities($row['email'], null, "UTF-8");
 						$postcount = htmlentities($row['postcount'], null, "UTF-8");
 						$name = htmlentities($row['username'], null, "UTF-8");
@@ -180,6 +183,8 @@ class UserData implements Module {
 		$user = new User($this->db);
 		$userID = $user->getID();
 		$basic = new Basic($this->db);
+		$config = new Configuration();
+		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		
 		$location = "";
 		if (isset($_GET['id'])) {
@@ -307,9 +312,10 @@ class UserData implements Module {
 				$name = htmlentities($row['name'], null, "UTF-8");
 				$info = $row['info'];
 				$signature = $row['signature'];
-				$day = date("d", $row['birthdate']);
-				$month = date("m", $row['birthdate']);
-				$year = date("Y", $row['birthdate']);
+				$dateTime->setTimestamp($row['birthdate']);
+				$day = $dateTime->format("d");
+				$month = $dateTime->format("m");
+				$year = $dateTime->format("Y");
 				$gender = $row['gender'];
 				$interests = htmlentities($row['interests'], null, "UTF-8");
 				$job = htmlentities($row['job'], null, "UTF-8");

@@ -21,6 +21,7 @@ class RSS {
 		$role = new Role($db);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
+			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 			$feedtitle = $config->getTitle()." - RSS Feed";
 			$feedlink = $config->getDomain();
 			$feeddescription = "RSS Feed von ".$config->getTitle();
@@ -36,7 +37,8 @@ class RSS {
 				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
 				$teaser = htmlentities($row['teaser'], null, "UTF-8");
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
-				$date = date("D, d M Y H:i:s O", $row['postdate']);
+				$dateTime->setTimestamp($row['postdate']);
+				$date = $dateTime->format("D, d M Y H:i:s O");
 				
 				$picID1 = $db->escapeString($row['picture1']);
 				$picID2 = $db->escapeString($row['picture2']);
