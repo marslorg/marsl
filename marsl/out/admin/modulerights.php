@@ -59,7 +59,7 @@ class ModuleRights {
 					foreach ($roles as $roleID) {
 						if ($roleID!=$role->getRole()) {
 							$roleID = $this->db->escapeString($roleID);
-							if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'")) {
+							if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID' LIMIT 1")) {
 								$result = $this->db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = $this->db->fetchArray($result)) {
 									$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");

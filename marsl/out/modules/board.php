@@ -153,7 +153,7 @@ class Board implements Module {
 	public function isOperator($boardID, $userID) {
 		$boardID = $this->db->escapeString($boardID);
 		$userID = $this->db->escapeString($userID);
-		if ($this->db->isExisting("SELECT `user` FROM `board_operator` WHERE `board`='$boardID' AND `user`='$userID'")) {
+		if ($this->db->isExisting("SELECT `user` FROM `board_operator` WHERE `board`='$boardID' AND `user`='$userID' LIMIT 1")) {
 			$role = new Role($this->db);
 			$roleID = $role->getRolebyUser($userID);
 			$location = $this->getLocation($boardID);
@@ -203,12 +203,12 @@ class Board implements Module {
 									$location = $row['location'];
 								}
 								if ($type=="0") {
-									if ($this->db->isExisting("SELECT * FROM `navigation` WHERE `module`='board' AND `id`='$newLocation'")) {
+									if ($this->db->isExisting("SELECT * FROM `navigation` WHERE `module`='board' AND `id`='$newLocation' LIMIT 1")) {
 										$location = $newLocation;
 									}
 								}
 								if ($type=="1") {
-									if ($this->db->isExisting("SELECT * FROM `board` WHERE `type`='0' AND `board`='$newLocation'")) {
+									if ($this->db->isExisting("SELECT * FROM `board` WHERE `type`='0' AND `board`='$newLocation' LIMIT 1")) {
 										$location = $newLocation;
 									}
 								}
@@ -295,7 +295,7 @@ class Board implements Module {
 		$write = $this->db->escapeString($write);
 		$extended = $this->db->escapeString($extended);
 		$admin = $this->db->escapeString($admin);
-		if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`= '$role' AND `board`='$board'")) {
+		if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`= '$role' AND `board`='$board' LIMIT 1")) {
 			$this->db->query("UPDATE `rights_board` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `board` = '$board'");
 		}
 		else {
@@ -316,16 +316,16 @@ class Board implements Module {
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
 			$roleID = $this->db->escapeString($roleID);
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `read`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `read`='1' LIMIT 1")) {
 				$rights['read'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `write`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `write`='1' LIMIT 1")) {
 				$rights['write'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `extended`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `extended`='1' LIMIT 1")) {
 				$rights['extended'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `admin`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `admin`='1' LIMIT 1")) {
 				$rights['admin'] = 1;
 			}
 		}
@@ -359,7 +359,7 @@ class Board implements Module {
 			foreach ($roles as $roleID) {
 				if ($roleID!=$role->getRole()) {
 					$roleID = $this->db->escapeString($roleID);
-					if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'")) {
+					if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' LIMIT 1")) {
 						$result = $this->db->query("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'");
 						while ($row = $this->db->fetchArray($result)) {
 							$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");
@@ -389,7 +389,7 @@ class Board implements Module {
 			if (isset($_POST['add'])) {
 				$operator = $this->db->escapeString($_POST['operator']);
 				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-					if ($this->db->isExisting("SELECT `nickname` FROM `user` JOIN `rights_board` USING(`role`) WHERE `extended`='1' AND `read`='1' AND `write`='1' AND `admin`='0' AND `board`='$board' AND `user`='$operator'")) {
+					if ($this->db->isExisting("SELECT `nickname` FROM `user` JOIN `rights_board` USING(`role`) WHERE `extended`='1' AND `read`='1' AND `write`='1' AND `admin`='0' AND `board`='$board' AND `user`='$operator' LIMIT 1")) {
 						$this->db->query("INSERT INTO `board_operator`(`user`,`board`) VALUES('$operator','$board')");
 					}
 				}
@@ -409,7 +409,7 @@ class Board implements Module {
 			while ($row = $this->db->fetchArray($result)) {
 				$user = $this->db->escapeString($row['user']);
 				$nickname = htmlentities($row['nickname'], null, "UTF-8");
-				if ($this->db->isExisting("SELECT * FROM `board_operator` WHERE `user`='$user' AND `board`='$board'")) {
+				if ($this->db->isExisting("SELECT * FROM `board_operator` WHERE `user`='$user' AND `board`='$board' LIMIT 1")) {
 					array_push($boardOperators, array('user'=>$user, 'nickname'=>$nickname));
 				}
 				else {

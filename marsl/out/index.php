@@ -28,6 +28,7 @@ class Main {
 		$basic = new Basic($this->db);
 		$title = htmlentities($basic->getTitle(), null, "UTF-8");
 		$image = htmlentities($basic->getImage(), null, "UTF-8");
+		$serverName = htmlentities($config->getClusterServer(), null, "UTF-8");
 		$domain = $config->getDomain();
 		$navigation = new Navigation($this->db);
 		$urlloader = new URLLoader($this->db);

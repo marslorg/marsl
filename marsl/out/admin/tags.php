@@ -34,7 +34,7 @@ class Tags {
 						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$newEntry = true;
 							$entry = $this->db->escapeString($_POST['entry']);
-							if (!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$entry'")) {
+							if (!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$entry' LIMIT 1")) {
 								$this->db->query("INSERT INTO `general`(`tag`) VALUES('$entry')");
 								$entrySuccessful = true;
 							}
@@ -95,9 +95,9 @@ class Tags {
 							$tag = $this->db->escapeString($_POST['autoTag']);
 						}
 					}
-					if (($_POST['action']=="tagExists")||$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+					if (($_POST['action']=="tagExists")||$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id') LIMIT 1")) {
 						if ($_POST['action']=="tagExists") {
-							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')")) {
+							if ((($_POST['do']=="rename")||($_POST['do']=="autoRename"))&&$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id') LIMIT 1")) {
 								$result = $this->db->query("SELECT `id` FROM `general` WHERE `tag`='$tag' AND NOT(`id`='$id')");
 								while ($row = $this->db->fetchArray($result)) {
 									$duplicateID = $row['id'];
@@ -106,7 +106,7 @@ class Tags {
 										$oldTag = htmlentities($row2['tag'], null, "UTF-8");
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
-										while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+										while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
 											$i++;
 											$autoTag = $tag." (".$i.")";
 										}
@@ -159,7 +159,7 @@ class Tags {
 									$oldTag = htmlentities($row2['tag'], null, "UTF-8");
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
-									while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id')")) {
+									while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
 										$i++;
 										$autoTag = $tag." (".$i.")";
 									}
