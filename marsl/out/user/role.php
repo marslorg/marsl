@@ -103,7 +103,7 @@ class Role {
 		$write = $this->db->escapeString($write);
 		$extended = $this->db->escapeString($extended);
 		$admin = $this->db->escapeString($admin);
-		if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`= '$role' AND `module`='$module'")) {
+		if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`= '$role' AND `module`='$module' LIMIT 1")) {
 			$this->db->query("UPDATE `rights_module` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `module` = '$module'");
 		}
 		else {
@@ -121,7 +121,7 @@ class Role {
 		$write = $this->db->escapeString($write);
 		$extended = $this->db->escapeString($extended);
 		$admin = $this->db->escapeString($admin);
-		if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$role' AND `location`='$location'")) {
+		if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$role' AND `location`='$location' LIMIT 1")) {
 			$this->db->query("UPDATE `rights` SET `read` = '$read', `write` = '$write', `extended`='$extended', `admin` = '$admin' WHERE `role`='$role' AND `location`='$location'");
 		}
 		else {
@@ -134,7 +134,7 @@ class Role {
 	 */
 	public function createRole($name) {
 		$name = $this->db->escapeString($name);
-		if (!$this->db->isExisting("SELECT * FROM `role` WHERE `name`='$name'")) {
+		if (!$this->db->isExisting("SELECT * FROM `role` WHERE `name`='$name' LIMIT 1")) {
 			$this->db->query("INSERT INTO `role`(`name`) VALUES('$name')");
 			return true;
 		}
@@ -149,13 +149,11 @@ class Role {
 	public function getPossibleRoles($role) {
 		$roles = array();
 		$role = $this->db->escapeString($role);
-		if ($this->db->isExisting("SELECT * FROM `role_editor` WHERE `master`='$role'")) {
-			$result = $this->db->query("SELECT slave FROM `role_editor` WHERE `master`='$role'");
-			while ($row = $this->db->fetchArray($result)) {
-				$slaves = $this->getPossibleRoles($row['slave']);
-				foreach ($slaves as $slave) {
-					array_push($roles,$slave);
-				}
+		$result = $this->db->query("SELECT `slave` FROM `role_editor` WHERE `master`='$role'");
+		while ($row = $this->db->fetchArray($result)) {
+			$slaves = $this->getPossibleRoles($row['slave']);
+			foreach ($slaves as $slave) {
+				array_push($roles,$slave);
 			}
 		}
 		array_push($roles,$role);
@@ -196,9 +194,9 @@ class Role {
 		$roles = array();
 		foreach($allRoles as $role) {
 			$roleID = $this->db->escapeString($role['role']);
-			$location = $this->db->isExisting("SELECT * FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1'");
-			$module = $this->db->isExisting("SELECT * FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1'");
-			$master = $this->db->isExisting("SELECT * FROM `role_editor` WHERE `master` = '$roleID'");
+			$location = $this->db->isExisting("SELECT * FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+			$module = $this->db->isExisting("SELECT * FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+			$master = $this->db->isExisting("SELECT * FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
 			if ($location || $module || $master) {
 				array_push($roles, $role);
 			}

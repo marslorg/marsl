@@ -25,16 +25,16 @@ class Authentication {
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
 			$roleID = $this->db->escapeString($roleID);
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `read`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `read`='1' LIMIT 1")) {
 				$rights['read'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `write`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `write`='1' LIMIT 1")) {
 				$rights['write'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `extended`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `extended`='1' LIMIT 1")) {
 				$rights['extended'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `admin`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `admin`='1' LIMIT 1")) {
 				$rights['admin'] = 1;
 			}
 		}
@@ -95,16 +95,16 @@ class Authentication {
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
 			$roleID = $this->db->escapeString($roleID);
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `read`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `read`='1' LIMIT 1")) {
 				$rights['read'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `write`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `write`='1' LIMIT 1")) {
 				$rights['write'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `extended`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `extended`='1' LIMIT 1")) {
 				$rights['extended'] = 1;
 			}
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `admin`='1'")) {
+			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `admin`='1' LIMIT 1")) {
 				$rights['admin'] = 1;
 			}
 		}

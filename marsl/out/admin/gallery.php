@@ -67,7 +67,7 @@ class Gallery {
 												$sub2 = substr($file,0,6);
 												if ($sub2 != "thumb_") {
 													if ($sub==".jpg"||$sub==".png"||$sub==".gif") {
-														if (!$this->db->isExisting("SELECT * FROM `picture` WHERE `album`='$id' AND `filename`='$file'")) {
+														if (!$this->db->isExisting("SELECT * FROM `picture` WHERE `album`='$id' AND `filename`='$file' LIMIT 1")) {
 															$this->db->query("INSERT INTO `picture`(`album`,`filename`,`deleted`,`visible`) VALUES('$id','$file','0','0')");
 															$from = $path.$file;
 															$to = $path."thumb_".$file;

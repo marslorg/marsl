@@ -31,7 +31,7 @@ class Standard {
 							$guest = $this->db->escapeString($_POST['guest']);
 							if (($role->getRole()!=$stdUser)&&($role->getRole()!=$guest)) {
 								if (in_array($stdUser,$possibleRoles)&&in_array($guest,$possibleRoles)) {
-									if ($this->db->isExisting("SELECT * FROM `stdroles`")) {
+									if ($this->db->isExisting("SELECT * FROM `stdroles` LIMIT 1")) {
 										$this->db->query("UPDATE `stdroles` SET `guest`='$guest', `user`='$stdUser'");
 									}
 									else {

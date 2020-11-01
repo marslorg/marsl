@@ -95,7 +95,7 @@ class Register implements Module {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send"&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$newID = $this->db->escapeString($_POST['location']);
-					if ($this->db->isExisting("SELECT `id` FROM `registration_tos`")) {
+					if ($this->db->isExisting("SELECT `id` FROM `registration_tos` LIMIT 1")) {
 						$this->db->query("UPDATE `registration_tos` SET `id`='$newID'");
 					}
 					else {

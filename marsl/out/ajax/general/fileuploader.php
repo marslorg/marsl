@@ -195,7 +195,7 @@ class FileUploader {
 	private function generateFileName() {
 		$basic = new Basic($this->db);
 		$filename = $this->db->escapeString($basic->randomHash());
-		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename'")) {
+		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename' LIMIT 1")) {
 			$filename = $this->db->escapeString($basic->randomHash());
 		}
 		return $filename;
@@ -204,7 +204,7 @@ class FileUploader {
 	private function generateKey() {
 		$basic = new Basic($this->db);
 		$key = $this->db->escapeString($basic->randomHash());
-		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key'")) {
+		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key' LIMIT 1")) {
 			$key = $this->db->escapeString($basic->randomHash());
 		}
 		return $key;

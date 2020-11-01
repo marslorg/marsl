@@ -257,7 +257,7 @@ class News implements Module {
 			}
 			else if ($_GET['action']=="edit") {
 				$id = $this->db->escapeString(htmlentities($_GET['id'], null, "ISO-8859-1"));
-				if ($this->db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'")) {
+				if ($this->db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0' LIMIT 1")) {
 					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 					while ($row = $this->db->fetchArray($result)) {
 						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
@@ -818,7 +818,7 @@ class News implements Module {
 			$tag = $this->db->escapeString($tag);
 			$tag = trim($tag);
 			$id = "";
-			if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag'"))) {
+			if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag' LIMIT 1"))) {
 				$this->db->query("INSERT INTO `general`(`tag`) VALUES('$tag')");
 			}
 	

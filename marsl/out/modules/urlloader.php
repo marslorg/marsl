@@ -21,26 +21,33 @@ class URLLoader implements Module {
 	public function adminNavi() {
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		if ($auth->moduleWriteAllowed("urlloader", $role->getRole())) {
-			$result = $this->db->query("SELECT `id`, `name`, `type` FROM `navigation` WHERE `type`='0' OR `type`='1' ORDER BY `pos`");
+		$curRole = $role->getRole();
+		if ($auth->moduleWriteAllowed("urlloader", $curRole)) {
+			$categories = array();
+			$categoryLinks = array();
+			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type`='0' OR `type`='1' OR `type`='2' ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
-				
-				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
-					$cat_id = htmlentities($row['id'], null, "ISO-8859-1");
-					$cat_name = htmlentities($row['name'], null, "ISO-8859-1");
-					$cat_type = htmlentities($row['type'], null, "ISO-8859-1");
-					$cat_id = $this->db->escapeString($cat_id);
-					$result_links = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='2' AND `category`='$cat_id'");
-					$links = array();
-					while ($row_links = $this->db->fetchArray($result_links)) {
-						if ($auth->locationReadAllowed($row_links['id'], $role->getRole())) {
-							array_push($links, array('id' => htmlentities($row_links['id'], null, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], null, "ISO-8859-1")));
+
+				if ($row['type'] == '2' || (($row['type'] == '0' || $row['type'] == '1') && $auth->locationAdminAllowed($row['id'], $curRole))) {
+					if ($row['type'] == '2' && $auth->locationReadAllowed($row['id'], $curRole)) {
+						$catID = $row['category'];
+						$linkID = htmlentities($row['id'], null, "ISO-8859-1");
+						$linkName = htmlentities($row['name'], null, "ISO-8859-1");
+						if (!array_key_exists($catID, $categoryLinks)) {
+							$categoryLinks[$catID] = array();
 						}
+						array_push($categoryLinks[$catID], array('id' => $linkID, 'name' => $linkName));
 					}
-					
-					require("template/urlloader.navigation.tpl.php");
+					else {
+						$catID = htmlentities($row['id'], null, "ISO-8859-1");
+						$catName = htmlentities($row['name'], null, "ISO-8859-1");
+						$catType = htmlentities($row['type'], null, "ISO-8859-1");
+						array_push($categories, array('id' => $catID, 'name' => $catName, 'type' => $catType));
+					}
 				}
 			}
+
+			require("template/urlloader.navigation.tpl.php");
 		}
 	}
 	
@@ -60,7 +67,7 @@ class URLLoader implements Module {
 					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$homepage = $_POST['homepage'];
 						$homepage = $this->db->escapeString($homepage);
-						if ($this->db->isExisting("SELECT * FROM `homepage`")) {
+						if ($this->db->isExisting("SELECT * FROM `homepage` LIMIT 1")) {
 							$this->db->query("UPDATE `homepage` SET `homepage`='$homepage'");
 						}
 						else {

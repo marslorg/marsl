@@ -43,7 +43,7 @@ class Post {
 				else {
 					$page = $_GET['page'];
 				}
-				if (!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'")) {
+				if (!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4' LIMIT 1")) {
 					$result = $this->db->query("SELECT `post` FROM `post` WHERE `thread`='$threadID' AND `deleted`='0'");
 					$pages = $this->db->getRowCount($result)/10;
 					$start = $page*10-10;
@@ -102,11 +102,11 @@ class Post {
 				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 					$postID = $this->db->escapeString($_GET['post']);
 					$threadID = $this->getThread($postID);
-					if ($threadID == $_GET['thread']&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'"))) {
+					if ($threadID == $_GET['thread']&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4' LIMIT 1"))) {
 						$boardID = $thread->getBoard($threadID);
 						if ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())) {
 							$this->db->query("UPDATE `post` SET `deleted`='1' WHERE `post`='$postID'");
-							if ($this->db->isExisting("SELECT `post` FROM `post` WHERE `deleted`='1' AND `post`='$postID'")) {
+							if ($this->db->isExisting("SELECT `post` FROM `post` WHERE `deleted`='1' AND `post`='$postID' LIMIT 1")) {
 								$result = $this->db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
 								while ($row = $this->db->fetchArray($result)) {
 									$postcount = $row['postcount']-1;
@@ -169,7 +169,7 @@ class Post {
 		$basic = new Basic($this->db);
 		$location = $this->db->escapeString($_GET['id']);
 		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$auth->moduleAdminAllowed("board", $role->getRole())||$auth->locationAdminAllowed($location, $role->getRole()));
-		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND (`type`='4' OR `type`='3')"))) {
+		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND (`type`='4' OR `type`='3') LIMIT 1"))) {
 			if ($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$auth->locationWriteAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())) {
 				if (isset($_POST['do'])) {
 					if ($_POST['do']=="answer") {
@@ -246,7 +246,7 @@ class Post {
 		$boardID = $thread->getBoard($threadID);
 		$page = $_GET['page'];
 		$basic = new Basic($this->db);
-		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4'"))) {
+		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4' LIMIT 1"))) {
 			if ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole()))))) {
 				if (isset($_POST['do'])) {
 					if ($_POST['do']=="edit") {
@@ -256,7 +256,7 @@ class Post {
 							$time = time();
 							$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
 							$this->db->query("UPDATE `post` SET `content`='$content', `operator`='$operator', `lastedit`='$time' WHERE `post`='$postID'");
-							if ($this->db->isExisting("SELECT `post` FROM `post` WHERE `post`='$postID' AND `content`='$content' AND `operator`='$operator' AND `lastedit`='$time'")) {
+							if ($this->db->isExisting("SELECT `post` FROM `post` WHERE `post`='$postID' AND `content`='$content' AND `operator`='$operator' AND `lastedit`='$time' LIMIT 1")) {
 								
 								$temporary = $this->db->escapeString($_POST['temporary']);
 								$result = $this->db->query("SELECT `file` FROM `attachment` WHERE `temporary`='$temporary'");
