@@ -92,7 +92,7 @@ class CBE implements Module {
 			if ($type=="band") {
 				$bandID = "";
 				
-				if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `band` WHERE `tag`='$tag'"))) {
+				if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `band` WHERE `tag`='$tag' LIMIT 1"))) {
 					$this->db->query("INSERT INTO `band`(`tag`) VALUES('$tag')");
 				}
 
@@ -105,7 +105,7 @@ class CBE implements Module {
 			if ($type=="location") {
 				$locationID = "";
 				
-				if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `location` WHERE `tag`='$tag'"))) {
+				if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `location` WHERE `tag`='$tag' LIMIT 1"))) {
 					$this->db->query("INSERT INTO `location`(`tag`) VALUES('$tag')");
 				}
 				

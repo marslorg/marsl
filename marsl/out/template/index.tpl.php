@@ -33,6 +33,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/default-skin/default-skin.css" type="text/css" />
 	</head>
 	<body>
+		<input type="hidden" id="serverName" name="serverName" value="<?php echo $serverName; ?>" />
 		<div class="head">
 			<div class="mainhead">
 				<a href="https://www.music2web.de">

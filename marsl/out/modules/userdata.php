@@ -85,7 +85,7 @@ class UserData implements Module {
 						if (isset($_GET['primemail'])) {
 							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 								$email = $this->db->escapeString(urldecode($_GET['primemail']));
-								if (!$this->db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
+								if (!$this->db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0' LIMIT 1")) {
 									$this->db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
 									$this->db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
 								}
@@ -224,7 +224,7 @@ class UserData implements Module {
 			if (isset($_GET['primemail'])) {
 				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
 					$email = $this->db->escapeString(urldecode($_GET['primemail']));
-					if (!$this->db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0'")) {
+					if (!$this->db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0' LIMIT 1")) {
 						$this->db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
 						$this->db->query("UPDATE `email` SET `primary`='1' WHERE `user`='$userID' AND `email`='$email'");
 					}

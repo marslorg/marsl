@@ -177,7 +177,7 @@ class Navigation implements Module {
 					foreach ($roles as $roleID) {
 						if ($roleID!=$role->getRole()) {
 							$roleID = $this->db->escapeString($roleID);
-							if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id'")) {
+							if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id' LIMIT 1")) {
 								$result = $this->db->query("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
 								while ($row = $this->db->fetchArray($result)) {
 									$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");
