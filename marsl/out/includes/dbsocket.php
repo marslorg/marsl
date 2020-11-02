@@ -18,7 +18,6 @@ class DB {
 	 * Send a mysql query to the database and return the result.
 	 */
 	public function query($query) {
-		$config = new Configuration();
 		$res = mysqli_query($this->mysqllink, $query);
 		return $res;
 	}
@@ -27,7 +26,6 @@ class DB {
 	 * Send a mysql query to the database and return whether there is an existing row for this query.
 	 */
 	public function isExisting($query) {
-		$config = new Configuration();
 		$res = mysqli_query($this->mysqllink, $query);
 		$numRows = mysqli_num_rows($res);
 		
@@ -58,8 +56,9 @@ class DB {
 	/*
 	* Returns the number of rows in the result
 	*/
-	public function getRowCount($result) {
-		return mysqli_num_rows($result);
+	public function getRowCount($queryResult) {
+		$row = $this->fetchArray($queryResult);
+		return $row['rowcount'];
 	}
 	
 	/*
