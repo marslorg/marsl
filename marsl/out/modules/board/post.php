@@ -44,7 +44,7 @@ class Post {
 					$page = $_GET['page'];
 				}
 				if (!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4' LIMIT 1")) {
-					$result = $this->db->query("SELECT `post` FROM `post` WHERE `thread`='$threadID' AND `deleted`='0'");
+					$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `post` WHERE `thread`='$threadID' AND `deleted`='0'");
 					$pages = $this->db->getRowCount($result)/10;
 					$start = $page*10-10;
 					$end = 10;

@@ -44,7 +44,7 @@ class Thread {
 				}
 			}
 			$threads = array();
-			$result = $this->db->query("SELECT `post`, `thread`.`thread` AS `thread`, `board`, `postcount`, `title`, `thread`.`author` AS `threadauthor`, `post`.`author` AS `postauthor`, `viewcount`, `date`, `type` FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE (`type`='0' OR `type`='3') AND `board`='$boardID'");
+			$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE (`type`='0' OR `type`='3') AND `board`='$boardID'");
 			$pages = $this->db->getRowCount($result)/15;
 			$start = $page*15-15;
 			$end = 15;
@@ -95,7 +95,7 @@ class Thread {
 	 */
 	public function getPageNumber($thread) {
 		$thread = $this->db->escapeString($thread);
-		$result = $this->db->query("SELECT `post` FROM `post` WHERE `thread`='$thread' AND `deleted`='0'");
+		$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `post` WHERE `thread`='$thread' AND `deleted`='0'");
 		$pages = ceil($this->db->getRowCount($result)/10);
 		return $pages;
 	}

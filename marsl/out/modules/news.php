@@ -416,7 +416,7 @@ class News implements Module {
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
 				}
-				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0'");
+				$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0'");
 				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
@@ -538,7 +538,7 @@ class News implements Module {
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
-				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
+				$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
 				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
@@ -771,7 +771,7 @@ class News implements Module {
 				
 				if ($type=="all") {
 					$topic = "Alle Nachrichten";
-					$result = $this->db->query("SELECT * FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
 					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC");
 					$pages = $this->db->getRowCount($result)/10;
 					
