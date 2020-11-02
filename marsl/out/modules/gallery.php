@@ -89,7 +89,7 @@ class Gallery implements Module {
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
 				}
-				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0'");
+				$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `album` WHERE `visible`='1' AND `deleted`='0'");
 				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
@@ -427,7 +427,7 @@ class Gallery implements Module {
 					$page = $_GET['page'];
 				}
 				$location = $this->db->escapeString($location);
-				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
+				$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
 				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
