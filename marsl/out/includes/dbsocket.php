@@ -11,7 +11,11 @@ class DB {
 	 */
 	public function connect() {
 		$config = new Configuration();
-		$this->mysqllink = mysqli_connect($config->getDBHost(), $config->getDBUser(), $config->getDBPass(), $config->getDBName());
+        while ($this->mysqllink == null) {
+			set_error_handler(function() {});
+			$this->mysqllink = mysqli_connect($config->getDBHost(), $config->getDBUser(), $config->getDBPass(), $config->getDBName());
+			restore_error_handler();
+		}
 	}
 	
 	/*
