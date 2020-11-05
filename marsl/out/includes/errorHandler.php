@@ -36,6 +36,25 @@ function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 	foreach($_FILES as $key=>$value) {
 		$error .= $key."->".$value."\n";
 	}
+
+	$error .= "STACKTRACE:\n\n";
+
+	$backtrace = debug_backtrace();
+	array_shift($backtrace);
+
+	foreach ($backtrace as $traceLine) {
+		$error .= "In ".$traceLine['file']." on line ".$traceLine['line']." called function ".$traceLine['function'];
+		if (array_key_exists("args", $traceLine) && count($traceLine['args']) > 0) {
+			$error .= " with arguments";
+			foreach ($traceLine['args'] as $argument) {
+				$error .= " ".$argument.",";
+			}
+			$error = substr($error, 0, -1);
+		}
+		$error .= ".\n=> ";
+	}
+	$error = substr($error, 0, -3);
+ 
 	//mail($config->errMail(), "Fehler auf ".$config->getDomain(), $error, "From: ".$config->getTitle()."<".$config->sysMail().">");
 	//echo "<b>Ein Fehler ist aufgetreten. Wir arbeiten daran.</b>";
 	echo nl2br($error);

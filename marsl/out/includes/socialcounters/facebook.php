@@ -34,7 +34,7 @@ class Facebook {
 		);
 		
 		$result = 0;
-		$fanCountJSON = file_get_contents($url);
+		/*$fanCountJSON = file_get_contents($url);
 		if ($fanCountJSON === false) {
 			$result = 0;
 		}
@@ -50,7 +50,7 @@ class Facebook {
 			else {
 				$result = $fanCount;
 			}
-		}
+		}*/
 		return $result;
 	}
 }
