@@ -3,6 +3,7 @@ include_once (dirname(__FILE__)."/includes/errorHandler.php");
 include_once (dirname(__FILE__)."/includes/dbsocket.php");
 include_once (dirname(__FILE__)."/user/user.php");
 include_once (dirname(__FILE__)."/includes/config.inc.php");
+include_once (dirname(__FILE__)."/user/auth.php");
 
 class Login {
 	/*
@@ -17,7 +18,8 @@ class Login {
 			$db = new DB();
 			$db->connect();
 			$user = new User($db);
-			$rightpw = $user->login($_POST['nickname'], $_POST['password']);
+			$auth = new Authentication($db);
+			$rightpw = $user->login($_POST['nickname'], $_POST['password'], $auth);
 			$db->close();
 			if ($rightpw) {
 				header("Location: admin/index.php");

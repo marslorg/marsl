@@ -26,10 +26,10 @@ class Gallery {
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$user = new User($this->db);
-		$basic = new Basic($this->db);
+		$auth = new Authentication($this->db);
+		$basic = new Basic($this->db, $auth);
 		$role = new Role($this->db);
 		if ($user->isAdmin()) {
-			$auth = new Authentication($this->db);
 			$authTime = $_GET['time'];
 			$authToken = $_GET['token'];
 			if ($auth->checkToken($authTime, $authToken)) {

@@ -24,7 +24,7 @@ class EditPicture {
 		$user = new User($this->db);
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $auth);
 		$title = $basic->getTitle();
 		$new = true;
 		if ($user->isAdmin()&&$auth->moduleAdminAllowed("gallery", $role->getRole())&&$auth->moduleExtendedAllowed("gallery", $role->getRole())) {

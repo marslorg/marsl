@@ -24,7 +24,7 @@ class File {
 		$crypt = new Encryption();
 		
 		if ($scope=="board") {
-			$board = new Board($db);
+			$board = new Board($db, $auth);
 			$result = $db->query("SELECT `board`, `servername`, `realname`, `key` FROM `attachment` JOIN `post_attachment` USING(`file`) JOIN `post` USING(`post`) JOIN `thread` USING(`thread`) WHERE `file`='$fileID'");
 			while ($row = $db->fetchArray($result)) {
 				$boardID = $row['board'];
