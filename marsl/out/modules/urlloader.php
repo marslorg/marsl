@@ -131,15 +131,9 @@ class URLLoader implements Module {
 					$proof = $row['module'];
 					$foot = $row['foot'];
 				}
-<<<<<<< HEAD
-				$navi = new Navigation($this->db);
-				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "ISO-8859-1");
-				$id = htmlentities($_GET['id'], null, "ISO-8859-1");
-=======
 				$navi = new Navigation($this->db, $this->auth);
-				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "UTF-8");
+				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "ISO-8859-1");
 				$id = htmlentities($_GET['id'], null, "UTF-8");
->>>>>>> 763e92a... Performance optimizations for the rights requests
 				$authTime = time();
 				$authToken = $this->auth->getToken($authTime);
 				require_once("template/urlloader.content.tpl.php");
