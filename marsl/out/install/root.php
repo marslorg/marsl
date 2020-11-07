@@ -9,6 +9,7 @@ include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/role.php");
+include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 
 class Root {
@@ -27,13 +28,14 @@ class Root {
 			if ($_POST['action'] == "send") {
 				if (!empty($_POST['password'])) {
 					if ($_POST['password']!=$_POST['proof']) {
-						echo "Die Passw�rter stimmen nicht �berein.<br><br>";
+						echo "Die Passwörter stimmen nicht überein.<br><br>";
 					}
 					else {
-						$basic = new Basic($this->db);
+						$auth = new Authentication($this->db);
+						$basic = new Basic($this->db, $auth);
 						if ($basic->checkMail($_POST['email'])) {
 							$user = new User($this->db);
-							$user->register("root", $_POST['password'], $_POST['email']);
+							$user->register("root", $_POST['password'], $_POST['email'], $auth);
 							$userID = $user->getIDbyName("root");
 							$role = new Role($this->db);
 							$roleID = $role->getIDbyName("root");
@@ -42,7 +44,7 @@ class Root {
 							$this->db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 						}
 						else {
-							echo "Die E-Mail-Adresse ist nicht g�ltig.<br><br>";
+							echo "Die E-Mail-Adresse ist nicht gültig.<br><br>";
 						}
 					}
 				}

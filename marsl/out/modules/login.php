@@ -9,14 +9,15 @@ include_once(dirname(__FILE__)."/../includes/basic.php");
 class Login implements Module {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	public function display() {
 		$user = new User($this->db);
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$location = "";
 		if (isset($_GET['id'])) {
@@ -27,7 +28,7 @@ class Login implements Module {
 		}
 		if ($user->isGuest()||$user->isAdmin()) {
 			
-			if ($auth->moduleReadAllowed("login", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
+			if ($this->auth->moduleReadAllowed("login", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())) {
 				if (isset($_GET['action'])) {
 					if ($_GET['action']=="forgot") {
 						if (isset($_GET['action2'])) {
@@ -138,7 +139,7 @@ class Login implements Module {
 			$init = false;
 			$success = true;
 			$recover = true;
-			$basic = new Basic($this->db);
+			$basic = new Basic($this->db, $this->auth);
 			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 			require_once("template/recover.tpl.php");
 		}
@@ -151,8 +152,8 @@ class Login implements Module {
 						$user = new User($this->db);
 						$password = $user->getPassbyID($uid);
 						$auth_code = md5("admin".$uid.$time.$password);
-						$auth = $_GET['auth'];
-						if ($auth_code == $auth) {
+						$authParameter = $_GET['auth'];
+						if ($auth_code == $authParameter) {
 							$password = $_POST['password'];
 							$password2 = $_POST['password2'];
 							if ($password==$password2) {
@@ -160,15 +161,15 @@ class Login implements Module {
 								header("Location: index.php?id=".$location."&action=forgot&action2=recover&status=success");
 							}
 							else {
-								header("Location: index.php?id=".$location."&action=forgot&action2=recover&status=failed&uid=".$uid."&time=".$time."&auth=".$auth);
+								header("Location: index.php?id=".$location."&action=forgot&action2=recover&status=failed&uid=".$uid."&time=".$time."&auth=".$authParameter);
 							}
 						}
 						else {
-							header("Location: index.php?id=".$location."&action=forgot&action2=recover&uid=".$uid."&time=".$time."&auth=".$auth);
+							header("Location: index.php?id=".$location."&action=forgot&action2=recover&uid=".$uid."&time=".$time."&auth=".$authParameter);
 						}
 					}
 					else {
-						header("Location: index.php?id=".$location."&action=forgot&action2=recover&uid=".$uid."&time=".$time."&auth=".$auth);
+						header("Location: index.php?id=".$location."&action=forgot&action2=recover&uid=".$uid."&time=".$time."&auth=".$authParameter);
 					}
 						
 				}
@@ -192,12 +193,12 @@ class Login implements Module {
 			$location = $basic->getHomeLocation();
 		}
 		
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$time = $_GET['time'];
 		$recover = false;
 		$uid = "";
-		$auth = "";
+		$authParameter = "";
 		$init = true;
 		$success = false;
 		if (isset($_GET['status'])) {
@@ -211,8 +212,8 @@ class Login implements Module {
 			$user = new User($this->db);
 			$password = $user->getPassbyID($uid);
 			$auth_code = md5("admin".$uid.$time.$password);
-			$auth = $_GET['auth'];
-			if ($auth_code == $auth) {
+			$authParameter = $_GET['auth'];
+			if ($auth_code == $authParameter) {
 				$recover = true;
 			}
 		}

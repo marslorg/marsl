@@ -11,9 +11,11 @@ include_once(dirname(__FILE__)."/module.php");
 class Gallery implements Module {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	/*
@@ -23,9 +25,8 @@ class Gallery implements Module {
 		$user = new User($this->db);
 		$role = new Role($this->db);
 		if ($user->isAdmin()) {
-			$auth = new Authentication($this->db);
-			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
-			$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
+			$moduleAdmin = $this->auth->moduleAdminAllowed("gallery", $role->getRole());
+			$moduleExtended = $this->auth->moduleExtendedAllowed("gallery", $role->getRole());
 			if ($moduleAdmin) {
 				require_once("template/gallery.navigation.tpl.php");
 				if (isset($_GET['action'])) {
@@ -77,13 +78,12 @@ class Gallery implements Module {
 	private function albums() {
 		$user = new User($this->db);
 		$role = new Role($this->db);
-		$navigation = new Navigation($this->db);
+		$navigation = new Navigation($this->db, $this->auth);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($user->isAdmin()) {
-			$auth = new Authentication($this->db);
-			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
-			$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
+			$moduleAdmin = $this->auth->moduleAdminAllowed("gallery", $role->getRole());
+			$moduleExtended = $this->auth->moduleExtendedAllowed("gallery", $role->getRole());
 			if ($moduleAdmin) {
 				$page = 1;
 				if (isset($_GET['page'])) {
@@ -103,7 +103,7 @@ class Gallery implements Module {
 					$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
 					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
 					$location = htmlentities($navigation->getNamebyID($row['location']), null, "ISO-8859-1");
-					$locationAdmin = $auth->locationAdminAllowed($row['location'], $role->getRole());
+					$locationAdmin = $this->auth->locationAdminAllowed($row['location'], $role->getRole());
 					$editLink = ($moduleExtended&&$locationAdmin);
 					$description = $row['description'];
 					$dateTime->setTimestamp($row['date']);
@@ -113,7 +113,7 @@ class Gallery implements Module {
 					array_push($galleries, array('photograph'=>$photograph, 'album'=>$id, 'authorIP'=>$authorIP, 'author'=>$authorName, 'location'=>$location, 'description'=>$description, 'date'=>$date, 'postdate'=>$postdate, 'editLink'=>$editLink));
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/gallery.tpl.php");
 			}
 		}
@@ -125,19 +125,18 @@ class Gallery implements Module {
 	 */
 	private function details() {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		$album = $this->db->escapeString($_GET['id']);
-		$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
-		$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
+		$moduleAdmin = $this->auth->moduleAdminAllowed("gallery", $role->getRole());
+		$moduleExtended = $this->auth->moduleExtendedAllowed("gallery", $role->getRole());
 		$locationRead = false;
 		$locationAdmin = false;
 		$result = $this->db->query("SELECT `location` FROM `album` WHERE `album`='$album'");
 		while ($row = $this->db->fetchArray($result)) {
-			$locationRead = $auth->locationReadAllowed($row['location'], $role->getRole());
-			$locationAdmin = $auth->locationAdminAllowed($row['location'], $role->getRole());
+			$locationRead = $this->auth->locationReadAllowed($row['location'], $role->getRole());
+			$locationAdmin = $this->auth->locationAdminAllowed($row['location'], $role->getRole());
 		}
 		
-		if (isset($_POST['action'])&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+		if (isset($_POST['action'])&&$this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 			if ($_POST['action']=="send") {
 				if ($moduleExtended&&$moduleAdmin&&$locationAdmin) {
 					$result = $this->db->query("SELECT * FROM `picture` WHERE `album`='$album' AND `deleted`='0'");
@@ -171,7 +170,7 @@ class Gallery implements Module {
 				array_push($pictures, array('picture'=>$picture, 'subtitle'=>$subtitle, 'visible'=>$visible, 'thumbPath'=>$thumbPath, 'picPath'=>$picPath, 'administrator'=>$administrator));
 			}
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			require_once("template/gallery.thumbs.tpl.php");
 		}
 	}
@@ -181,13 +180,12 @@ class Gallery implements Module {
 	 */
 	private function addPhoto() {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		$album = $this->db->escapeString($_GET['id']);
-		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())&&$auth->moduleAdminAllowed("gallery", $role->getRole())) {
+		if ($this->auth->moduleExtendedAllowed("gallery", $role->getRole())&&$this->auth->moduleAdminAllowed("gallery", $role->getRole())) {
 			$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album' AND `deleted`='0'");
 			while ($row = $this->db->fetchArray($result)) {
 				$location = $row['location'];
-				if ($auth->locationAdminAllowed($location, $role->getRole())) {
+				if ($this->auth->locationAdminAllowed($location, $role->getRole())) {
 					$album = htmlentities($row['album'], null, "ISO-8859-1");
 					require_once("template/gallery.addphoto.tpl.php");
 				}
@@ -200,18 +198,17 @@ class Gallery implements Module {
 	 */
 	private function edit() {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		$album = $this->db->escapeString($_GET['id']);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())) {
+		if ($this->auth->moduleExtendedAllowed("gallery", $role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send") {
-					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album'");
 						while ($row = $this->db->fetchArray($result)) {
 							$category = $row['location'];
-							if ($auth->locationAdminAllowed($category, $role->getRole())&&$auth->locationAdminAllowed($_POST['category'], $role->getRole())) {
+							if ($this->auth->locationAdminAllowed($category, $role->getRole())&&$this->auth->locationAdminAllowed($_POST['category'], $role->getRole())) {
 								$photograph = $this->db->escapeString($_POST['photograph']);
 								$category = $this->db->escapeString($_POST['category']);
 								if (checkdate($_POST['month'], $_POST['day'], $_POST['year'])) {
@@ -220,7 +217,7 @@ class Gallery implements Module {
 								else {
 									$date = time();
 								}
-								$basic = new Basic($this->db);
+								$basic = new Basic($this->db, $this->auth);
 								$description = $this->db->escapeString($basic->cleanHTML($_POST['description']));
 								$this->db->query("UPDATE `album` SET `photograph`='$photograph', `location`='$category', `date`='$date', `description`='$description' WHERE `album`='$album'");
 							}
@@ -232,14 +229,14 @@ class Gallery implements Module {
 			$locations = array();
 			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
-				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
+				if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())) {
 					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 				}
 			}
 			$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$album'");
 			while ($row = $this->db->fetchArray($result)) {
 				$category = $row['location'];
-				if ($auth->locationAdminAllowed($category, $role->getRole())) {
+				if ($this->auth->locationAdminAllowed($category, $role->getRole())) {
 					$photograph = htmlentities($row['photograph'], null, "ISO-8859-1");
 					$category = htmlentities($category, null, "ISO-8859-1");
 					$dateTime->setTimestamp($row['date']);
@@ -249,7 +246,7 @@ class Gallery implements Module {
 					$description = $row['description'];
 					$album = htmlentities($_GET['id'], null, "ISO-8859-1");
 					$authTime = time();
-					$authToken = $auth->getToken($authTime);
+					$authToken = $this->auth->getToken($authTime);
 					require_once("template/gallery.edit.tpl.php");
 				}
 			}
@@ -265,16 +262,15 @@ class Gallery implements Module {
 			$user = new User($this->db);
 			if ($user->isAdmin()) {
 				$role = new Role($this->db);
-				$auth = new Authentication($this->db);
-				$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
-				$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
+				$moduleAdmin = $this->auth->moduleAdminAllowed("gallery", $role->getRole());
+				$moduleExtended = $this->auth->moduleExtendedAllowed("gallery", $role->getRole());
 				if ($_GET['do']=="submit") {
-					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 						if ($moduleExtended&&$moduleAdmin) {
 							$id = $this->db->escapeString($_GET['id']);
 							$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$id'");
 							while ($row = $this->db->fetchArray($result)) {
-								if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+								if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 									$admin = $this->db->escapeString($user->getID());
 									$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
 									$this->db->query("UPDATE `album` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `album`='$id'");
@@ -285,12 +281,12 @@ class Gallery implements Module {
 					}
 				}
 				if ($_GET['do']=="del") {
-					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 						if ($moduleExtended&&$moduleAdmin) {
 							$id = $this->db->escapeString($_GET['id']);
 							$result = $this->db->query("SELECT * FROM `album` WHERE `album`='$id'");
 							while ($row = $this->db->fetchArray($result)) {
-								if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+								if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 									$this->db->query("UPDATE `album` SET `deleted`='1' WHERE `album`='$id'");
 									$this->db->query("UPDATE `picture` SET `deleted`='1' WHERE `album`='$id'");
 								}
@@ -308,18 +304,17 @@ class Gallery implements Module {
 	private function queue() {
 		$user = new User($this->db);
 		$role = new Role($this->db);
-		$navigation = new Navigation($this->db);
+		$navigation = new Navigation($this->db, $this->auth);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($user->isAdmin()) {
-			$auth = new Authentication($this->db);
-			$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
-			$moduleExtended = $auth->moduleExtendedAllowed("gallery", $role->getRole());
+			$moduleAdmin = $this->auth->moduleAdminAllowed("gallery", $role->getRole());
+			$moduleExtended = $this->auth->moduleExtendedAllowed("gallery", $role->getRole());
 			if ($moduleAdmin&&$moduleExtended) {
 				$galleries = array();
 				$result = $this->db->query("SELECT * FROM `album` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+					if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 						$id = htmlentities($row['album'], null, "ISO-8859-1");
 						$author = $row['author'];
 						$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
@@ -335,7 +330,7 @@ class Gallery implements Module {
 					}
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/gallery.queue.tpl.php");
 			}
 		}
@@ -350,19 +345,18 @@ class Gallery implements Module {
 			$success = $_GET['success'];
 		}
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$user = new User($this->db);
-		if ($auth->moduleAdminAllowed("gallery", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("gallery", $role->getRole())) {
 			$locations = array();
 			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
-				if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
+				if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $role->getRole())) {
 					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"), 'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 				}
 			}
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			if (isset($_GET['step'])) {
 				if ($_GET['step']=="2") {
 					$tmpDir = $_GET['dir'];
@@ -385,17 +379,16 @@ class Gallery implements Module {
 	 */
 	private function ftp() {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
-		if ($auth->moduleExtendedAllowed("gallery", $role->getRole())) {
+		if ($this->auth->moduleExtendedAllowed("gallery", $role->getRole())) {
 			$locations = array();
 			$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='gallery' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
-				if ($auth->locationAdminAllowed($row['id'], $role->getRole())) {
+				if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())) {
 					array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 				}
 			}
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			require_once("template/gallery.ftp.tpl.php");
 		}
 	}
@@ -404,12 +397,11 @@ class Gallery implements Module {
 	 * Shows the frontend of the gallery.
 	 */
 	public function display() {
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$role = new Role($this->db);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($auth->moduleReadAllowed("gallery", $role->getRole())) {
+		if ($this->auth->moduleReadAllowed("gallery", $role->getRole())) {
 			if (!isset($_GET['action'])) {
 				$location = "";
 				if (isset($_GET['id'])) {

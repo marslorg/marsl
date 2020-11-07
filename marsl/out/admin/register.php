@@ -9,9 +9,11 @@ include_once (dirname(__FILE__)."/../user/auth.php");
 class RegisterUser {
 	
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 
 	/*
@@ -20,8 +22,7 @@ class RegisterUser {
 	 */
 	public function admin() {
 		$user = new User($this->db);
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		if ($user->isAdmin()) {
 			$role = new Role($this->db);
 			$possibleRoles = $role->getPossibleRoles($role->getRole());
@@ -33,10 +34,10 @@ class RegisterUser {
 			$emailProof = true;
 			$registered = false;
 			if (isset($_POST['action'])) {
-				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if ($_POST['password']==$_POST['password2']) {
 						if ($basic->checkMail($_POST['email'])) {
-							if($user->register($_POST['nickname'], $_POST['password'], $_POST['email'])) {
+							if($user->register($_POST['nickname'], $_POST['password'], $_POST['email'], $this->auth)) {
 								$email = $this->db->escapeString($_POST['email']);
 								$this->db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 								$registered = true;
@@ -77,7 +78,7 @@ class RegisterUser {
 				}
 			}
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			require_once("template/register.tpl.php");
 		}
 	}

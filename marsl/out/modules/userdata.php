@@ -11,9 +11,11 @@ include_once(dirname(__FILE__)."/module.php");
 class UserData implements Module {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}	
 	
 	/*
@@ -21,18 +23,17 @@ class UserData implements Module {
 	 */
 	public function admin() {
 		$user = new User($this->db);
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$mailer = new Mailer($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($auth->moduleAdminAllowed("userdata", $role->getRole())||$auth->moduleExtendedAllowed("userdata", $role->getRole())) {
-			if ($auth->moduleAdminAllowed("userdata", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("userdata", $role->getRole())||$this->auth->moduleExtendedAllowed("userdata", $role->getRole())) {
+			if ($this->auth->moduleAdminAllowed("userdata", $role->getRole())) {
 				require_once("template/userdata.alphabet.tpl.php");
 			}
 			if (isset($_GET['action'])) {
-				if (($_GET['action']=="list")&&$auth->moduleAdminAllowed("userdata", $role->getRole())) {
+				if (($_GET['action']=="list")&&$this->auth->moduleAdminAllowed("userdata", $role->getRole())) {
 					$userdata = array();
 					$search = $this->db->escapeString($_GET['search']);
 					$ownRole = $role->getRole();
@@ -59,14 +60,14 @@ class UserData implements Module {
 					require_once("template/userdata.list.tpl.php");
 				}
 				if ($_GET['action']=="details") {
-					if ($auth->moduleAdminAllowed("userdata", $role->getRole())||($auth->moduleExtendedAllowed("userdata", $role->getRole())&&($_GET['user']==$user->getID()))) {
+					if ($this->auth->moduleAdminAllowed("userdata", $role->getRole())||($this->auth->moduleExtendedAllowed("userdata", $role->getRole())&&($_GET['user']==$user->getID()))) {
 						$userID = $this->db->escapeString($_GET['user']);
 						$ownID = $user->getID();
 						$ownRole = $role->getRole();
 						$possibleRoles = $role->getPossibleRoles($ownRole);
 						
 						if (isset($_POST['entermail'])) {
-							if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+							if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 								$email = $this->db->escapeString($_POST['email']);
 								if ($basic->checkMail($email)) {
 									$curTime = time();
@@ -77,13 +78,13 @@ class UserData implements Module {
 						}
 						
 						if (isset($_GET['delmail'])) {
-							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+							if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 								$email = $this->db->escapeString(urldecode($_GET['delmail']));
 								$this->db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
 							}
 						}
 						if (isset($_GET['primemail'])) {
-							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+							if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 								$email = $this->db->escapeString(urldecode($_GET['primemail']));
 								if (!$this->db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0' LIMIT 1")) {
 									$this->db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
@@ -92,7 +93,7 @@ class UserData implements Module {
 							}
 						}
 						if (isset($_GET['confmail'])) {
-							if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+							if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 								$email = $this->db->escapeString(urldecode($_GET['confmail']));
 								$mailer->sendConfirmationMail($userID, $email);
 							}
@@ -123,7 +124,7 @@ class UserData implements Module {
 								$rightPassword = true;
 								$safePassword = true;
 								if (isset($_POST['change'])||isset($_POST['passwordChange'])) {
-									if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+									if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 										if (isset($_POST['change'])) {
 											$updateNickname = $user->updateNickname($userID, $_POST['nickname']);
 											if ($updateNickname) {
@@ -169,7 +170,7 @@ class UserData implements Module {
 									}
 								}
 								$authTime = time();
-								$authToken = $auth->getToken($authTime);
+								$authToken = $this->auth->getToken($authTime);
 								require_once("template/userdata.edit.tpl.php");
 							}
 						}
@@ -182,7 +183,7 @@ class UserData implements Module {
 	public function display() {
 		$user = new User($this->db);
 		$userID = $user->getID();
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		
@@ -194,17 +195,16 @@ class UserData implements Module {
 			$location = $basic->getHomeLocation();
 		}
 		
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$samePasswords = true;
 		$rightPassword = true;
 		$passwordChange = false;
 		
-		if ($auth->locationReadAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("userdata", $role->getRole())&&$auth->moduleWriteAllowed("userdata", $role->getRole())) {
+		if ($this->auth->locationReadAllowed($location, $role->getRole())&&$this->auth->moduleReadAllowed("userdata", $role->getRole())&&$this->auth->moduleWriteAllowed("userdata", $role->getRole())) {
 			
 			$mailer = new Mailer($this->db);
 			if (isset($_POST['entermail'])) {
-				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$email = $this->db->escapeString($_POST['email']);
 					if ($basic->checkMail($email)) {
 						$curTime = time();
@@ -216,13 +216,13 @@ class UserData implements Module {
 			}
 			
 			if (isset($_GET['delmail'])) {
-				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 					$email = $this->db->escapeString(urldecode($_GET['delmail']));
 					$this->db->query("DELETE FROM `email` WHERE `user`='$userID' AND `primary`='0' AND `email`='$email'");
 				}
 			}
 			if (isset($_GET['primemail'])) {
-				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 					$email = $this->db->escapeString(urldecode($_GET['primemail']));
 					if (!$this->db->isExisting("SELECT `email` FROM `email` WHERE `email`='$email' AND `user`='$userID' AND `confirmed`='0' LIMIT 1")) {
 						$this->db->query("UPDATE `email` SET `primary`='0' WHERE `user`='$userID'");
@@ -231,7 +231,7 @@ class UserData implements Module {
 				}
 			}
 			if (isset($_GET['confmail'])) {
-				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 					$email = $this->db->escapeString(urldecode($_GET['confmail']));
 					$mailer->sendConfirmationMail($userID, $email);
 				}
@@ -239,7 +239,7 @@ class UserData implements Module {
 			
 			
 			if (isset($_POST['action'])) {
-				if (($userID == $_POST['userID'])&&($auth->checkToken($_POST['authTime'], $_POST['authToken']))) {
+				if (($userID == $_POST['userID'])&&($this->auth->checkToken($_POST['authTime'], $_POST['authToken']))) {
 					
 					if ($_POST['action']=="password") {
 						$passwordChange = true;
@@ -287,7 +287,7 @@ class UserData implements Module {
 			}
 			
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			$nickname = "";
 			$prename = "";
 			$name = "";

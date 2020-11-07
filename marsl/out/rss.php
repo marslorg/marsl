@@ -53,12 +53,12 @@ class RSS {
 					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				
-				$basic = new Basic($db);
+				$basic = new Basic($db, $auth);
 				$modules = $basic->getModules();
 				$moduleTags = array();
 				foreach ($modules as $module) {
 					include_once(dirname(__FILE__)."/modules/".$module['file'].".php");
-					$class = new $module['class']($db);
+					$class = new $module['class']($db, $auth);
 					if ($class->isTaggable()) {
 						$tagList = $class->getTagList();
 						foreach($tagList as $tagType) {

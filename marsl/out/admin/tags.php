@@ -10,13 +10,14 @@ include_once (dirname(__FILE__)."/../user/auth.php");
 class Tags {
 	
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 
 	public function admin() {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$user = new User($this->db);
 		if ($user->isHead()) {
@@ -31,7 +32,7 @@ class Tags {
 				$entrySuccessful = false;
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="newTag") {
-						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$newEntry = true;
 							$entry = $this->db->escapeString($_POST['entry']);
 							if (!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$entry' LIMIT 1")) {
@@ -44,7 +45,7 @@ class Tags {
 				$deletionSuccessful = false;
 				if (isset($_GET['action2'])) {
 					if ($_GET['action2']=="delete") {
-						if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+						if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 							$tagID = $this->db->escapeString($_GET['tagid']);
 							$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$tagID' AND `type`='general'");
 							$this->db->query("DELETE FROM `general` WHERE `id`='$tagID'");
@@ -53,7 +54,7 @@ class Tags {
 					}
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				$tags = array();
 				$search = $this->db->escapeString($_GET['search']);
 				$result = $this->db->query("SELECT `id`, `tag` FROM `general` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
@@ -69,9 +70,8 @@ class Tags {
 	
 	private function edit($id) {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		$authTime = time();
-		$authToken = $auth->getToken($authTime);
+		$authToken = $this->auth->getToken($authTime);
 		$user = new User($this->db);
 		if ($user->isHead()) {
 			$id = $this->db->escapeString($id);
@@ -86,7 +86,7 @@ class Tags {
 			}
 				
 			if ($nameconvertion) {
-				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if (isset($_POST['tag'])) {
 						$tag = $this->db->escapeString($_POST['tag']);
 					}
@@ -181,9 +181,8 @@ class Tags {
 	}
 	
 	private function buildEditingForm($id) {
-		$auth = new Authentication($this->db);
 		$authTime = time();
-		$authToken = $auth->getToken($authTime);
+		$authToken = $this->auth->getToken($authTime);
 		$id = $this->db->escapeString($id);
 		$news = array();
 		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='general' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");

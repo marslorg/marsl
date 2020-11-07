@@ -7,9 +7,11 @@ include_once(dirname(__FILE__)."/../modules/urlloader.php");
 class Basic {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	/*
@@ -62,7 +64,7 @@ class Basic {
 	 */
 	public function getTitle() {
 		$config = new Configuration();
-		$urlloader = new URLLoader($this->db);
+		$urlloader = new URLLoader($this->db, $this->auth);
 		$title = $urlloader->getTitle();
 		if ($title!=null) {
 			return $urlloader->getTitle().$config->getTitle();
@@ -76,7 +78,7 @@ class Basic {
 	 * Gets the page corresponding thumbnail.
 	 */
 	public function getImage() {
-		$urlloader = new URLLoader($this->db);
+		$urlloader = new URLLoader($this->db, $this->auth);
 		return $urlloader->getImage();
 	}
 	

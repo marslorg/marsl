@@ -13,18 +13,19 @@ include_once(dirname(__FILE__)."/module.php");
 class News implements Module {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	/*
 	 * Displays the admin interface of the news module.
 	 */
 	public function admin() {
-		$navigation = new Navigation($this->db);
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db);
+		$navigation = new Navigation($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth);
 		$user = new User($this->db);
 		$role = new Role($this->db);
 		$modules = $basic->getModules();
@@ -37,7 +38,7 @@ class News implements Module {
 
 		foreach ($modules as $module) {
 			include_once(dirname(__FILE__)."/".$module['file'].".php");
-			$class = new $module['class']($this->db);
+			$class = new $module['class']($this->db, $this->auth);
 			if ($class->isTaggable()) {
 				$tagList = $class->getTagList();
 				foreach($tagList as $tagType) {
@@ -47,7 +48,7 @@ class News implements Module {
 				}
 			}	
 		}
-		if ($auth->moduleAdminAllowed("news", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("news", $role->getRole())) {
 			require_once("template/news.navigation.tpl.php");
 			if(!isset($_GET['action'])) {
 				/*
@@ -72,7 +73,7 @@ class News implements Module {
 				$new = true;
 				if (isset($_POST['action'])) {
 					$new = false;
-					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$failed = false;
 
 						if ($failed) {
@@ -120,7 +121,7 @@ class News implements Module {
 							}
 							$teaser = $this->db->escapeString($basic->cleanHTML($_POST['teaser']));
 							$text = $this->db->escapeString($basic->cleanHTML($_POST['text']));
-							if ($auth->locationAdminAllowed($location, $role->getRole())||$auth->locationExtendedAllowed($location, $role->getRole())) {
+							if ($this->auth->locationAdminAllowed($location, $role->getRole())||$this->auth->locationExtendedAllowed($location, $role->getRole())) {
 
 								$picture1 = 0;
 								if (isset($_POST['picture1'])) {
@@ -160,15 +161,15 @@ class News implements Module {
 									$scope = $type[1];
 									$module = $basic->getModule($file);
 									include_once(dirname(__FILE__)."/".$file.".php");
-									$class = new $module['class']($this->db);
+									$class = new $module['class']($this->db, $this->auth);
 									$class->addTags($moduleTag['tags'], $scope, $newsID);
 
 								}
 								$administrators = $user->getAdminUsers();
 								foreach ($administrators as $administrator) {
 									$administratorRole = $role->getRolebyUser($administrator);
-									if ($auth->moduleAdminAllowed("news", $administratorRole)) {
-										if ($auth->locationAdminAllowed($location, $administratorRole)) {
+									if ($this->auth->moduleAdminAllowed("news", $administratorRole)) {
+										if ($this->auth->locationAdminAllowed($location, $administratorRole)) {
 											$mailer = new Mailer($this->db);
 											$mailer->sendNewArticleMail($administrator);
 										}
@@ -197,12 +198,12 @@ class News implements Module {
 				$locations = array();
 				$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
+					if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $role->getRole())) {
 						array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 					}
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/news.write.tpl.php");
 			}
 			else if ($_GET['action']=="queue") {
@@ -210,7 +211,7 @@ class News implements Module {
 				$news = array();
 				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+					if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 						$id = htmlentities($row['news'], null, "ISO-8859-1");
 						$author = $row['author'];
 						$corrected = $row['corrected'];
@@ -252,7 +253,7 @@ class News implements Module {
 					}
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
@@ -260,7 +261,7 @@ class News implements Module {
 				if ($this->db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0' LIMIT 1")) {
 					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 					while ($row = $this->db->fetchArray($result)) {
-						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+						if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 							$corrected = $row['corrected'];
 							$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 							$title = htmlentities($row['title'], null, "ISO-8859-1");
@@ -282,7 +283,7 @@ class News implements Module {
 								$scope = $type[1];
 								$module = $basic->getModule($file);
 								include_once(dirname(__FILE__)."/".$file.".php");
-								$class = new $module['class']($this->db);
+								$class = new $module['class']($this->db, $this->auth);
 								$moduleTag['tags'] = htmlentities($class->getTagString($scope, $id), null, "ISO-8859-1");
 
 								array_push($tmpModuleTags, $moduleTag);
@@ -292,7 +293,7 @@ class News implements Module {
 							$failed = false;
 							if (isset($_POST['action'])) {
 								$new = false;
-								if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+								if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 									$failed = false;
 
 									if ($failed) {
@@ -374,7 +375,7 @@ class News implements Module {
 											$scope = $type[1];
 											$module = $basic->getModule($file);
 											include_once(dirname(__FILE__)."/".$file.".php");
-											$class = new $module['class']($this->db);
+											$class = new $module['class']($this->db, $this->auth);
 											$class->addTags($moduleTag['tags'], $scope, $id);
 
 										}
@@ -399,12 +400,12 @@ class News implements Module {
 							$locations = array();
 							$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 							while ($row = $this->db->fetchArray($result)) {
-								if ($auth->locationAdminAllowed($row['id'], $role->getRole())||$auth->locationExtendedAllowed($row['id'], $role->getRole())) {
+								if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $role->getRole())) {
 									array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 								}
 							}
 							$authTime = time();
-							$authToken = $auth->getToken($authTime);
+							$authToken = $this->auth->getToken($authTime);
 							require_once("template/news.edit.tpl.php");
 						}
 					}
@@ -429,7 +430,7 @@ class News implements Module {
 					$author = htmlentities($user->getAcronymbyID($row['author']), null, "ISO-8859-1");
 					$authorIP = htmlentities($row['author_ip'], null, "ISO-8859-1");
 					$category = $row['location'];
-					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
+					$editLink = ($this->auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$location = $navigation->getNamebyID($category);
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
@@ -453,7 +454,7 @@ class News implements Module {
 					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP, 'corrected'=>$corrected));
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/news.tpl.php");
 			}
 			else if ($_GET['action']=="details") {
@@ -461,8 +462,8 @@ class News implements Module {
 				$id = $this->db->escapeString($_GET['id']);
 				$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
-					$submitLink = (($row['visible']==0)&&($auth->locationAdminAllowed($row['location'], $role->getRole())));
-					$editLink = ($auth->locationAdminAllowed($row['location'], $role->getRole()));
+					$submitLink = (($row['visible']==0)&&($this->auth->locationAdminAllowed($row['location'], $role->getRole())));
+					$editLink = ($this->auth->locationAdminAllowed($row['location'], $role->getRole()));
 					$author = $row['author'];
 					$corrected = $row['corrected'];
 					$authorName = htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1");
@@ -501,7 +502,7 @@ class News implements Module {
 					$dateTime->setTimestamp($row['postdate']);
 					$postdate = $dateTime->format("\a\m d\. M Y \u\m H\:i\:s");
 					$authTime = time();
-					$authToken = $auth->getToken($authTime);
+					$authToken = $this->auth->getToken($authTime);
 					require_once("template/news.details.tpl.php");
 				}
 			}
@@ -512,15 +513,14 @@ class News implements Module {
 	 * Displays the frontend of a news module.
 	 */
 	public function display() {
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$user = new User($this->db);
 		$role = new Role($this->db);
 
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		
-		if ($auth->moduleReadAllowed("news", $role->getRole())) {
+		if ($this->auth->moduleReadAllowed("news", $role->getRole())) {
 			if (!isset($_GET['action'])) {
 				$location = "";
 				if (isset($_GET['id'])) {
@@ -619,7 +619,7 @@ class News implements Module {
 					$moduleTags = array();
 					foreach ($modules as $module) {
 						include_once(dirname(__FILE__)."/".$module['file'].".php");
-						$class = new $module['class']($this->db);
+						$class = new $module['class']($this->db, $this->auth);
 						if ($class->isTaggable()) {
 							$tagList = $class->getTagList();
 							foreach($tagList as $tagType) {
@@ -640,16 +640,15 @@ class News implements Module {
 	 * Executes some smaller functions on a news article.
 	 */
 	private function doThings() {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$user = new User($this->db);
 		if (isset($_GET['do'])) {
 			if ($_GET['do']=="submit") {
-				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 					$id = $this->db->escapeString($_GET['id']);
 					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
 					while ($row = $this->db->fetchArray($result)) {
-						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+						if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 							$admin = $this->db->escapeString($user->getID());
 							$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
 							$this->db->query("UPDATE `news` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `news`='$id'");
@@ -658,11 +657,11 @@ class News implements Module {
 				}
 			}
 			else if ($_GET['do']=="del") {
-				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 					$id = $this->db->escapeString($_GET['id']);
 					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
 					while ($row = $this->db->fetchArray($result)) {
-						if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
+						if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
 							$this->db->query("UPDATE `news` SET `deleted`='1' WHERE `news`='$id'");
 						}
 					}
@@ -734,10 +733,9 @@ class News implements Module {
 	 * Performs a fulltext search over the attributes of the news table.
 	*/
 	public function search($query, $type) {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$roleID = $role->getRole();
-		if ($auth->moduleReadAllowed("news", $roleID)) {
+		if ($this->auth->moduleReadAllowed("news", $roleID)) {
 			$query = $this->db->escapeString($query);
 			$queryWords = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY);
 			$queryWordCount = 1;
@@ -858,7 +856,6 @@ class News implements Module {
 	
 	public function displayTag($tagID, $type) {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		$tagID = $this->db->escapeString($tagID);
 		$articles = array();
 		$tagName = "";
@@ -872,7 +869,7 @@ class News implements Module {
 		}
 		$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='general' ORDER BY `date` DESC");
 		while ($row = $this->db->fetchArray($result)) {
-			if ($auth->locationReadAllowed($row['location'], $role->getRole())) {
+			if ($this->auth->locationReadAllowed($row['location'], $role->getRole())) {
 				$news = $row['news'];
 				$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 				$title = htmlentities($row['title'], null, "ISO-8859-1");
@@ -889,16 +886,15 @@ class News implements Module {
 	public function getImage() {
 		if (isset($_GET['action'])) {
 			if ($_GET['action']=="read") {
-				$auth = new Authentication($this->db);
 				$role = new Role($this->db);
-				if ($auth->moduleReadAllowed("news", $role->getRole())) {
+				if ($this->auth->moduleReadAllowed("news", $role->getRole())) {
 					$newsID = $this->db->escapeString($_GET['show']);
 					$location = $this->db->escapeString($_GET['id']);
 					$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 					while ($row = $this->db->fetchArray($result)) {
 						$location = $this->db->escapeString($row['maps_to']);
 					}
-					if ($auth->locationReadAllowed($location, $role->getRole())) {
+					if ($this->auth->locationReadAllowed($location, $role->getRole())) {
 						$picture = "empty";
 						$result = $this->db->query("SELECT `picture2` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
 						while ($row = $this->db->fetchArray($result)) {
@@ -935,9 +931,8 @@ class News implements Module {
 	public function getTitle() {
 		if (isset($_GET['action'])) {
 			if ($_GET['action']=="read") {
-				$auth = new Authentication($this->db);
 				$role = new Role($this->db);
-				if ($auth->moduleReadAllowed("news", $role->getRole())) {
+				if ($this->auth->moduleReadAllowed("news", $role->getRole())) {
 					$newsID = $this->db->escapeString($_GET['show']);
 					$location = $this->db->escapeString($_GET['id']);
 					$headline = "";
@@ -946,7 +941,7 @@ class News implements Module {
 					while ($row = $this->db->fetchArray($result)) {
 						$location = $this->db->escapeString($row['maps_to']);
 					}
-					if ($auth->locationReadAllowed($location, $role->getRole())) {
+					if ($this->auth->locationReadAllowed($location, $role->getRole())) {
 						$picture = "empty";
 						$result = $this->db->query("SELECT `headline`, `title` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
 						while ($row = $this->db->fetchArray($result)) {

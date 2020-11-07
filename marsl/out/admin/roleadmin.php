@@ -8,9 +8,11 @@ include_once (dirname(__FILE__)."/../includes/dbsocket.php");
 class RoleAdmin {
 	
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 
 	/*
@@ -19,12 +21,11 @@ class RoleAdmin {
 	public function admin() {
 		$user = new User($this->db);
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		if ($user->isAdmin()) {
 			if (isset($_POST['action'])) {
 				$action = $_POST['action'];
 				if ($action=="new") {
-					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						if ($role->createRole($_POST['role'])) {
 							$slave = $this->db->lastInsertedID();
 							$master = $this->db->escapeString($role->getRole());
@@ -33,7 +34,7 @@ class RoleAdmin {
 					}
 				}
 				else if ($action=="change") {
-					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$roleID = $_POST['role'];
 						if ($roleID!=$role->getRole()) {
 							if (in_array($roleID,$role->getPossibleRoles($role->getRole()))) {
@@ -47,7 +48,7 @@ class RoleAdmin {
 			}
 			else if (isset($_GET['action'])) {
 				if ($_GET['action']=="del") {
-					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 						$roleID = $_GET['role'];
 						if ($roleID!=$role->getRole()) {
 							if (in_array($roleID,$role->getPossibleRoles($role->getRole()))) {
@@ -74,7 +75,7 @@ class RoleAdmin {
 				}
 			}
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			require_once("template/role.tpl.php");
 		}
 	}

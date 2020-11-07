@@ -10,9 +10,11 @@ include_once (dirname(__FILE__)."/../user/auth.php");
 class ModuleRights {
 	
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 
 	/*
@@ -20,16 +22,15 @@ class ModuleRights {
 	 */
 	public function admin() {
 		$user = new User($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		if ($user->isAdmin()) {
 			if (!isset($_GET['action'])) {
 				$modules = array();
 				$result = $this->db->query("SELECT * FROM `module`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($auth->moduleAdminAllowed($row['file'], $role->getRole())&&$auth->moduleExtendedAllowed($row['file'], $role->getRole())
-					&&$auth->moduleWriteAllowed($row['file'], $role->getRole())&&$auth->moduleReadAllowed($row['file'], $role->getRole())) {
+					if ($this->auth->moduleAdminAllowed($row['file'], $role->getRole())&&$this->auth->moduleExtendedAllowed($row['file'], $role->getRole())
+					&&$this->auth->moduleWriteAllowed($row['file'], $role->getRole())&&$this->auth->moduleReadAllowed($row['file'], $role->getRole())) {
 						array_push($modules,array('file'=>$row['file'],'name'=>$row['name']));
 					}
 				}
@@ -39,11 +40,11 @@ class ModuleRights {
 				$module = $basic->getModule($_GET['module']);
 				$moduleID = $this->db->escapeString($module['file']);
 				$name = htmlentities($module['name'], null, "ISO-8859-1");
-				if ($auth->moduleAdminAllowed($moduleID, $role->getRole())&&$auth->moduleExtendedAllowed($moduleID, $role->getRole())
-				&&$auth->moduleWriteAllowed($moduleID, $role->getRole())&&$auth->moduleReadAllowed($moduleID, $role->getRole())) {
+				if ($this->auth->moduleAdminAllowed($moduleID, $role->getRole())&&$this->auth->moduleExtendedAllowed($moduleID, $role->getRole())
+				&&$this->auth->moduleWriteAllowed($moduleID, $role->getRole())&&$this->auth->moduleReadAllowed($moduleID, $role->getRole())) {
 					$roles = $role->getPossibleRoles($role->getRole());
 					if (isset($_POST['change'])) {
-						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							foreach($roles as $roleID) {
 								if ($roleID!=$role->getRole()) {
 									$read = isset($_POST[$roleID.'_read']);
@@ -75,7 +76,7 @@ class ModuleRights {
 					
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/modulerights.role.tpl.php");
 			}
 		}

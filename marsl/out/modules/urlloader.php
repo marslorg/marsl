@@ -10,26 +10,27 @@ include_once(dirname(__FILE__)."/module.php");
 class URLLoader implements Module {
 	
 	private $db;
+	private $auth;
 	
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	/*
 	 * Shows the navigation in the admin backend.
 	 */
 	public function adminNavi() {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$curRole = $role->getRole();
-		if ($auth->moduleWriteAllowed("urlloader", $curRole)) {
+		if ($this->auth->moduleWriteAllowed("urlloader", $curRole)) {
 			$categories = array();
 			$categoryLinks = array();
 			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type`='0' OR `type`='1' OR `type`='2' ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
 
-				if ($row['type'] == '2' || (($row['type'] == '0' || $row['type'] == '1') && $auth->locationAdminAllowed($row['id'], $curRole))) {
-					if ($row['type'] == '2' && $auth->locationReadAllowed($row['id'], $curRole)) {
+				if ($row['type'] == '2' || (($row['type'] == '0' || $row['type'] == '1') && $this->auth->locationAdminAllowed($row['id'], $curRole))) {
+					if ($row['type'] == '2' && $this->auth->locationReadAllowed($row['id'], $curRole)) {
 						$catID = $row['category'];
 						$linkID = htmlentities($row['id'], null, "ISO-8859-1");
 						$linkName = htmlentities($row['name'], null, "ISO-8859-1");
@@ -60,11 +61,10 @@ class URLLoader implements Module {
 		}
 		else {
 			$user = new User($this->db);
-			$auth = new Authentication($this->db);
 			$role = new Role($this->db);
-			if (($auth->moduleAdminAllowed("urlloader", $role->getRole()))&&($user->isHead())) {
+			if (($this->auth->moduleAdminAllowed("urlloader", $role->getRole()))&&($user->isHead())) {
 				if (isset($_POST['action'])) {
-					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$homepage = $_POST['homepage'];
 						$homepage = $this->db->escapeString($homepage);
 						if ($this->db->isExisting("SELECT * FROM `homepage` LIMIT 1")) {
@@ -87,7 +87,7 @@ class URLLoader implements Module {
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/urlloader.tpl.php");
 			}
 		}
@@ -97,7 +97,7 @@ class URLLoader implements Module {
 	 * Updates a location with the submitted content.
 	 */
 	private function updateLocation() {
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$id = $this->db->escapeString($_GET['id']);
 		$head = $this->db->escapeString($basic->cleanHTML($_POST['head']));
 		$module = $this->db->escapeString($basic->cleanHTML($_POST['module']));
@@ -109,18 +109,17 @@ class URLLoader implements Module {
 	 * Interface to change the content of a location.
 	 */
 	private function contentAdmin() {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		if ($auth->moduleWriteAllowed("urlloader", $role->getRole())) {
-			if ($auth->locationAdminAllowed($_GET['id'], $role->getRole())) {
+		if ($this->auth->moduleWriteAllowed("urlloader", $role->getRole())) {
+			if ($this->auth->locationAdminAllowed($_GET['id'], $role->getRole())) {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="update") {
-						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$this->updateLocation();
 						}
 					}
 				}
-				$basic = new Basic($this->db);
+				$basic = new Basic($this->db, $this->auth);
 				$modules = $basic->getModules();
 				$id = $this->db->escapeString($_GET['id']);
 				$head = "";
@@ -132,11 +131,17 @@ class URLLoader implements Module {
 					$proof = $row['module'];
 					$foot = $row['foot'];
 				}
+<<<<<<< HEAD
 				$navi = new Navigation($this->db);
 				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "ISO-8859-1");
 				$id = htmlentities($_GET['id'], null, "ISO-8859-1");
+=======
+				$navi = new Navigation($this->db, $this->auth);
+				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "UTF-8");
+				$id = htmlentities($_GET['id'], null, "UTF-8");
+>>>>>>> 763e92a... Performance optimizations for the rights requests
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/urlloader.content.tpl.php");
 			}
 		}
@@ -146,10 +151,9 @@ class URLLoader implements Module {
 	 * Loads the content of a location into the frontend and starts the display-function of a module.
 	 */
 	public function display() {
-		$auth = new Authentication($this->db);
 		$id = -1;
 		$role = new Role($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		if (isset($_GET['id'])) {
 			$id = $_GET['id'];
 		}
@@ -166,10 +170,10 @@ class URLLoader implements Module {
 				$searchScope = explode("_",$_GET['scope']);
 				$searchContext = $searchScope[0];
 				$type = $searchScope[1];
-				if ($auth->moduleReadAllowed($searchContext, $role->getRole())) {
+				if ($this->auth->moduleReadAllowed($searchContext, $role->getRole())) {
 					include_once(dirname(__FILE__)."/".$searchContext.".php");
 					$moduleInfo = $basic->getModule($searchContext);
-					$module = new $moduleInfo['class']($this->db);
+					$module = new $moduleInfo['class']($this->db, $this->auth);
 					if ($module->isSearchable()) {
 						$module->search($searchQuery, $type);
 					}
@@ -188,10 +192,10 @@ class URLLoader implements Module {
 					$tagContext = "news";
 				}
 				$type = $tagScope[1];
-				if ($auth->moduleReadAllowed($tagContext, $role->getRole())) {
+				if ($this->auth->moduleReadAllowed($tagContext, $role->getRole())) {
 					include_once(dirname(__FILE__)."/".$tagContext.".php");
 					$moduleInfo = $basic->getModule($tagContext);
-					$module = new $moduleInfo['class']($this->db);
+					$module = new $moduleInfo['class']($this->db, $this->auth);
 					if ($module->isTaggable()) {
 						$module->displayTag($tagID, $type);
 					}
@@ -205,7 +209,7 @@ class URLLoader implements Module {
 				$id = $this->db->escapeString($row['maps_to']);
 			}
 			
-			if ($auth->locationReadAllowed($id, $role->getRole())) {
+			if ($this->auth->locationReadAllowed($id, $role->getRole())) {
 				$result = $this->db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
 				while ($row = $this->db->fetchArray($result)) {
 					$head = $row['head'];
@@ -215,7 +219,7 @@ class URLLoader implements Module {
 					echo $head;
 					while ($row2 = $this->db->fetchArray($result2)) {
 						include_once(dirname(__FILE__)."/".$module.".php");
-						$content = new $row2['class']($this->db);
+						$content = new $row2['class']($this->db, $this->auth);
 						$content->display();
 					}
 					echo $foot;
@@ -279,7 +283,6 @@ class URLLoader implements Module {
 	}
 	
 	public function getImage() {
-		$auth = new Authentication($this->db);
 		$id = -1;
 		$role = new Role($this->db);
 		if (isset($_GET['id'])) {
@@ -297,14 +300,14 @@ class URLLoader implements Module {
 			$id = $this->db->escapeString($row['maps_to']);
 		}
 			
-		if ($auth->locationReadAllowed($id, $role->getRole())) {
+		if ($this->auth->locationReadAllowed($id, $role->getRole())) {
 			$result = $this->db->query("SELECT `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
 			while ($row = $this->db->fetchArray($result)) {
 				$module = $this->db->escapeString($row['module']);
 				$result2 = $this->db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
 				while ($row2 = $this->db->fetchArray($result2)) {
 					include_once(dirname(__FILE__)."/".$module.".php");
-					$content = new $row2['class']($this->db);
+					$content = new $row2['class']($this->db, $this->auth);
 					return $content->getImage();
 				}
 			}
@@ -313,10 +316,9 @@ class URLLoader implements Module {
 	}
 	
 	public function getTitle() {
-		$auth = new Authentication($this->db);
 		$id = -1;
 		$role = new Role($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$title = "";
 		if (isset($_GET['id'])) {
 			$id = $_GET['id'];
@@ -337,7 +339,7 @@ class URLLoader implements Module {
 				$id = $this->db->escapeString($row['maps_to']);
 			}
 				
-			if ($auth->locationReadAllowed($id, $role->getRole())) {
+			if ($this->auth->locationReadAllowed($id, $role->getRole())) {
 				$result = $this->db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
 				while ($row = $this->db->fetchArray($result)) {
 					$title = $row['name']." - ";
@@ -345,7 +347,7 @@ class URLLoader implements Module {
 					$result2 = $this->db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
 					while ($row2 = $this->db->fetchArray($result2)) {
 						include_once(dirname(__FILE__)."/".$module.".php");
-						$content = new $row2['class']($this->db);
+						$content = new $row2['class']($this->db, $this->auth);
 						$newTitle = $content->getTitle();
 						if ($newTitle!=null) {
 							$title = $newTitle." - ";

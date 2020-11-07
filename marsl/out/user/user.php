@@ -73,8 +73,8 @@ class User {
 	/*
 	 * Logout a user.
 	 */
-	public function logout() {
-		$basic = new Basic($this->db);
+	public function logout($auth) {
+		$basic = new Basic($this->db, $auth);
 		$session = $this->db->escapeString($basic->session());
 		$lastlogout = $this->db->escapeString(time());
 		$oldsession = $this->db->escapeString($this->session);
@@ -85,7 +85,7 @@ class User {
 	/*
 	 * Login a user.
 	 */
-	public function login($nickname, $password) {
+	public function login($nickname, $password, $auth) {
 		if (empty($nickname)||empty($password)) {
 			return false;
 		}
@@ -100,7 +100,7 @@ class User {
 				$password = $this->db->escapeString($this->hashPassword($regdate, $password));
 				if ($this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password' LIMIT 1")) {
 					$lastlogin = $this->db->escapeString(time());
-					$basic = new Basic($this->db);
+					$basic = new Basic($this->db, $auth);
 					$session = $this->db->escapeString($basic->session());
 					
 					$this->db->query("UPDATE `user` SET `lastlogin`='$lastlogin', `sessionid`='$session' WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password'");
@@ -346,13 +346,13 @@ class User {
 	/*
 	 * Register a user.
 	 */
-	public function register($nickname, $password, $mail) {
+	public function register($nickname, $password, $mail, $auth) {
 		$nickname = $this->db->escapeString($nickname);
 		if (strlen($nickname)>=4) {
 			if ((!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1"))&&(!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') LIMIT 1"))) {
 				$regdate = $this->db->escapeString(time());
 				$hashPassword = $this->db->escapeString($this->hashPassword($regdate, $password));
-				$basic = new Basic($this->db);
+				$basic = new Basic($this->db, $auth);
 				$session = $this->db->escapeString($basic->randomHash().$basic->randomHash());
 				$this->db->query("INSERT INTO `user`(`nickname`,`password`,`postcount`,`regdate`,`sessionid`,`deleted`) VALUES('$nickname','$hashPassword','0','$regdate','$session','0')");
 				$user = $this->db->escapeString($this->getIDbyName($nickname));

@@ -42,9 +42,9 @@ class Main {
 	public function admin() {
 		
 		$user = new User($this->db);
-		$basic = new Basic($this->db);
-		$urlloader = new URLLoader($this->db);
 		$auth = new Authentication($this->db);
+		$basic = new Basic($this->db, $auth);
+		$urlloader = new URLLoader($this->db, $auth);
 		$role = new Role($this->db);
 		$roleID = $role->getRole();
 		
@@ -59,14 +59,14 @@ class Main {
 			}
 			
 			if ($this->var == "logout") {
-				$user->logout();
+				$user->logout($auth);
 				@header("Location: index.php");
 			}
 			else if ($this->var == "module") {
 				if ($basic->getModule($_GET['module'])!=false) {
 					$array = $basic->getModule($_GET['module']);
 					include_once(dirname(__FILE__)."/../modules/".$array['file'].".php");
-					$content = new $array['class']($this->db);
+					$content = new $array['class']($this->db, $auth);
 				}
 				else {
 					include_once(dirname(__FILE__)."/admin.php");
@@ -75,25 +75,25 @@ class Main {
 			}
 			else if ($this->var == "urlloader") {
 				if ($auth->moduleAdminAllowed("urlloader", $roleID)) {
-					$content = new URLLoader($this->db);
+					$content = new URLLoader($this->db, $auth);
 				}
 			}
 			else if ($this->var == "standards") {
 				if ($headAdmin) {
-					$content = new Standard($this->db);
+					$content = new Standard($this->db, $auth);
 				}
 			}
 			else if ($this->var == "modulerights") {
-				$content = new ModuleRights($this->db);
+				$content = new ModuleRights($this->db, $auth);
 			}
 			else if ($this->var == "role") {
-				$content = new RoleAdmin($this->db);
+				$content = new RoleAdmin($this->db, $auth);
 			}
 			else if ($this->var =="register") {
-				$content = new RegisterUser($this->db);
+				$content = new RegisterUser($this->db, $auth);
 			}
 			else if ($this->var=="tags") {
-				$content = new Tags($this->db);
+				$content = new Tags($this->db, $auth);
 			}
 			else {
 				include_once(dirname(__FILE__)."/admin.php");
@@ -108,7 +108,7 @@ class Main {
 				if ($_GET['var']=="forgot") {
 					if (isset($_GET['action'])) {
 						if ($_GET['action']=="recover") {
-							$recover = new Recover($this->db);
+							$recover = new Recover($this->db, $auth);
 							$recover->admin();
 						}
 						else {

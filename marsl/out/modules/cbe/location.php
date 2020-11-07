@@ -9,9 +9,11 @@ include_once(dirname(__FILE__)."/../../user/role.php");
 class Location {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	public function display() {
@@ -20,13 +22,12 @@ class Location {
 	
 	public function admin() {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
-		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("cbe", $role->getRole())) {
 			$newEntry = false;
 			$entrySuccessful = false;
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="newClub") {
-					if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$newEntry = true;
 						$entry = $this->db->escapeString($_POST['entry']);
 						if (!$this->db->isExisting("SELECT * FROM `location` WHERE `tag`='$entry' LIMIT 1")) {
@@ -39,7 +40,7 @@ class Location {
 			$deletionSuccessful = false;
 			if (isset($_GET['action2'])) {
 				if ($_GET['action2']=="delete") {
-					if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+					if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 						$clubID = $this->db->escapeString($_GET['club']);
 						$this->db->query("DELETE FROM `news_tag` WHERE `tag`='$clubID' AND `type`='cbe_location'");
 						$this->db->query("DELETE FROM `location` WHERE `id`='$clubID'");
@@ -48,7 +49,7 @@ class Location {
 				}
 			}
 			$authTime = time();
-			$authToken = $auth->getToken($authTime);
+			$authToken = $this->auth->getToken($authTime);
 			$clubs = array();
 			$search = $this->db->escapeString($_GET['search']);
 			$result = $this->db->query("SELECT `id`, `tag` FROM `location` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
@@ -63,10 +64,9 @@ class Location {
 	
 	public function edit($id) {
 		$role = new Role($this->db);
-		$auth = new Authentication($this->db);
 		$authTime = time();
-		$authToken = $auth->getToken($authTime);
-		if ($auth->moduleAdminAllowed("cbe", $role->getRole())) {
+		$authToken = $this->auth->getToken($authTime);
+		if ($this->auth->moduleAdminAllowed("cbe", $role->getRole())) {
 			$id = $this->db->escapeString($id);
 			$nameconvertion = false;
 			if (isset($_POST['action'])) {
@@ -79,7 +79,7 @@ class Location {
 			}
 			
 			if ($nameconvertion) {
-				if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if (isset($_POST['tag'])) {
 						$tag = $this->db->escapeString($_POST['tag']);
 					}
@@ -170,8 +170,8 @@ class Location {
 			else {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="send") {
-						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$basic = new Basic($this->db);
+						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+							$basic = new Basic($this->db, $this->auth);
 							$street = $this->db->escapeString($_POST['street']);
 							$number = $this->db->escapeString($_POST['number']);
 							$zip = $this->db->escapeString($_POST['zip']);
@@ -189,9 +189,8 @@ class Location {
 	}
 	
 	private function buildEditingForm($id) {
-		$auth = new Authentication($this->db);
 		$authTime = time();
-		$authToken = $auth->getToken($authTime);
+		$authToken = $this->auth->getToken($authTime);
 		$id = $this->db->escapeString($id);
 		$news = array();
 		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_location' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");

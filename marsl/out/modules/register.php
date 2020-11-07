@@ -12,17 +12,18 @@ include_once(dirname(__FILE__)."/../includes/basic.php");
 class Register implements Module {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	public function display() {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$user = new User($this->db);
 		$recaptcha = new Recaptcha();
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$location = "";
 		if (isset($_GET['id'])) {
 			$location = $_GET['id'];
@@ -39,8 +40,8 @@ class Register implements Module {
 		$passwordFailure = false;
 		$nicknameFailure = false;
 		if ($user->isGuest()||$user->isAdmin()) {
-			if ($auth->moduleReadAllowed("register", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
-				if ($auth->moduleWriteAllowed("register", $role->getRole())&&$auth->locationWriteAllowed($location, $role->getRole())) {
+			if ($this->auth->moduleReadAllowed("register", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())) {
+				if ($this->auth->moduleWriteAllowed("register", $role->getRole())&&$this->auth->locationWriteAllowed($location, $role->getRole())) {
 					if (isset($_POST['action'])) {
 						if ($_POST['action']=="send") {
 							if ($recaptcha->checkRecaptcha()) {
@@ -51,7 +52,7 @@ class Register implements Module {
 									$password2 = $this->db->escapeString($_POST['password2']);
 									if ($password==$password2) {
 										$nickname = $this->db->escapeString($_POST['nickname']);
-										if ($user->register($nickname, $password, $mail)) {
+										if ($user->register($nickname, $password, $mail, $this->auth)) {
 											$success = true;
 										}
 										else {
@@ -89,11 +90,10 @@ class Register implements Module {
 	}
 	
 	public function admin() {
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		if ($auth->moduleAdminAllowed("register", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("register", $role->getRole())) {
 			if (isset($_POST['action'])) {
-				if ($_POST['action']=="send"&&$auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+				if ($_POST['action']=="send"&&$this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$newID = $this->db->escapeString($_POST['location']);
 					if ($this->db->isExisting("SELECT `id` FROM `registration_tos` LIMIT 1")) {
 						$this->db->query("UPDATE `registration_tos` SET `id`='$newID'");
@@ -115,14 +115,14 @@ class Register implements Module {
 			while ($row = $this->db->fetchArray($result)) {
 				$guestRole = $role->getGuestRole();
 				$location = $row['id'];
-				if ($auth->locationReadAllowed($location, $guestRole)) {
+				if ($this->auth->locationReadAllowed($location, $guestRole)) {
 					$name = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($links, array('id'=>$location, 'name'=>$name));
 				}
 			}
 		}
 		$authTime = time();
-		$authToken = $auth->getToken($authTime);
+		$authToken = $this->auth->getToken($authTime);
 		require_once("template/register.tos.tpl.php");
 	}
 	
