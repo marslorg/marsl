@@ -47,7 +47,12 @@ function sendErrorMail($errno, $errmsg, $filename, $linenum) {
 		if (array_key_exists("args", $traceLine) && count($traceLine['args']) > 0) {
 			$error .= " with arguments";
 			foreach ($traceLine['args'] as $argument) {
-				$error .= " ".$argument.",";
+                if (is_string($argument)) {
+                    $error .= " ".$argument.",";
+				}
+				else {
+					$error .= " ".serialize($argument).",";
+				}
 			}
 			$error = substr($error, 0, -1);
 		}

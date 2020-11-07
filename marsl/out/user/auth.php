@@ -7,9 +7,59 @@ include_once(dirname(__FILE__)."/user.php");
 class Authentication {
 	
 	private $db;
+	private $locationRights;
+	private $moduleRights;
 
 	public function __construct($db) {
 		$this->db = $db;
+
+		$curLocationRights = array();
+		$result = $this->db->query("SELECT * FROM `rights` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
+		while ($row = $this->db->fetchArray($result)) {
+			$role = $row['role'];
+			$location = $row['location'];
+			$read = $row['read'] == 1;
+			$write = $row['write'] == 1;
+			$extended = $row['extended'] == 1;
+			$admin = $row['admin'] == 1;
+			if (array_key_exists($role, $curLocationRights) && array_key_exists($location, $curLocationRights[$role])) {
+				$curLocationRights[$role][$location]['read'] = $curLocationRights[$role][$location]['read'] || $read;
+				$curLocationRights[$role][$location]['write'] = $curLocationRights[$role][$location]['write'] || $write;
+				$curLocationRights[$role][$location]['extended'] = $curLocationRights[$role][$location]['extended'] || $extended;
+				$curLocationRights[$role][$location]['admin'] = $curLocationRights[$role][$location]['admin'] || $admin;
+			}
+			else {
+				$curLocationRights[$role][$location]['read'] = $read;
+				$curLocationRights[$role][$location]['write'] = $write;
+				$curLocationRights[$role][$location]['extended'] = $extended;
+				$curLocationRights[$role][$location]['admin'] = $admin;
+			}
+		}
+		$this->locationRights = $curLocationRights;
+
+		$curModuleRights = array();
+		$moduleResult = $this->db->query("SELECT * FROM `rights_module` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
+		while ($moduleRow = $this->db->fetchArray($moduleResult)) {
+			$role = $moduleRow['role'];
+			$module = $moduleRow['module'];
+			$read = $moduleRow['read'] == 1;
+			$write = $moduleRow['write'] == 1;
+			$extended = $moduleRow['extended'] == 1;
+			$admin = $moduleRow['admin'] == 1;
+			if (array_key_exists($role, $curModuleRights) && array_key_exists($module, $curModuleRights[$role])) {
+				$curModuleRights[$role][$module]['read'] = $curModuleRights[$role][$module]['read'] || $read;
+				$curModuleRights[$role][$module]['write'] = $curModuleRights[$role][$module]['write'] || $write;
+				$curModuleRights[$role][$module]['extended'] = $curModuleRights[$role][$module]['extended'] || $extended;
+				$curModuleRights[$role][$module]['admin'] = $curModuleRights[$role][$module]['admin'] || $admin;
+			}
+			else {
+				$curModuleRights[$role][$module]['read'] = $read;
+				$curModuleRights[$role][$module]['write'] = $write;
+				$curModuleRights[$role][$module]['extended'] = $extended;
+				$curModuleRights[$role][$module]['admin'] = $admin;
+			}
+		}
+		$this->moduleRights = $curModuleRights;
 	}
 	
 	/*
@@ -24,18 +74,20 @@ class Authentication {
 		$rights['admin'] = 0;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = $this->db->escapeString($roleID);
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `read`='1' LIMIT 1")) {
-				$rights['read'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `write`='1' LIMIT 1")) {
-				$rights['write'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `extended`='1' LIMIT 1")) {
-				$rights['extended'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$module' AND `admin`='1' LIMIT 1")) {
-				$rights['admin'] = 1;
+			if (array_key_exists($roleID, $this->moduleRights) && array_key_exists($module, $this->moduleRights[$roleID])) {
+				$rightsArray = $this->moduleRights[$roleID][$module];
+                if ($rightsArray['read']) {
+                	$rights['read'] = true;
+				}
+				if ($rightsArray['write']) {
+                	$rights['write'] = true;
+				}
+				if ($rightsArray['extended']) {
+                	$rights['extended'] = true;
+				}
+				if ($rightsArray['admin']) {
+                	$rights['admin'] = true;
+				}
 			}
 		}
 		return $rights;
@@ -88,24 +140,26 @@ class Authentication {
 	private function locationRight($location, $roleID) {
 		$role = new Role($this->db);
 		$location = $this->db->escapeString($location);
-		$rights['read'] = 0;
-		$rights['write'] = 0;
-		$rights['extended'] = 0;
-		$rights['admin'] = 0;
+		$rights['read'] = false;
+		$rights['write'] = false;
+		$rights['extended'] = false;
+		$rights['admin'] = false;
 		$roles = $role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
-			$roleID = $this->db->escapeString($roleID);
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `read`='1' LIMIT 1")) {
-				$rights['read'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `write`='1' LIMIT 1")) {
-				$rights['write'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `extended`='1' LIMIT 1")) {
-				$rights['extended'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$location' AND `admin`='1' LIMIT 1")) {
-				$rights['admin'] = 1;
+			if (array_key_exists($roleID, $this->locationRights) && array_key_exists($location, $this->locationRights[$roleID])) {
+				$rightsArray = $this->locationRights[$roleID][$location];
+                if ($rightsArray['read']) {
+                	$rights['read'] = true;
+				}
+				if ($rightsArray['write']) {
+                	$rights['write'] = true;
+				}
+				if ($rightsArray['extended']) {
+                	$rights['extended'] = true;
+				}
+				if ($rightsArray['admin']) {
+                	$rights['admin'] = true;
+				}
 			}
 		}
 		return $rights;

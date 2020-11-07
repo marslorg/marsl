@@ -11,9 +11,11 @@ include_once(dirname(__FILE__)."/../../includes/dbsocket.php");
 class Post {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 	
 	/*
@@ -21,17 +23,16 @@ class Post {
 	 */
 	public function display() {
 		$location = $_GET['id'];
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
 		$user = new User($this->db);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($auth->moduleReadAllowed("board", $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())) {
-			$thread = new Thread($this->db);
-			$board = new Board($this->db);
+		if ($this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())) {
+			$thread = new Thread($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth);
 			$threadID = $this->db->escapeString($_GET['thread']);
 			$boardID = $thread->getBoard($threadID);
-			if (($location==$board->getLocation($boardID))&&($board->readAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($board->getLocation($boardID), $role->getRole()))) {
+			if (($location==$board->getLocation($boardID))&&($board->readAllowed($boardID, $role->getRole())&&$this->auth->locationReadAllowed($board->getLocation($boardID), $role->getRole()))) {
 				if (isset($_GET['do'])||isset($_POST['do'])) {
 					$this->doThings();
 				}
@@ -48,10 +49,10 @@ class Post {
 					$pages = $this->db->getRowCount($result)/10;
 					$start = $page*10-10;
 					$end = 10;
-					$isAuthor = (($thread->getType($threadID)!=3)&&($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$auth->locationWriteAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())));
+					$isAuthor = (($thread->getType($threadID)!=3)&&($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())&&$this->auth->locationWriteAllowed($location, $role->getRole())&&$this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->moduleWriteAllowed("board", $role->getRole())));
 					$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 					$isAdmin = $board->isAdmin($boardID, $user->getID());
-					$isGlobalAdmin = ($auth->moduleAdminAllowed("board", $role->getRole())&&$auth->locationAdminAllowed($location, $role->getRole()));
+					$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
 					$result = $this->db->query("SELECT `viewcount` FROM `thread` WHERE `thread`='$threadID'");
 					while ($row = $this->db->fetchArray($result)) {
 						$viewcount = $row['viewcount']+1;
@@ -81,7 +82,7 @@ class Post {
 						array_push($posts, array('post'=>$post, 'date'=>$date, 'operator'=>$operator, 'operatorNickname'=>$operatorNickname, 'lastedit'=>$lastedit, 'content'=>$content, 'ip'=>$ip, 'author'=>$author, 'authorNickname'=>$authorNickname, 'editable'=>$editable, 'files'=>$files));
 					}
 					$authTime = time();
-					$authToken = $auth->getToken($authTime);
+					$authToken = $this->auth->getToken($authTime);
 					require_once("template/board.posts.tpl.php");
 				}
 			}
@@ -92,14 +93,13 @@ class Post {
 	 * Do small functions which can be applied to a post.
 	 */
 	private function doThings() {
-		$auth = new Authentication($this->db);
-		$board = new Board($this->db);
-		$thread = new Thread($this->db);
+		$board = new Board($this->db, $this->auth);
+		$thread = new Thread($this->db, $this->auth);
 		$user = new User($this->db);
 		$role = new Role($this->db);
 		if (isset($_GET['do'])) {
 			if ($_GET['do']=="del") {
-				if ($auth->checkToken($_GET['time'], $_GET['token'])) {
+				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 					$postID = $this->db->escapeString($_GET['post']);
 					$threadID = $this->getThread($postID);
 					if ($threadID == $_GET['thread']&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4' LIMIT 1"))) {
@@ -159,21 +159,20 @@ class Post {
 	 * Dialog to insert a new post.
 	 */
 	public function answer() {
-		$board = new Board($this->db);
-		$thread = new Thread($this->db);
-		$auth = new Authentication($this->db);
+		$board = new Board($this->db, $this->auth);
+		$thread = new Thread($this->db, $this->auth);
 		$role = new Role($this->db);
 		$user = new User($this->db);
 		$threadID = $this->db->escapeString($_GET['thread']);
 		$boardID = $thread->getBoard($threadID);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		$location = $this->db->escapeString($_GET['id']);
-		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$auth->moduleAdminAllowed("board", $role->getRole())||$auth->locationAdminAllowed($location, $role->getRole()));
+		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$this->auth->moduleAdminAllowed("board", $role->getRole())||$this->auth->locationAdminAllowed($location, $role->getRole()));
 		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND (`type`='4' OR `type`='3') LIMIT 1"))) {
-			if ($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$auth->locationReadAllowed($location, $role->getRole())&&$auth->locationWriteAllowed($location, $role->getRole())&&$auth->moduleReadAllowed("board", $role->getRole())&&$auth->moduleWriteAllowed("board", $role->getRole())) {
+			if ($board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())&&$this->auth->locationWriteAllowed($location, $role->getRole())&&$this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->moduleWriteAllowed("board", $role->getRole())) {
 				if (isset($_POST['do'])) {
 					if ($_POST['do']=="answer") {
-						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$content = $this->db->escapeString($basic->cleanStrict($_POST['content']));
 							$author = $this->db->escapeString($user->getID());
 							$time = $this->db->escapeString(time());
@@ -222,7 +221,7 @@ class Post {
 					}
 					$title = $thread->getTitle($threadID);
 					$authTime = time();
-					$authToken = $auth->getToken($authTime);
+					$authToken = $this->auth->getToken($authTime);
 					$temporaryKey = $basic->tempFileKey();
 					require_once("template/board.answer.tpl.php");
 				}
@@ -234,9 +233,8 @@ class Post {
 	 * Dialog to edit a post.
 	 */
 	public function edit() {
-		$board = new Board($this->db);
-		$thread = new Thread($this->db);
-		$auth = new Authentication($this->db);
+		$board = new Board($this->db, $this->auth);
+		$thread = new Thread($this->db, $this->auth);
 		$role = new Role($this->db);
 		$postID = $this->db->escapeString($_GET['post']);
 		$author = $this->getAuthor($postID);
@@ -245,12 +243,12 @@ class Post {
 		$threadID = $this->getThread($postID);
 		$boardID = $thread->getBoard($threadID);
 		$page = $_GET['page'];
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		if (($location==$board->getLocation($boardID))&&(!$this->db->isExisting("SELECT `type` FROM `thread` WHERE `thread`='$threadID' AND `type`='4' LIMIT 1"))) {
 			if ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $role->getRole()))))) {
 				if (isset($_POST['do'])) {
 					if ($_POST['do']=="edit") {
-						if ($auth->checkToken($_POST['authTime'],$_POST['authToken'])) {
+						if ($this->auth->checkToken($_POST['authTime'],$_POST['authToken'])) {
 							$content = $this->db->escapeString($basic->cleanStrict($_POST['content']));
 							$operator = $user->getID();
 							$time = time();
@@ -276,13 +274,13 @@ class Post {
 					}
 				}
 				else {
-					$isAdmin = ($board->isAdmin($boardID, $user->getID())||$auth->moduleAdminAllowed("board", $role->getRole())||$auth->locationAdminAllowed($location, $role->getRole()));
+					$isAdmin = ($board->isAdmin($boardID, $user->getID())||$this->auth->moduleAdminAllowed("board", $role->getRole())||$this->auth->locationAdminAllowed($location, $role->getRole()));
 					$content = "";
 					$result = $this->db->query("SELECT `content` FROM `post` WHERE `post`='$postID' AND `deleted`='0'");
 					while ($row = $this->db->fetchArray($result)) {
 						$content = $row['content'];
 						$authTime = time();
-						$authToken = $auth->getToken($authTime);
+						$authToken = $this->auth->getToken($authTime);
 						$temporaryKey = $basic->tempFileKey();
 						require_once("template/board.edit.tpl.php");
 					}

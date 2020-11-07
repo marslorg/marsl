@@ -9,9 +9,11 @@ include_once(dirname(__FILE__)."/module.php");
 class Newsletter implements Module {
 
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 
 	/*
@@ -25,13 +27,12 @@ class Newsletter implements Module {
 	 * Initiate the module's admin view.
 	 */
 	public function admin() {
-		$auth = new Authentication($this->db);
 		$authTime = time();
-		$authToken = $auth->getToken($authTime);
+		$authToken = $this->auth->getToken($authTime);
 		$role = new Role($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $this->auth);
 		
-		if ($auth->moduleAdminAllowed("newsletter", $role->getRole()) && $auth->moduleExtendedAllowed("newsletter", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("newsletter", $role->getRole()) && $this->auth->moduleExtendedAllowed("newsletter", $role->getRole())) {
 		
 			if (!isset($_GET['action'])) {
 				

@@ -8,9 +8,11 @@ include_once (dirname(__FILE__)."/../user/auth.php");
 class Standard {
 	
 	private $db;
+	private $auth;
 
-	public function __construct($db) {
+	public function __construct($db, $auth) {
 		$this->db = $db;
+		$this->auth = $auth;
 	}
 
 	/*
@@ -18,7 +20,6 @@ class Standard {
 	 */
 	public function admin() {
 		$user = new User($this->db);
-		$auth = new Authentication($this->db);
 		
 		if ($user->isAdmin()) {
 			if ($user->isHead()) {
@@ -26,7 +27,7 @@ class Standard {
 				$possibleRoles = $role->getPossibleRoles($role->getRole());
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="change") {
-						if ($auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$stdUser = $this->db->escapeString($_POST['user']);
 							$guest = $this->db->escapeString($_POST['guest']);
 							if (($role->getRole()!=$stdUser)&&($role->getRole()!=$guest)) {
@@ -60,7 +61,7 @@ class Standard {
 					}
 				}
 				$authTime = time();
-				$authToken = $auth->getToken($authTime);
+				$authToken = $this->auth->getToken($authTime);
 				require_once("template/standard.tpl.php");
 			}
 		}

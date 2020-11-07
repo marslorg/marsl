@@ -3,6 +3,7 @@ include_once (dirname(__FILE__)."/includes/errorHandler.php");
 include_once (dirname(__FILE__)."/includes/dbsocket.php");
 include_once (dirname(__FILE__)."/user/user.php");
 include_once (dirname(__FILE__)."/includes/config.inc.php");
+include_once (dirname(__FILE__)."/user/auth.php");
 
 class Login {
 	
@@ -17,8 +18,9 @@ class Login {
 		$db = new DB();
 		$db->connect();
 		$user = new User($db);
+		$auth = new Authentication($db);
 		if (isset($_SERVER['HTTP_REFERER'])) {
-			$rightpw = $user->login($_POST['nickname'], $_POST['password']);
+			$rightpw = $user->login($_POST['nickname'], $_POST['password'], $auth);
 			$db->close();
 			$referer = $_SERVER['HTTP_REFERER'];
 			if ($rightpw) {

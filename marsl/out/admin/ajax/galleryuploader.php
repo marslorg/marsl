@@ -35,7 +35,7 @@ class GalleryUploader {
 		}
 		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		$basic = new Basic($this->db);
+		$basic = new Basic($this->db, $auth);
 		$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 		if ($moduleAdmin) {
 			$uploadResult = $this->upload();
