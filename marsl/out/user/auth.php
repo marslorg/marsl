@@ -97,13 +97,17 @@ class Authentication {
 	 * Evaluates the rights matrix.
 	 */
 	private function evalModuleRights($right, $module, $roleID) {
-		$rights = $this->moduleRight($module, $roleID);
-		if (empty($rights)) {
-			return 0;
+		$role = new Role($this->db);
+		$hasRight = false;
+		$roles = $role->getPossibleRoles($roleID);
+		$rolesLength = sizeof($roles);
+		for ($roleIdx = 0; !$hasRight && $roleIdx < $rolesLength; $roleIdx++) {
+			$curRoleID = $roles[$roleIdx];
+			if (array_key_exists($roleID, $this->moduleRights) && array_key_exists($module, $this->moduleRights[$curRoleID]) && array_key_exists($right, $this->moduleRights[$curRoleID][$module])) {
+				$hasRight = $this->moduleRights[$curRoleID][$module][$right];
+			}
 		}
-		else {
-			return $rights[$right];
-		}
+		return $hasRight;
 	}
 	
 	/*
@@ -135,47 +139,20 @@ class Authentication {
 	}
 	
 	/*
-	 * Gets the rights matrix for a given location and role.
-	 */
-	private function locationRight($location, $roleID) {
-		$role = new Role($this->db);
-		$location = $this->db->escapeString($location);
-		$rights['read'] = false;
-		$rights['write'] = false;
-		$rights['extended'] = false;
-		$rights['admin'] = false;
-		$roles = $role->getPossibleRoles($roleID);
-		foreach ($roles as $roleID) {
-			if (array_key_exists($roleID, $this->locationRights) && array_key_exists($location, $this->locationRights[$roleID])) {
-				$rightsArray = $this->locationRights[$roleID][$location];
-                if ($rightsArray['read']) {
-                	$rights['read'] = true;
-				}
-				if ($rightsArray['write']) {
-                	$rights['write'] = true;
-				}
-				if ($rightsArray['extended']) {
-                	$rights['extended'] = true;
-				}
-				if ($rightsArray['admin']) {
-                	$rights['admin'] = true;
-				}
-			}
-		}
-		return $rights;
-	}
-	
-	/*
-	 * Evaluates the rights matrix.
+	 * Evaluates if the role has right for the given location.
 	 */
 	private function evalLocationRights($right, $location, $roleID) {
-		$rights = $this->locationRight($location, $roleID);
-		if (empty($rights)) {
-			return 0;
+		$role = new Role($this->db);
+		$hasRight = false;
+		$roles = $role->getPossibleRoles($roleID);
+		$rolesLength = sizeof($roles);
+		for ($roleIdx = 0; !$hasRight && $roleIdx < $rolesLength; $roleIdx++) {
+			$curRoleID = $roles[$roleIdx];
+			if (array_key_exists($roleID, $this->locationRights) && array_key_exists($location, $this->locationRights[$curRoleID]) && array_key_exists($right, $this->locationRights[$curRoleID][$location])) {
+				$hasRight = $this->locationRights[$curRoleID][$location][$right];
+			}
 		}
-		else {
-			return $rights[$right];
-		}
+		return $hasRight;
 	}
 	
 	/*

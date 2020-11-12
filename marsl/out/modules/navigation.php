@@ -20,7 +20,8 @@ class Navigation implements Module {
 	 */
 	public function admin() {
 		$role = new Role($this->db);
-		if ($this->auth->moduleAdminAllowed("navigation", $role->getRole())) {
+		$curRole = $role->getRole();
+		if ($this->auth->moduleAdminAllowed("navigation", $curRole)) {
 			$action = "";
 			if (isset($_GET['action'])) {
 				$action = $_GET['action'];
@@ -28,38 +29,24 @@ class Navigation implements Module {
 			$this->evalAction($action);
 			
 			if ($action!="role") {
-				$categories = array();			
-				$result = $this->db->query("SELECT `id`, `name`, `pos`, `maps_to` FROM `navigation` WHERE `type`='0' ORDER BY `pos`");
+				$categories = array();
+				$catcontents = array();	
+				$links = array();	
+				$result = $this->db->query("SELECT `id`, `name`, `pos`, `category`, `maps_to`, `type` FROM `navigation` WHERE `type`='0' OR `type`='1' OR `type`='2' ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())) {
+					if ($this->auth->locationAdminAllowed($row['id'], $curRole)) {
 						if (empty($row['maps_to'])) {
-							$roleEditor = $this->auth->locationAdminAllowed($row['id'], $role->getRole())&&$this->auth->locationExtendedAllowed($row['id'], $role->getRole())&&$this->auth->locationWriteAllowed($row['id'], $role->getRole())&&$this->auth->locationReadAllowed($row['id'], $role->getRole());
+							$roleEditor = $this->auth->locationAdminAllowed($row['id'], $curRole)&&$this->auth->locationExtendedAllowed($row['id'], $curRole)&&$this->auth->locationWriteAllowed($row['id'], $curRole)&&$this->auth->locationReadAllowed($row['id'], $curRole);
 							$name = htmlentities($row['name'], null, "ISO-8859-1");
-							array_push($categories, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
-						}
-					}
-				}
-				
-				$catcontents = array();
-				$result = $this->db->query("SELECT `id`, `name`, `pos`, `maps_to` FROM `navigation` WHERE `type`='1' ORDER BY `pos`");
-				while ($row = $this->db->fetchArray($result)) {
-					if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())) {
-						if (empty($row['maps_to'])) {
-							$roleEditor = $this->auth->locationAdminAllowed($row['id'], $role->getRole())&&$this->auth->locationExtendedAllowed($row['id'], $role->getRole())&&$this->auth->locationWriteAllowed($row['id'], $role->getRole())&&$this->auth->locationReadAllowed($row['id'], $role->getRole());
-							$name = htmlentities($row['name'], null, "ISO-8859-1");
-							array_push($catcontents, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
-						}
-					}
-				}
-				
-				$links = array();
-				$result = $this->db->query("SELECT `id`, `name`, `pos`, `category`, `maps_to` FROM `navigation` WHERE `type`='2' ORDER BY `pos`");
-				while ($row = $this->db->fetchArray($result)) {
-					if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())) {
-						if (empty($row['maps_to'])) {
-							$roleEditor = $this->auth->locationAdminAllowed($row['id'], $role->getRole())&&$this->auth->locationExtendedAllowed($row['id'], $role->getRole())&&$this->auth->locationWriteAllowed($row['id'], $role->getRole())&&$this->auth->locationReadAllowed($row['id'], $role->getRole());
-							$name = htmlentities($row['name'], null, "ISO-8859-1");
-							array_push($links, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'category' => $row['category'], 'role' => $roleEditor));
+							if ($row['type'] == 0) {
+								array_push($categories, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
+							}
+							if ($row['type'] == 1) {
+								array_push($catcontents, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
+							}
+							if ($row['type'] == 2) {
+								array_push($links, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'category' => $row['category'], 'role' => $roleEditor));
+							}
 						}
 					}
 				}
