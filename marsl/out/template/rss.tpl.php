@@ -1,6 +1,6 @@
 <?php
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
-echo "<?xml version=\"1.0\" encoding=\"windows-1252\"?>";
+echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
 	<channel>
