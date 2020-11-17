@@ -2,7 +2,7 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <!DOCTYPE HTML>
-<html>
+<html lang="de">
 	<head>
 		<title><?php echo $title; ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -23,10 +23,10 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<script type="text/javascript" src="includes/jscripts/plupload/js/i18n/de.js"></script>
 		<link rel="alternate" type="application/rss+xml" title="<?php echo $title; ?> - RSS Feed" href="<?php echo $domain; ?>/rss.php" />
 		<link rel="icon" href="includes/graphics/favicon.ico" type="image/x-icon" />
-		<link rel="stylesheet" href="styles/style.css?v=30" type="text/css" />
+		<link rel="stylesheet" href="styles/style.css?v=32" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=6" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
-		<link rel="stylesheet" href="styles/mobile.css?v=17" type="text/css" media="all and (max-width: 1023px)" />
+		<link rel="stylesheet" href="styles/mobile.css?v=18" type="text/css" media="all and (max-width: 1023px)" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/photoswipe.css" type="text/css" />

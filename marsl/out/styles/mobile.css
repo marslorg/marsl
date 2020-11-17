@@ -175,6 +175,7 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
 
 	.news, .gallery {
 		position: relative;
+		margin-right: 3%;
 	}
 
 	.albumtable, .newstable, .newsrow, .albumdescription, .newscontent, .albuminformation {

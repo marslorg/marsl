@@ -44,6 +44,11 @@ a:hover {
 	display: flex;
 	flex-direction: column;
 	min-height: calc(100vh - 153px);
+	word-wrap: break-word;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	-ms-hyphens: auto;
+	hyphens: auto;
 }
 
 .right_box {
