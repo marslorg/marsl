@@ -31,6 +31,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/photoswipe.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/default-skin/default-skin.css" type="text/css" />
+		<link rel="manifest" href="./manifest.json" />
 	</head>
 	<body>
 		<input type="hidden" id="serverName" name="serverName" value="<?php echo $serverName; ?>" />
@@ -131,5 +132,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		</div>
 		<!--  immediately before </body> -->
 		<script src="includes/shariff/shariff.complete.js"></script>
+		<script src="app.js"></script>
 	</body>
 </html>

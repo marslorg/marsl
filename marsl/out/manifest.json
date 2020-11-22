@@ -1,0 +1,26 @@
+{
+    "name": "Music2Web.de",
+    "short_name": "Music2Web.de",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#580000",
+    "description": "Das Musikportal für alternative Popkultur.",
+    "theme_color": "#E00000",
+    "icons": [
+      {
+        "src": "./includes/graphics/mobicon.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "./includes/graphics/icon_512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      },
+      {
+        "src": "./includes/graphics/icon_1000x1000.png",
+        "sizes": "1000x1000",
+        "type": "image/png"
+      }
+    ]
+  }
