@@ -8,8 +8,8 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="mobile-web-app-capable" content="yes" />
-		<link rel="icon" sizes="192x192" href="includes/graphics/mobicon.png" />
-		<link rel="apple-touch-icon" sizes="192x192" href="includes/graphics/mobicon.png" />
+		<link rel="icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
+		<link rel="apple-touch-icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
 		<?php if ($image!=null): ?>
 		<meta property="og:image" content="<?php echo $domain; ?>/<?php echo $image; ?>" />
 		<meta property="og:title" content="<?php echo $title; ?>" />
