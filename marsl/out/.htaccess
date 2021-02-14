@@ -1,0 +1,31 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^(admin)($|/) - [L]
+    RewriteRule ^(ajax)($|/) - [L]
+    RewriteRule ^(albums)($|/) - [L]
+    RewriteRule ^(files)($|/) - [L]
+    RewriteRule ^(includes)($|/) - [L]
+    RewriteRule ^(install)($|/) - [L]
+    RewriteRule ^(modules)($|/) - [L]
+    RewriteRule ^(news)($|/) - [L]
+    RewriteRule ^(shared)($|/) - [L]
+    RewriteRule ^(shell)($|/) - [L]
+    RewriteRule ^(styles)($|/) - [L]
+    RewriteRule ^(template)($|/) - [L]
+    RewriteRule ^(user)($|/) - [L]
+    RewriteRule ^(adminforgot.php)($|/) - [L]
+    RewriteRule ^(adminlogin.php)($|/) - [L]
+    RewriteRule ^(app.js)($|/) - [L]
+    RewriteRule ^(file.php)($|/) - [L]
+    RewriteRule ^(forgot.php)($|/) - [L]
+    RewriteRule ^(googlenews.php)($|/) - [L]
+    RewriteRule ^(login.php)($|/) - [L]
+    RewriteRule ^(manifest.json)($|/) - [L]
+    RewriteRule ^(rss.php)($|/) - [L]
+    RewriteRule ^(sw.js)($|/) - [L]
+    RewriteRule ^(taggedrss.php)($|/) - [L]
+    RewriteRule ^(api.php)($|/) - [L]
+    
+    RewriteRule ^api/(.*)$ api/index.php?request_url=$1 [L,QSA] 
+</IfModule>

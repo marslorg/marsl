@@ -1,4 +1,5 @@
 <?php
+include_once(dirname(__FILE__)."/errorHandler.php");
 include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
 include_once(dirname(__FILE__)."/htmlpurifier/library/HTMLPurifier.auto.php");
@@ -153,11 +154,18 @@ class Basic {
 	 */
 	public function randomHash() {
 		mt_srand(time());
-		$randomHash = mt_rand();
+		$randomHash = mt_rand().mt_rand().mt_rand().mt_rand();
 		$randomHash = md5($randomHash);
 		return $randomHash;
 	}
 	
+	public function randomSHA512() {
+		mt_srand(time());
+		$randomHash = mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand().mt_rand();
+		$randomHash = hash("sha512", $randomHash);
+		return $randomHash;
+	}
+
 	/*
 	 * Return the numeric value of a month.
 	 */

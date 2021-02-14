@@ -71,6 +71,11 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 					<a class="hide" href="#">Newsletter</a>
 				</li>
 				<?php endif; ?>
+				<?php if($isRoot): ?>
+				<li>
+					<a class="hide" href="index.php?var=api">API Schlüssel</a>
+				</li>
+				<?php endif; ?>
 				<?php if ($userdata): ?>
 				<li>
 					<a class="hide" href="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>">Daten &auml;ndern</a>

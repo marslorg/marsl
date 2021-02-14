@@ -42,15 +42,9 @@ class RegisterUser {
 								$this->db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 								$registered = true;
 								$userID = $user->getIDbyName($_POST['nickname']);
-								if (empty($_POST['role'])) {
-									$user->changeRole($userID,$role->getUserRole());
-								}
-								else {
+								if (!empty($_POST['role'])) {
 									if(($_POST['role']!=$role->getRole())&&(in_array($_POST['role'],$possibleRoles))) {
 										$user->changeRole($userID,$_POST['role']);									
-									}
-									else {
-										$user->changeRole($userID,$role->getUserRole());
 									}
 								}
 							}
