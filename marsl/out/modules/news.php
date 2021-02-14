@@ -9,6 +9,10 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../includes/mailer.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/../includes/web-push-php-6.0.3/vendor/autoload.php");
+
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
 
 class News implements Module {
 
@@ -207,7 +211,7 @@ class News implements Module {
 				require_once("template/news.write.tpl.php");
 			}
 			else if ($_GET['action']=="queue") {
-				$this->doThings();
+				$this->doGetActions();
 				$news = array();
 				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
@@ -412,7 +416,7 @@ class News implements Module {
 				}
 			}
 			else if ($_GET['action']=="news") {
-				$this->doThings();
+				$this->doGetActions();
 				$page = 1;
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
@@ -458,7 +462,7 @@ class News implements Module {
 				require_once("template/news.tpl.php");
 			}
 			else if ($_GET['action']=="details") {
-				$this->doThings();
+				$this->doGetActions();
 				$id = $this->db->escapeString($_GET['id']);
 				$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
@@ -639,35 +643,107 @@ class News implements Module {
 	/*
 	 * Executes some smaller functions on a news article.
 	 */
-	private function doThings() {
+	private function doGetActions() {
 		$role = new Role($this->db);
 		$user = new User($this->db);
 		if (isset($_GET['do'])) {
 			if ($_GET['do']=="submit") {
-				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-					$id = $this->db->escapeString($_GET['id']);
-					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
-					while ($row = $this->db->fetchArray($result)) {
-						if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
-							$admin = $this->db->escapeString($user->getID());
-							$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
-							$this->db->query("UPDATE `news` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `news`='$id'");
-						}
-					}
-				}
+    			$this->submitArticleToFrontend($role, $user);
 			}
 			else if ($_GET['do']=="del") {
-				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-					$id = $this->db->escapeString($_GET['id']);
-					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
-					while ($row = $this->db->fetchArray($result)) {
-						if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
-							$this->db->query("UPDATE `news` SET `deleted`='1' WHERE `news`='$id'");
-						}
-					}
-				}
+    			$this->deleteArticle($role);
 			}
 		}
+	}
+
+    private function deleteArticle($role)
+    {
+        if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
+        	$id = $this->db->escapeString($_GET['id']);
+        	$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
+        	while ($row = $this->db->fetchArray($result)) {
+        		if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
+        			$this->db->query("UPDATE `news` SET `deleted`='1' WHERE `news`='$id'");
+        		}
+        	}
+        }
+    }
+
+    private function submitArticleToFrontend($role, $user) {
+        if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
+        	$id = $this->db->escapeString($_GET['id']);
+        	$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
+        	while ($row = $this->db->fetchArray($result)) {
+        		if ($this->auth->locationAdminAllowed($row['location'], $role->getRole())) {
+        			$admin = $this->db->escapeString($user->getID());
+        			$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
+					$this->db->query("UPDATE `news` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `news`='$id'");
+                    if ($this->auth->locationReadAllowed($row['location'], $role->getGuestRole())) {
+                        $this->webPushArticle($id, $row['location'], $row['headline'], $row['title'], $row['teaser']);
+                    }
+        		}
+        	}
+        }
+	}
+	
+	private function webPushArticle($id, $location, $headline, $title, $teaser) {
+        if (extension_loaded('gmp')) {
+            $payloadJSON = $this->buildPayloadJSON($id, $location, $headline, $title, $teaser);
+            $webPush = $this->buildWebPushObject($payloadJSON);
+
+            foreach ($webPush->flush() as $report) {
+                if (!$report->isSuccess()) {
+                    $statusCode = $report->getResponse()->getStatusCode();
+                    if ($statusCode == 410 || $statusCode == 404) {
+                        $endpoint = $report->getRequest()->getUri()->__toString();
+                        $endpoint = $this->db->escapeString($endpoint);
+                        $this->db->query("DELETE FROM `pushtoken` WHERE `endpoint`='$endpoint'");
+                    }
+                }
+            }
+        }
+	}
+
+	private function buildPayloadJSON($id, $location, $headline, $title, $teaser) {
+		$config = new Configuration();
+
+		$messageTitle = $headline.": ".$title;
+		$teaser = str_replace("<br />", "\n", $teaser);
+		$teaser = strip_tags($teaser);
+		$message = $teaser;
+		$url = $config->getDomain().$config->getBasePath()."/index.php?id=".$location."&show=".$id."&action=read";
+		$icon = $config->getDomain().$config->getBasePath()."/includes/graphics/icon_512x512.png";
+
+		$payloadArray = array();
+		$payloadArray['title'] = $messageTitle;
+		$payloadArray['body'] = $message;
+		$payloadArray['icon'] = $icon;
+		$payloadArray['data'] = $url;
+		$payloadArray['requireInteraction'] = true;
+
+		$payloadJSON = json_encode($payloadArray);
+		return $payloadJSON;
+	}
+
+	private function buildWebPushObject($payloadJSON) {
+		$config = new Configuration();
+		$auth = [
+			'VAPID' => [
+				'subject' => $config->getDomain().$config->getBasePath(),
+				'publicKey' => $config->getWebPushPublicKey(),
+				'privateKey' => $config->getWebPushPrivateKey()
+			]
+		];
+		$webPush = new WebPush($auth);
+		$result = $this->db->query("SELECT * FROM `pushtoken` WHERE `type` = 'webpush'");
+		while ($row = $this->db->fetchArray($result)) {
+			$subscription = Subscription::create([
+				'endpoint'=>$row['endpoint'],
+				'keys'=>['p256dh'=>$row['key'], 'auth'=>$row['auth']]
+			]);
+			$webPush->queueNotification($subscription, $payloadJSON);
+		}
+		return $webPush;
 	}
 	
 	/*

@@ -182,6 +182,35 @@ class Authentication {
 	public function locationAdminAllowed($location, $roleID) {
 		return $this->evalLocationRights("admin", $location, $roleID);
 	}
+
+    public function isAppAllowed() {
+		$appIsAuthenticated = false;
+
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+        	if (isset($_SERVER['PHP_AUTH_PW'])) {
+        		$appKey = $this->db->escapeString($_SERVER['PHP_AUTH_USER']);
+        		$appSecret = "";
+        		$result = $this->db->query("SELECT `secret` FROM `app` WHERE `key`='$appKey'");
+        		while ($row = $this->db->fetchArray($result)) {
+        			$appSecret = $row['secret'];
+        		}
+				
+				$message = $_SERVER['REQUEST_METHOD'].$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+				if ($_SERVER['REQUEST_METHOD'] == "POST" || $_SERVER['REQUEST_METHOD'] == "PUT") {
+					$rawData = file_get_contents("php://input");
+					$message = $message.$rawData;
+				}
+
+				$hash = hash_hmac("sha512", $message, $appSecret);
+
+				if ($hash == $_SERVER['PHP_AUTH_PW']) {
+					$appIsAuthenticated = true;
+				}
+        	}
+        }
+
+        return $appIsAuthenticated;
+    }
 	
 	/*
 	 * Get a token to prevent CSRF attacks.

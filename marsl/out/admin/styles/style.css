@@ -152,7 +152,7 @@ a:hover {
 	border: #777777 1px solid;
 }
 
-.alphabetsearch {
+.alphabetsearch, .apisetup {
 	margin-left: 26%;
 	width: 300px;
 	text-align: center;
@@ -166,12 +166,12 @@ a:hover {
 	font-size: 11px;
 }
 
-.userlist, .cbelist {
+.userlist, .cbelist, .applist {
 	min-width: 1024px;
 	margin-top: 25px;
 }
 
-.userlist td, .cbelist td {
+.userlist td, .cbelist td, .applist td {
 	background-color: #EEEEEE;
 	padding-left: 5px;
 	padding-right: 5px;

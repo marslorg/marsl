@@ -10,6 +10,7 @@ include_once (dirname(__FILE__)."/standard.php");
 include_once (dirname(__FILE__)."/modulerights.php");
 include_once (dirname(__FILE__)."/register.php");
 include_once (dirname(__FILE__)."/tags.php");
+include_once(dirname(__FILE__)."/api.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/recover.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
@@ -49,6 +50,7 @@ class Main {
 		$roleID = $role->getRole();
 		
 		$headAdmin = $user->isHead();
+		$isRoot = $user->isRoot();
 		
 		$content = "";
 		
@@ -94,6 +96,9 @@ class Main {
 			}
 			else if ($this->var=="tags") {
 				$content = new Tags($this->db, $auth);
+			}
+			else if ($this->var=="api") {
+				$content = new API($this->db, $auth);
 			}
 			else {
 				include_once(dirname(__FILE__)."/admin.php");
