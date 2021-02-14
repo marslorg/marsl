@@ -403,3 +403,42 @@ a:hover {
 .twitter-timeline {
 	display: inline-block !important;
 }
+
+#footer-permission {
+	display: none;
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 60px;
+	padding-left: 30px;
+	padding-right: 30px;
+	line-height: 60px;
+	background: #000;
+	color: #fff;
+	font-family: Verdana, Arial, Helvetica, Sans-Serif;
+}
+
+#footer-permission a {
+	color: #fff;
+}
+
+#footer-permission #description {
+	float: left;
+}
+
+#footer-permission #accept, #footer-permission #reject {
+	margin-left: 10px;
+	width: 20px;
+}
+
+#footer-permission #reject a {
+	text-decoration: underline;
+}
+
+#footer-permission #accept a {
+	border: 1px solid #fff;
+	padding: 5px 10px;
+	text-decoration: none;
+	background: #580000;
+}

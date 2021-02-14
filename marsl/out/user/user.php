@@ -43,6 +43,19 @@ class User {
 		
 		return $headAdmin;
 	}
+
+	public function isRoot() {
+		$role = new Role($this->db);
+		$roleID = $this->db->escapeString($role->getRole());
+
+		$root = false;
+
+		if ($this->db->isExisting("SELECT * FROM `role` WHERE `name`='root' AND `role`='$roleID' LIMIT 1")) {
+			$root = true;
+		}
+
+		return $root;
+	}
 	
 	/*
 	 * Returns whether the logged in user is a guest.
@@ -354,15 +367,13 @@ class User {
 				$hashPassword = $this->db->escapeString($this->hashPassword($regdate, $password));
 				$basic = new Basic($this->db, $auth);
 				$session = $this->db->escapeString($basic->randomHash().$basic->randomHash());
-				$this->db->query("INSERT INTO `user`(`nickname`,`password`,`postcount`,`regdate`,`sessionid`,`deleted`) VALUES('$nickname','$hashPassword','0','$regdate','$session','0')");
+				$role = new Role($this->db);
+				$roleID = $role->getUserRole();
+				$this->db->query("INSERT INTO `user`(`nickname`,`password`,`postcount`,`regdate`,`sessionid`,`deleted`,`role`) VALUES('$nickname','$hashPassword','0','$regdate','$session','0','$roleID')");
 				$user = $this->db->escapeString($this->getIDbyName($nickname));
 				$confirmID = $this->db->escapeString($basic->confirmID());
 				$mail = $this->db->escapeString($mail);
-				$result = $this->db->query("SELECT `user` FROM `stdroles`");
-				while ($row = $this->db->fetchArray($result)) {
-					$role = $this->db->escapeString($row['user']);
-					$this->db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`,`primary`) VALUES('$mail','$user','0','$regdate','$confirmID','1')");
-				}
+				$this->db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`,`primary`) VALUES('$mail','$user','0','$regdate','$confirmID','1')");
 				$mailer = new Mailer($this->db);
 				$mailer->sendConfirmationMail($user, $mail);
 				return true;

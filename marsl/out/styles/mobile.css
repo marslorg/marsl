@@ -117,6 +117,23 @@ input#menu_responsive[type=checkbox]:checked ~ .menu {
   	border-bottom: 5px solid transparent;
 }
 
+#footer-permission {
+	padding-top: 30px;
+	padding-bottom: 30px;
+	line-height: inherit;
+	height: auto;
+}
+
+#footer-permission #description {
+	width: 100%;
+}
+
+#footer-permission #buttons {
+	display: block;
+	text-align: center;
+	margin-top: 50px;
+}
+
 @media all and (max-width: 1005px) {
 	.right_box br {
 		display: none;

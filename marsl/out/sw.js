@@ -103,13 +103,22 @@ self.addEventListener('push', event => {
     self.registration.showNotification(notification.title, notification);
 });
 
-self.addEventListener('notificationClick', event => {
+self.addEventListener('notificationclick', event => {
+    let url = event.notification.data;
     event.notification.close();
-    if (event.action === 'ok') {
-        event.waitUntil(
-            client.openWindow(event.notification.data.url)
-        );
-    }
+    event.waitUntil(
+        clients.matchAll({type: 'window'}).then(windowClients => {
+            for (var i = 0; i < windowClients.length; i++) {
+                var client = windowClients[i];
+                if (client.url === url && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
+    );
 })
 
 async function cacheFirst(req) {

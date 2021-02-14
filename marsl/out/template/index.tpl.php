@@ -129,6 +129,15 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="footer">
 				<a href="https://www.music2web.de/index.php?id=469">Jobs</a> | <a href="https://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="https://www.music2web.de/index.php?id=738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/index.php?id=186">Impressum</a>
 			</div>
+			<div id="footer-permission">
+				<span id="description">
+					Bleibe immer über aktuelle Nachrichten von uns informiert und abonniere jetzt unsere Push-Meldungen.
+				</span>
+				<span id="buttons">
+					<span id="accept"><a href="javascript:void(0)" title="Ja">Ja</a></span>
+					<span id="reject"><a href="javascript:void(0)" title="Nein">Nein</a></span>
+				</span>
+			</div>
 		</div>
 		<!--  immediately before </body> -->
 		<script src="includes/shariff/shariff.complete.js"></script>
