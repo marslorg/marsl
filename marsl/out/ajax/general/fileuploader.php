@@ -11,19 +11,20 @@ class FileUploader {
 
 	private $db;
 	private $auth;
+	private $role;
 
 	public function __construct() {
 		$this->db = new DB();
 		$this->db->connect();
-		$this->auth = new Authentication($this->db);
+		$this->role = new Role($this->db);
+		$this->auth = new Authentication($this->db, $this->role);
 	}
 
 	public function display() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		
-		$role = new Role($this->db);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		
 		$authToken = $_GET['token'];
 		$authTime = $_GET['time'];
@@ -194,7 +195,7 @@ class FileUploader {
 	}
 	
 	private function generateFileName() {
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$filename = $this->db->escapeString($basic->randomHash());
 		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `servername`='$filename' LIMIT 1")) {
 			$filename = $this->db->escapeString($basic->randomHash());
@@ -203,7 +204,7 @@ class FileUploader {
 	}
 	
 	private function generateKey() {
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$key = $this->db->escapeString($basic->randomHash());
 		while ($this->db->isExisting("SELECT * FROM `attachment` WHERE `key`='$key' LIMIT 1")) {
 			$key = $this->db->escapeString($basic->randomHash());

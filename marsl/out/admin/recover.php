@@ -2,6 +2,7 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 include_once (dirname(__FILE__)."/../includes/dbsocket.php");
 include_once (dirname(__FILE__)."/../user/user.php");
+include_once (dirname(__FILE__)."/../user/role.php");
 include_once (dirname(__FILE__)."/../includes/basic.php");
 
 /*
@@ -11,10 +12,12 @@ class Recover {
 	
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 
 	/*
@@ -25,7 +28,7 @@ class Recover {
 			$init = false;
 			$success = true;
 			$recover = true;
-			$basic = new Basic($this->db, $this->auth);
+			$basic = new Basic($this->db, $this->auth, $this->role);
 			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 			require_once("template/recover.tpl.php");
 		}
@@ -35,7 +38,7 @@ class Recover {
 					$time = $_GET['time'];
 					if ($time+172800 >= time()) {
 						$uid = $_GET['uid'];
-						$user = new User($this->db);
+						$user = new User($this->db, $this->role);
 						$password = $user->getPassbyID($uid);
 						$auth_code = md5("admin".$uid.$time.$password);
 						$authParameter = $_GET['auth'];
@@ -73,7 +76,7 @@ class Recover {
 	 * Loads the box to set a new password.
 	 */
 	private function recoverBox() {
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
 		$time = $_GET['time'];
 		$recover = false;
@@ -89,7 +92,7 @@ class Recover {
 		}
 		if ($time+172800 >= time()) {
 			$uid = $_GET['uid'];
-			$user = new User($this->db);
+			$user = new User($this->db, $this->role);
 			$password = $user->getPassbyID($uid);
 			$auth_code = md5("admin".$uid.$time.$password);
 			$authParameter = $_GET['auth'];

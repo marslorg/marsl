@@ -9,28 +9,29 @@ class Standard {
 	
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 
 	/*
 	 * Set the standard roles for guest users and newly registered users in the guest registration dialog.
 	 */
 	public function admin() {
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		
 		if ($user->isAdmin()) {
 			if ($user->isHead()) {
-				$role = new Role($this->db);
-				$possibleRoles = $role->getPossibleRoles($role->getRole());
+				$possibleRoles = $this->role->getPossibleRoles($this->role->getRole());
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="change") {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$stdUser = $this->db->escapeString($_POST['user']);
 							$guest = $this->db->escapeString($_POST['guest']);
-							if (($role->getRole()!=$stdUser)&&($role->getRole()!=$guest)) {
+							if (($this->role->getRole()!=$stdUser)&&($this->role->getRole()!=$guest)) {
 								if (in_array($stdUser,$possibleRoles)&&in_array($guest,$possibleRoles)) {
 									if ($this->db->isExisting("SELECT * FROM `stdroles` LIMIT 1")) {
 										$this->db->query("UPDATE `stdroles` SET `guest`='$guest', `user`='$stdUser'");
@@ -55,7 +56,7 @@ class Standard {
 					$possibleRole = $this->db->escapeString($possibleRole);
 					$result = $this->db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {
-						if ($role->getRole()!=$row['role']) {
+						if ($this->role->getRole()!=$row['role']) {
 							array_push($roles,array('role' => htmlentities($row['role'], null, "ISO-8859-1"), 'name' => htmlentities($row['name'], null, "ISO-8859-1")));
 						}
 					}

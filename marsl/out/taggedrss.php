@@ -17,8 +17,8 @@ class RSS {
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
-		$auth = new Authentication($db);
 		$role = new Role($db);
+		$auth = new Authentication($db, $role);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
@@ -53,12 +53,12 @@ class RSS {
 					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
 				}
 				
-				$basic = new Basic($db, $auth);
+				$basic = new Basic($db, $auth, $role);
 				$modules = $basic->getModules();
 				$moduleTags = array();
 				foreach ($modules as $module) {
 					include_once(dirname(__FILE__)."/modules/".$module['file'].".php");
-					$class = new $module['class']($db, $auth);
+					$class = new $module['class']($db, $auth, $role);
 					if ($class->isTaggable()) {
 						$tagList = $class->getTagList();
 						foreach($tagList as $tagType) {

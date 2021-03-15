@@ -21,10 +21,10 @@ class EditPicture {
 	public function admin() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-		$user = new User($this->db);
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		$basic = new Basic($this->db, $auth);
+		$user = new User($this->db, $role);
+		$auth = new Authentication($this->db, $role);
+		$basic = new Basic($this->db, $auth, $role);
 		$title = $basic->getTitle();
 		$new = true;
 		if ($user->isAdmin()&&$auth->moduleAdminAllowed("gallery", $role->getRole())&&$auth->moduleExtendedAllowed("gallery", $role->getRole())) {

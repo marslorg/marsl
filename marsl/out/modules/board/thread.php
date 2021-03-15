@@ -11,10 +11,12 @@ class Thread {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	/*
@@ -23,13 +25,12 @@ class Thread {
 	public function display() {
 		$location = $_GET['id'];
 		$boardID = $this->db->escapeString($_GET['board']);
-		$user = new User($this->db);
-		$role = new Role($this->db);
-		$board = new Board($this->db, $this->auth);
+		$user = new User($this->db, $this->role);
+		$board = new Board($this->db, $this->auth, $this->role);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if (($location==$board->getLocation($boardID))&&($this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())&&$board->readAllowed($boardID, $role->getRole()))) {
-			$writeAllowed = $this->auth->moduleWriteAllowed("board", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())&&$board->readAllowed($boardID, $role->getRole());
+		if (($location==$board->getLocation($boardID))&&($this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())&&$board->readAllowed($boardID, $this->role->getRole()))) {
+			$writeAllowed = $this->auth->moduleWriteAllowed("board", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())&&$board->readAllowed($boardID, $this->role->getRole());
 			$globals = array();
 			$fixeds = array();
 			$page = 1;
@@ -118,15 +119,14 @@ class Thread {
 	 * Get globally fixed threads.
 	 */
 	private function getGlobals() {
-		$user = new User($this->db);
-		$role = new Role($this->db);
-		$board = new Board($this->db, $this->auth);
+		$user = new User($this->db, $this->role);
+		$board = new Board($this->db, $this->auth, $this->role);
 		$globals = array();
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		$result = $this->db->query("SELECT `post`, `thread`.`thread` AS `thread`, `board`, `postcount`, `title`, `thread`.`author` AS `threadauthor`, `post`.`author` AS `postauthor`, `viewcount`, `date` FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE `type`='2' ORDER BY `date` DESC");
 		while ($row = $this->db->fetchArray($result)) {
-			if ($this->auth->locationReadAllowed($board->getLocation($row['board']), $role->getRole())&&$board->readAllowed($row['board'], $role->getRole())) {
+			if ($this->auth->locationReadAllowed($board->getLocation($row['board']), $this->role->getRole())&&$board->readAllowed($row['board'], $this->role->getRole())) {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
@@ -150,7 +150,7 @@ class Thread {
 	 */
 	private function getFixeds() {
 		$board = $this->db->escapeString($_GET['board']);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$fixeds = array();
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
@@ -192,19 +192,18 @@ class Thread {
 	public function moveThread() {
 		$location = $_GET['id'];
 		$threadID = $this->db->escapeString($_GET['thread']);
-		$board = new Board($this->db, $this->auth);
+		$board = new Board($this->db, $this->auth, $this->role);
 		$boardID = $this->getBoard($threadID);
-		$role = new Role($this->db);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 		$isAdmin = $board->isAdmin($boardID, $user->getID());
-		$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+		$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 		if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 			if (isset($_POST['do'])) {
 				if ($_POST['do']=="move") {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$destinationID = $this->db->escapeString($_POST['destination']);
-						if ($board->readAllowed($destinationID, $role->getRole())&&$board->writeAllowed($destinationID, $role->getRole())&&$this->auth->locationReadAllowed($board->getLocation($destinationID), $role->getRole())&&$this->auth->locationWriteAllowed($board->getLocation($destinationID), $role->getRole())&&$this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->moduleWriteAllowed("board", $role->getRole())) {
+						if ($board->readAllowed($destinationID, $this->role->getRole())&&$board->writeAllowed($destinationID, $this->role->getRole())&&$this->auth->locationReadAllowed($board->getLocation($destinationID), $this->role->getRole())&&$this->auth->locationWriteAllowed($board->getLocation($destinationID), $this->role->getRole())&&$this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->moduleWriteAllowed("board", $this->role->getRole())) {
 							$this->db->query("UPDATE `thread` SET `board`='$destinationID' WHERE `thread`='$threadID'");
 							
 							$result = $this->db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
@@ -236,7 +235,7 @@ class Thread {
 				while ($row = $this->db->fetchArray($result)) {
 					$destinationID = $row['board'];
 					$destinationTitle = htmlentities($row['title'], null, "ISO-8859-1");
-					if ($board->readAllowed($destinationID, $role->getRole())&&$board->writeAllowed($destinationID, $role->getRole())&&$this->auth->locationReadAllowed($board->getLocation($destinationID), $role->getRole())&&$this->auth->locationWriteAllowed($board->getLocation($destinationID), $role->getRole())&&$this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->moduleWriteAllowed("board", $role->getRole())) {
+					if ($board->readAllowed($destinationID, $this->role->getRole())&&$board->writeAllowed($destinationID, $this->role->getRole())&&$this->auth->locationReadAllowed($board->getLocation($destinationID), $this->role->getRole())&&$this->auth->locationWriteAllowed($board->getLocation($destinationID), $this->role->getRole())&&$this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->moduleWriteAllowed("board", $this->role->getRole())) {
 						array_push($boards, array('board'=>$destinationID, 'title'=>$destinationTitle));
 					}
 				}
@@ -254,13 +253,12 @@ class Thread {
 	public function changeTitle() {
 		$location = $_GET['id'];
 		$threadID = $this->db->escapeString($_GET['thread']);
-		$board = new Board($this->db, $this->auth);
+		$board = new Board($this->db, $this->auth, $this->role);
 		$boardID = $this->getBoard($threadID);
-		$role = new Role($this->db);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 		$isAdmin = $board->isAdmin($boardID, $user->getID());
-		$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+		$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 		if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 			if (isset($_POST['do'])) {
 				if ($_POST['do']=="change") {
@@ -289,13 +287,12 @@ class Thread {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 			$location = $_GET['id'];
 			$threadID = $this->db->escapeString($_GET['thread']);
-			$board = new Board($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
-			$role = new Role($this->db);
-			$user = new User($this->db);
+			$user = new User($this->db, $this->role);
 			$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 			$isAdmin = $board->isAdmin($boardID, $user->getID());
-			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='0' WHERE `thread`='$threadID'");
 				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
@@ -311,13 +308,12 @@ class Thread {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 			$location = $_GET['id'];
 			$threadID = $this->db->escapeString($_GET['thread']);
-			$board = new Board($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
-			$role = new Role($this->db);
-			$user = new User($this->db);
+			$user = new User($this->db, $this->role);
 			$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 			$isAdmin = $board->isAdmin($boardID, $user->getID());
-			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='3' WHERE `thread`='$threadID'");
 				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
@@ -333,13 +329,12 @@ class Thread {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 			$location = $_GET['id'];
 			$threadID = $this->db->escapeString($_GET['thread']);
-			$board = new Board($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
-			$role = new Role($this->db);
-			$user = new User($this->db);
+			$user = new User($this->db, $this->role);
 			$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 			$isAdmin = $board->isAdmin($boardID, $user->getID());
-			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='4' WHERE `thread`='$threadID'");
 				$result = $this->db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");
@@ -365,10 +360,9 @@ class Thread {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 			$location = $_GET['id'];
 			$threadID = $this->db->escapeString($_GET['thread']);
-			$board = new Board($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
-			$role = new Role($this->db);
-			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&$isGlobalAdmin) {
 				$this->db->query("UPDATE `thread` SET `type`='2' WHERE `thread`='$threadID'");
 				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
@@ -384,13 +378,12 @@ class Thread {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 			$location = $_GET['id'];
 			$threadID = $this->db->escapeString($_GET['thread']);
-			$board = new Board($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
-			$role = new Role($this->db);
-			$user = new User($this->db);
+			$user = new User($this->db, $this->role);
 			$isOperator = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID()));
 			$isAdmin = $board->isAdmin($boardID, $user->getID());
-			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='1' WHERE `thread`='$threadID'");
 				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
@@ -406,10 +399,9 @@ class Thread {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 			$location = $_GET['id'];
 			$threadID = $this->db->escapeString($_GET['thread']);
-			$board = new Board($this->db, $this->auth);
+			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
-			$role = new Role($this->db);
-			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $role->getRole())&&$this->auth->locationAdminAllowed($location, $role->getRole()));
+			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&$isGlobalAdmin) {
 				$this->db->query("UPDATE `thread` SET `type`='0' WHERE `thread`='$threadID'");
 				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
@@ -422,14 +414,13 @@ class Thread {
 	 * Create a new thread.
 	 */
 	public function newThread() {
-		$board = new Board($this->db, $this->auth);
-		$role = new Role($this->db);
-		$user = new User($this->db);
+		$board = new Board($this->db, $this->auth, $this->role);
+		$user = new User($this->db, $this->role);
 		$boardID = $this->db->escapeString($_GET['board']);
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = $this->db->escapeString($_GET['id']);
-		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$this->auth->moduleAdminAllowed("board", $role->getRole())||$this->auth->locationAdminAllowed($location, $role->getRole()));
-		if (($location==$board->getLocation($boardID))&&$board->readAllowed($boardID, $role->getRole())&&$board->writeAllowed($boardID, $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())&&$this->auth->locationWriteAllowed($location, $role->getRole())&&$this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->moduleWriteAllowed("board", $role->getRole())) {
+		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$this->auth->moduleAdminAllowed("board", $this->role->getRole())||$this->auth->locationAdminAllowed($location, $this->role->getRole()));
+		if (($location==$board->getLocation($boardID))&&$board->readAllowed($boardID, $this->role->getRole())&&$board->writeAllowed($boardID, $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())&&$this->auth->locationWriteAllowed($location, $this->role->getRole())&&$this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->moduleWriteAllowed("board", $this->role->getRole())) {
 			if (isset($_POST['do'])) {
 				if ($_POST['do']=="newthread") {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {

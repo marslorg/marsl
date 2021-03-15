@@ -4,15 +4,18 @@ include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
 include_once(dirname(__FILE__)."/htmlpurifier/library/HTMLPurifier.auto.php");
 include_once(dirname(__FILE__)."/../modules/urlloader.php");
+include_once(dirname(__FILE__)."/../user/role.php");
 
 class Basic {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	/*
@@ -65,7 +68,7 @@ class Basic {
 	 */
 	public function getTitle() {
 		$config = new Configuration();
-		$urlloader = new URLLoader($this->db, $this->auth);
+		$urlloader = new URLLoader($this->db, $this->auth, $this->role);
 		$title = $urlloader->getTitle();
 		if ($title!=null) {
 			return $urlloader->getTitle().$config->getTitle();
@@ -79,7 +82,7 @@ class Basic {
 	 * Gets the page corresponding thumbnail.
 	 */
 	public function getImage() {
-		$urlloader = new URLLoader($this->db, $this->auth);
+		$urlloader = new URLLoader($this->db, $this->auth, $this->role);
 		return $urlloader->getImage();
 	}
 	

@@ -16,8 +16,8 @@ class GoogleNews {
 		header("Content-type: application/rss+xml");
 		$db = new DB();
 		$db->connect();
-		$auth = new Authentication($db);
 		$role = new Role($db);
+		$auth = new Authentication($db, $role);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));

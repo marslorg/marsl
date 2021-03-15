@@ -11,10 +11,12 @@ class Portal implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	/*
@@ -22,8 +24,7 @@ class Portal implements Module {
 	 */
 	public function display() {
 		$id;
-		$basic = new Basic($this->db, $this->auth);
-		$role = new Role($this->db);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if (isset($_GET['id'])) {
 			$id = $this->db->escapeString($_GET['id']);
 		}
@@ -34,8 +35,8 @@ class Portal implements Module {
 		while ($row = $this->db->fetchArray($result)) {
 			$id = $row['maps_to'];
 		}
-		if ($this->auth->moduleReadAllowed("portal", $role->getRole())&&$this->auth->moduleReadAllowed("news", $role->getRole())) {
-			if ($this->auth->locationReadAllowed($id, $role->getRole())) {
+		if ($this->auth->moduleReadAllowed("portal", $this->role->getRole())&&$this->auth->moduleReadAllowed("news", $this->role->getRole())) {
+			if ($this->auth->locationReadAllowed($id, $this->role->getRole())) {
 				$this->constructFeaturedContent();
 				$this->constructPortal();
 			}
@@ -46,7 +47,6 @@ class Portal implements Module {
 	 * Displays the featured content slider.
 	 */
 	private function constructFeaturedContent() {
-		$role = new Role($this->db);
 		$news = array();
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
@@ -54,7 +54,7 @@ class Portal implements Module {
 		while ($row = $this->db->fetchArray($result)) {
 			$location = htmlentities($row['location'], null, "ISO-8859-1");
 			$photograph = "";
-			if ($this->auth->locationReadAllowed($location, $role->getRole())) {
+			if ($this->auth->locationReadAllowed($location, $this->role->getRole())) {
 				$dateTime->setTimestamp($row['date']);
 				$date = $dateTime->format("d\.m\.Y");
 				if (!empty($row['photograph'])) {
@@ -70,11 +70,10 @@ class Portal implements Module {
 	 * Displays the content boxes.
 	 */
 	private function constructPortal() {
-		$role = new Role($this->db);
 		$pages = array();
 		$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 		while ($row = $this->db->fetchArray($result)) {
-			if ($this->auth->locationReadAllowed($row['id'], $role->getRole())) {
+			if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
 				array_push($pages, array('location'=>$row['id'], 'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
 			}
 		}
@@ -114,12 +113,11 @@ class Portal implements Module {
 	 * Admin interface for the portal to choose the articles which should be shown in the featured content slider.
 	 */
 	public function admin() {
-		$user = new User($this->db);
-		$role = new Role($this->db);
+		$user = new User($this->db, $this->role);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($user->isAdmin()) {
-			if ($this->auth->moduleAdminAllowed("portal", $role->getRole())) {
+			if ($this->auth->moduleAdminAllowed("portal", $this->role->getRole())) {
 				if (isset($_POST['action'])) {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
@@ -131,7 +129,7 @@ class Portal implements Module {
 							while ($row2 = $this->db->fetchArray($result2)) {
 								$picture = htmlentities($row2['url'], null, "ISO-8859-1");
 							}
-							if ($this->auth->moduleReadAllowed("news", $role->getGuestRole())&&($picture!="empty")&&$this->auth->locationReadAllowed($location, $role->getGuestRole())&&$this->auth->locationAdminAllowed($location, $role->getRole())) {
+							if ($this->auth->moduleReadAllowed("news", $this->role->getGuestRole())&&($picture!="empty")&&$this->auth->locationReadAllowed($location, $this->role->getGuestRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole())) {
 								$article = $this->db->escapeString($row['news']);
 								if (isset($_POST[$row['news']])) {
 									$this->db->query("UPDATE `news` SET `featured`='1' WHERE `news`='$article'");
@@ -155,7 +153,7 @@ class Portal implements Module {
 					while ($row2 = $this->db->fetchArray($result2)) {
 						$picture = $row2['url'];
 					}
-					if ($this->auth->moduleReadAllowed("news", $role->getGuestRole())&&($picture!="empty")&&$this->auth->locationReadAllowed($location, $role->getGuestRole())&&$this->auth->locationAdminAllowed($location, $role->getRole())) {
+					if ($this->auth->moduleReadAllowed("news", $this->role->getGuestRole())&&($picture!="empty")&&$this->auth->locationReadAllowed($location, $this->role->getGuestRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole())) {
 						array_push($news, array('headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'id'=>$row['news'], 'title'=>htmlentities($row['title'], null, "ISO-8859-1"), 'date'=>$date, 'featured'=>$row['featured']));
 					}
 				}

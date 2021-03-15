@@ -17,9 +17,9 @@ private $db;
     }
 
     public function upload() {
-        $auth = new Authentication($this->db);
-		$role = new Role($this->db);
-        $user = new User($this->db);
+        $role = new Role($this->db);
+        $auth = new Authentication($this->db, $role);
+        $user = new User($this->db, $role);
         
         if ($auth->moduleAdminAllowed("news", $role->getRole())) {
             if ($auth->checkToken($_GET['authTime'], $_GET['authToken'])) {

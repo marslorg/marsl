@@ -11,15 +11,16 @@ class Tags {
 	
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 
 	public function admin() {
-		$role = new Role($this->db);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		if ($user->isHead()) {
 			if (isset($_GET['action'])) {
 				if ($_GET['action']=="edit") {
@@ -69,10 +70,9 @@ class Tags {
 	}
 	
 	private function edit($id) {
-		$role = new Role($this->db);
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		if ($user->isHead()) {
 			$id = $this->db->escapeString($id);
 			$nameconvertion = false;

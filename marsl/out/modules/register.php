@@ -13,17 +13,18 @@ class Register implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	public function display() {
-		$role = new Role($this->db);
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$recaptcha = new Recaptcha();
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = "";
 		if (isset($_GET['id'])) {
 			$location = $_GET['id'];
@@ -40,8 +41,8 @@ class Register implements Module {
 		$passwordFailure = false;
 		$nicknameFailure = false;
 		if ($user->isGuest()||$user->isAdmin()) {
-			if ($this->auth->moduleReadAllowed("register", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())) {
-				if ($this->auth->moduleWriteAllowed("register", $role->getRole())&&$this->auth->locationWriteAllowed($location, $role->getRole())) {
+			if ($this->auth->moduleReadAllowed("register", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
+				if ($this->auth->moduleWriteAllowed("register", $this->role->getRole())&&$this->auth->locationWriteAllowed($location, $this->role->getRole())) {
 					if (isset($_POST['action'])) {
 						if ($_POST['action']=="send") {
 							if ($recaptcha->checkRecaptcha()) {
@@ -90,8 +91,7 @@ class Register implements Module {
 	}
 	
 	public function admin() {
-		$role = new Role($this->db);
-		if ($this->auth->moduleAdminAllowed("register", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("register", $this->role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send"&&$this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$newID = $this->db->escapeString($_POST['location']);
@@ -113,7 +113,7 @@ class Register implements Module {
 			
 			$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='1' OR `type`='2'");
 			while ($row = $this->db->fetchArray($result)) {
-				$guestRole = $role->getGuestRole();
+				$guestRole = $this->role->getGuestRole();
 				$location = $row['id'];
 				if ($this->auth->locationReadAllowed($location, $guestRole)) {
 					$name = htmlentities($row['name'], null, "ISO-8859-1");
