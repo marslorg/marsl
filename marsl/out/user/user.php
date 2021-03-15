@@ -9,12 +9,14 @@ class User {
 	
 	private $session;
 	private $db;
+	private $role;
 	
 	/*
 	 * Constructs the session of the user.
 	 */
-	public function __construct($db) {
+	public function __construct($db, $role) {
 		$this->db = $db;
+		$this->role = $role;
 		if (isset($_COOKIE["sessionid"])) {
 			$session = $this->db->escapeString($_COOKIE["sessionid"]);
 			if ($this->db->isExisting("SELECT * FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
@@ -29,8 +31,7 @@ class User {
 	 * Returns whether logged in user is root or directly under the root user.
 	 */
 	public function isHead() {	
-		$role = new Role($this->db);
-		$roleID = $this->db->escapeString($role->getRole());
+		$roleID = $this->db->escapeString($this->role->getRole());
 		
 		$headAdmin = 0;
 		
@@ -45,8 +46,7 @@ class User {
 	}
 
 	public function isRoot() {
-		$role = new Role($this->db);
-		$roleID = $this->db->escapeString($role->getRole());
+		$roleID = $this->db->escapeString($this->role->getRole());
 
 		$root = false;
 
@@ -68,11 +68,10 @@ class User {
 	 * Returns whether the logged in user has access rights on the admin panel.
 	 */
 	public function isAdmin() {
-		$role = new Role($this->db);
-		$roleID = $this->db->escapeString($role->getRole());
-		$location = $this->db->isExisting("SELECT * FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
-		$module = $this->db->isExisting("SELECT * FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
-		$master = $this->db->isExisting("SELECT * FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
+		$roleID = $this->db->escapeString($this->role->getRole());
+		$location = $this->db->isExisting("SELECT `role` FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+		$module = $this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+		$master = $this->db->isExisting("SELECT `master` FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
 		return ($location || $module || $master);
 	}
 	
@@ -87,7 +86,7 @@ class User {
 	 * Logout a user.
 	 */
 	public function logout($auth) {
-		$basic = new Basic($this->db, $auth);
+		$basic = new Basic($this->db, $auth, $this->role);
 		$session = $this->db->escapeString($basic->session());
 		$lastlogout = $this->db->escapeString(time());
 		$oldsession = $this->db->escapeString($this->session);
@@ -113,7 +112,7 @@ class User {
 				$password = $this->db->escapeString($this->hashPassword($regdate, $password));
 				if ($this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password' LIMIT 1")) {
 					$lastlogin = $this->db->escapeString(time());
-					$basic = new Basic($this->db, $auth);
+					$basic = new Basic($this->db, $auth, $this->role);
 					$session = $this->db->escapeString($basic->session());
 					
 					$this->db->query("UPDATE `user` SET `lastlogin`='$lastlogin', `sessionid`='$session' WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password'");
@@ -261,10 +260,9 @@ class User {
 	 * Update a role of a user and check whether the destination role is a possible role of the user.
 	 */
 	public function updateRole($user, $roleID) {
-		$role = new Role($this->db);
-		$ownRole = $role->getRole();
+		$ownRole = $this->role->getRole();
 		if ($ownRole!=$roleID) {
-			$possibleRoles = $role->getPossibleRoles($ownRole);
+			$possibleRoles = $this->role->getPossibleRoles($ownRole);
 			foreach ($possibleRoles as $possibleRole) {
 				if ($possibleRole == $roleID) {
 					$user = $this->db->escapeString($user);
@@ -365,16 +363,15 @@ class User {
 			if ((!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1"))&&(!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') LIMIT 1"))) {
 				$regdate = $this->db->escapeString(time());
 				$hashPassword = $this->db->escapeString($this->hashPassword($regdate, $password));
-				$basic = new Basic($this->db, $auth);
+				$basic = new Basic($this->db, $auth, $this->role);
 				$session = $this->db->escapeString($basic->randomHash().$basic->randomHash());
-				$role = new Role($this->db);
-				$roleID = $role->getUserRole();
+				$roleID = $this->role->getUserRole();
 				$this->db->query("INSERT INTO `user`(`nickname`,`password`,`postcount`,`regdate`,`sessionid`,`deleted`,`role`) VALUES('$nickname','$hashPassword','0','$regdate','$session','0','$roleID')");
 				$user = $this->db->escapeString($this->getIDbyName($nickname));
 				$confirmID = $this->db->escapeString($basic->confirmID());
 				$mail = $this->db->escapeString($mail);
 				$this->db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`,`primary`) VALUES('$mail','$user','0','$regdate','$confirmID','1')");
-				$mailer = new Mailer($this->db);
+				$mailer = new Mailer($this->db, $this->role);
 				$mailer->sendConfirmationMail($user, $mail);
 				return true;
 			}
@@ -421,9 +418,8 @@ class User {
 	 * Get a list of all admin users.
 	 */
 	public function getAdminUsers() {
-		$role = new Role($this->db);
 		$admins = array();
-		$adminRoles = $role->getAdminRoles();
+		$adminRoles = $this->role->getAdminRoles();
 		foreach ($adminRoles as $adminRole) {
 			$roleID = $this->db->escapeString($adminRole['role']);
 			$result = $this->db->query("SELECT `user` FROM `user` WHERE `role`='$roleID' AND `deleted`='0'");

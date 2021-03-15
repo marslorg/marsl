@@ -10,10 +10,12 @@ class Newsletter implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 
 	/*
@@ -29,16 +31,15 @@ class Newsletter implements Module {
 	public function admin() {
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
-		$role = new Role($this->db);
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		
-		if ($this->auth->moduleAdminAllowed("newsletter", $role->getRole()) && $this->auth->moduleExtendedAllowed("newsletter", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("newsletter", $this->role->getRole()) && $this->auth->moduleExtendedAllowed("newsletter", $this->role->getRole())) {
 		
 			if (!isset($_GET['action'])) {
 				
 				$temporaryKey = $basic->tempFileKey();
 				
-				$allRoles = $role->getRoles();
+				$allRoles = $this->role->getRoles();
 				
 				$roles = array();
 				

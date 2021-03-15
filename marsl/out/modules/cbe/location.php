@@ -10,10 +10,12 @@ class Location {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	public function display() {
@@ -21,8 +23,7 @@ class Location {
 	}
 	
 	public function admin() {
-		$role = new Role($this->db);
-		if ($this->auth->moduleAdminAllowed("cbe", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
 			$newEntry = false;
 			$entrySuccessful = false;
 			if (isset($_POST['action'])) {
@@ -63,10 +64,9 @@ class Location {
 	}
 	
 	public function edit($id) {
-		$role = new Role($this->db);
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
-		if ($this->auth->moduleAdminAllowed("cbe", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
 			$id = $this->db->escapeString($id);
 			$nameconvertion = false;
 			if (isset($_POST['action'])) {
@@ -171,7 +171,7 @@ class Location {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="send") {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$basic = new Basic($this->db, $this->auth);
+							$basic = new Basic($this->db, $this->auth, $this->role);
 							$street = $this->db->escapeString($_POST['street']);
 							$number = $this->db->escapeString($_POST['number']);
 							$zip = $this->db->escapeString($_POST['zip']);

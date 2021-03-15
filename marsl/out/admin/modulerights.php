@@ -11,26 +11,27 @@ class ModuleRights {
 	
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 
 	/*
 	 * The dialog to set up and change the module rights.
 	 */
 	public function admin() {
-		$user = new User($this->db);
-		$basic = new Basic($this->db, $this->auth);
-		$role = new Role($this->db);
+		$user = new User($this->db, $this->role);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if ($user->isAdmin()) {
 			if (!isset($_GET['action'])) {
 				$modules = array();
 				$result = $this->db->query("SELECT * FROM `module`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($this->auth->moduleAdminAllowed($row['file'], $role->getRole())&&$this->auth->moduleExtendedAllowed($row['file'], $role->getRole())
-					&&$this->auth->moduleWriteAllowed($row['file'], $role->getRole())&&$this->auth->moduleReadAllowed($row['file'], $role->getRole())) {
+					if ($this->auth->moduleAdminAllowed($row['file'], $this->role->getRole())&&$this->auth->moduleExtendedAllowed($row['file'], $this->role->getRole())
+					&&$this->auth->moduleWriteAllowed($row['file'], $this->role->getRole())&&$this->auth->moduleReadAllowed($row['file'], $this->role->getRole())) {
 						array_push($modules,array('file'=>$row['file'],'name'=>$row['name']));
 					}
 				}
@@ -40,35 +41,35 @@ class ModuleRights {
 				$module = $basic->getModule($_GET['module']);
 				$moduleID = $this->db->escapeString($module['file']);
 				$name = htmlentities($module['name'], null, "UTF-8");
-				if ($this->auth->moduleAdminAllowed($moduleID, $role->getRole())&&$this->auth->moduleExtendedAllowed($moduleID, $role->getRole())
-				&&$this->auth->moduleWriteAllowed($moduleID, $role->getRole())&&$this->auth->moduleReadAllowed($moduleID, $role->getRole())) {
-					$roles = $role->getPossibleRoles($role->getRole());
+				if ($this->auth->moduleAdminAllowed($moduleID, $this->role->getRole())&&$this->auth->moduleExtendedAllowed($moduleID, $this->role->getRole())
+				&&$this->auth->moduleWriteAllowed($moduleID, $this->role->getRole())&&$this->auth->moduleReadAllowed($moduleID, $this->role->getRole())) {
+					$roles = $this->role->getPossibleRoles($this->role->getRole());
 					if (isset($_POST['change'])) {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							foreach($roles as $roleID) {
-								if ($roleID!=$role->getRole()) {
+								if ($roleID!=$this->role->getRole()) {
 									$read = isset($_POST[$roleID.'_read']);
 									$write = isset($_POST[$roleID.'_write']);
 									$extended = isset($_POST[$roleID.'_extended']);
 									$admin = isset($_POST[$roleID.'_admin']);
-									$role->setModuleRights($roleID,$moduleID,$read,$write,$extended,$admin);
+									$this->role->setModuleRights($roleID,$moduleID,$read,$write,$extended,$admin);
 								}
 							}
 						}
 					}
 					$rights = array();
 					foreach ($roles as $roleID) {
-						if ($roleID!=$role->getRole()) {
+						if ($roleID!=$this->role->getRole()) {
 							$roleID = $this->db->escapeString($roleID);
 							if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID' LIMIT 1")) {
 								$result = $this->db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = $this->db->fetchArray($result)) {
-									$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");
+									$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "UTF-8");
 									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}
 							}
 							else {
-								$roleName = htmlentities($role->getNamebyID($roleID), null, "UTF-8");
+								$roleName = htmlentities($this->role->getNamebyID($roleID), null, "UTF-8");
 								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "UTF-8"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 							}
 						}

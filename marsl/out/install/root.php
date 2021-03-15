@@ -31,13 +31,13 @@ class Root {
 						echo "Die Passwörter stimmen nicht überein.<br><br>";
 					}
 					else {
-						$auth = new Authentication($this->db);
-						$basic = new Basic($this->db, $auth);
+						$role = new Role($this->db);
+						$auth = new Authentication($this->db, $role);
+						$basic = new Basic($this->db, $auth, $role);
 						if ($basic->checkMail($_POST['email'])) {
-							$user = new User($this->db);
+							$user = new User($this->db, $role);
 							$user->register("root", $_POST['password'], $_POST['email'], $auth);
 							$userID = $user->getIDbyName("root");
-							$role = new Role($this->db);
 							$roleID = $role->getIDbyName("root");
 							$user->changeRole($userID, $roleID);
 							$email = $this->db->escapeString($_POST['email']);
@@ -61,7 +61,7 @@ $root = new Root();
 $root->makeRoot();
 $root->closeDB();
 ?>
-Bitte geben sie Passwort und E-Mail-Adresse des Root-Benutzers ein.<br><br>
+Bitte geben Sie Passwort und E-Mail-Adresse des Root-Benutzers ein.<br><br>
 
 	<form method="post" action="root.php">
 	<fieldset>

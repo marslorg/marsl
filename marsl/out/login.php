@@ -4,6 +4,7 @@ include_once (dirname(__FILE__)."/includes/dbsocket.php");
 include_once (dirname(__FILE__)."/user/user.php");
 include_once (dirname(__FILE__)."/includes/config.inc.php");
 include_once (dirname(__FILE__)."/user/auth.php");
+include_once (dirname(__FILE__)."/user/role.php");
 
 class Login {
 	
@@ -17,8 +18,9 @@ class Login {
 		date_default_timezone_set($config->getTimezone());
 		$db = new DB();
 		$db->connect();
-		$user = new User($db);
-		$auth = new Authentication($db);
+		$role = new Role($db);
+		$user = new User($db, $role);
+		$auth = new Authentication($db, $role);
 		if (isset($_SERVER['HTTP_REFERER'])) {
 			$rightpw = $user->login($_POST['nickname'], $_POST['password'], $auth);
 			$db->close();

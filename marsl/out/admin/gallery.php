@@ -25,10 +25,10 @@ class Gallery {
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
-		$user = new User($this->db);
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db, $auth);
 		$role = new Role($this->db);
+		$user = new User($this->db, $role);
+		$auth = new Authentication($this->db, $role);
+		$basic = new Basic($this->db, $auth, $role);
 		if ($user->isAdmin()) {
 			$authTime = $_GET['time'];
 			$authToken = $_GET['token'];

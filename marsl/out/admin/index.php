@@ -41,20 +41,20 @@ class Main {
 	 * Loads the modules if necessary.
 	 */
 	public function admin() {
-		
-		$user = new User($this->db);
-		$auth = new Authentication($this->db);
-		$basic = new Basic($this->db, $auth);
-		$urlloader = new URLLoader($this->db, $auth);
 		$role = new Role($this->db);
+		$user = new User($this->db, $role);
+		$auth = new Authentication($this->db, $role);
 		$roleID = $role->getRole();
+		$basic = new Basic($this->db, $auth, $role);
+		$urlloader = new URLLoader($this->db, $auth, $role);
 		
 		$headAdmin = $user->isHead();
 		$isRoot = $user->isRoot();
+		$isAdmin = $user->isAdmin();
 		
 		$content = "";
 		
-		if ($user->isAdmin()) {
+		if ($isAdmin) {
 			
 			if (isset($_GET['var'])) {
 				$this->var = $_GET['var'];
@@ -68,7 +68,7 @@ class Main {
 				if ($basic->getModule($_GET['module'])!=false) {
 					$array = $basic->getModule($_GET['module']);
 					include_once(dirname(__FILE__)."/../modules/".$array['file'].".php");
-					$content = new $array['class']($this->db, $auth);
+					$content = new $array['class']($this->db, $auth, $role);
 				}
 				else {
 					include_once(dirname(__FILE__)."/admin.php");
@@ -77,28 +77,28 @@ class Main {
 			}
 			else if ($this->var == "urlloader") {
 				if ($auth->moduleAdminAllowed("urlloader", $roleID)) {
-					$content = new URLLoader($this->db, $auth);
+					$content = new URLLoader($this->db, $auth, $role);
 				}
 			}
 			else if ($this->var == "standards") {
 				if ($headAdmin) {
-					$content = new Standard($this->db, $auth);
+					$content = new Standard($this->db, $auth, $role);
 				}
 			}
 			else if ($this->var == "modulerights") {
-				$content = new ModuleRights($this->db, $auth);
+				$content = new ModuleRights($this->db, $auth, $role);
 			}
 			else if ($this->var == "role") {
-				$content = new RoleAdmin($this->db, $auth);
+				$content = new RoleAdmin($this->db, $auth, $role);
 			}
 			else if ($this->var =="register") {
-				$content = new RegisterUser($this->db, $auth);
+				$content = new RegisterUser($this->db, $auth, $role);
 			}
 			else if ($this->var=="tags") {
-				$content = new Tags($this->db, $auth);
+				$content = new Tags($this->db, $auth, $role);
 			}
 			else if ($this->var=="api") {
-				$content = new API($this->db, $auth);
+				$content = new API($this->db, $auth, $role);
 			}
 			else {
 				include_once(dirname(__FILE__)."/admin.php");
@@ -108,12 +108,20 @@ class Main {
 		
 		$title = htmlentities($basic->getTitle(), null, "UTF-8");
 		$modules = $basic->getModules();
-		if ($user->isGuest()) {
+
+		if ($isAdmin) {
+			$userdata = $auth->moduleExtendedAllowed("userdata", $role->getRole());
+			$userID = $user->getID();
+			$config = new Configuration();
+			$clusterServer = $config->getClusterServer();
+			require_once ("template/index.tpl.php");
+		}
+		else if ($user->isGuest()) {
 			if (isset($_GET['var'])) {
 				if ($_GET['var']=="forgot") {
 					if (isset($_GET['action'])) {
 						if ($_GET['action']=="recover") {
-							$recover = new Recover($this->db, $auth);
+							$recover = new Recover($this->db, $auth, $role);
 							$recover->admin();
 						}
 						else {
@@ -165,14 +173,6 @@ class Main {
 				}
 				require_once ("template/login.tpl.php");
 			}
-		}
-		
-		else if ($user->isAdmin()) {
-			$userdata = $auth->moduleExtendedAllowed("userdata", $role->getRole());
-			$userID = $user->getID();
-			$config = new Configuration();
-			$clusterServer = $config->getClusterServer();
-			require_once ("template/index.tpl.php");
 		}
 		$this->db->close();
 	}

@@ -10,10 +10,12 @@ class RegisterUser {
 	
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 
 	/*
@@ -21,13 +23,12 @@ class RegisterUser {
 	 * No double-opt-in required.
 	 */
 	public function admin() {
-		$user = new User($this->db);
-		$basic = new Basic($this->db, $this->auth);
+		$user = new User($this->db, $this->role);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if ($user->isAdmin()) {
-			$role = new Role($this->db);
-			$possibleRoles = $role->getPossibleRoles($role->getRole());
+			$possibleRoles = $this->role->getPossibleRoles($this->role->getRole());
 			$userRole = true;
-			if (!in_array($role->getUserRole(), $possibleRoles)) {
+			if (!in_array($this->role->getUserRole(), $possibleRoles)) {
 				$userRole = false;
 			}
 			$passwordProof = true;
@@ -43,7 +44,7 @@ class RegisterUser {
 								$registered = true;
 								$userID = $user->getIDbyName($_POST['nickname']);
 								if (!empty($_POST['role'])) {
-									if(($_POST['role']!=$role->getRole())&&(in_array($_POST['role'],$possibleRoles))) {
+									if(($_POST['role']!=$this->role->getRole())&&(in_array($_POST['role'],$possibleRoles))) {
 										$user->changeRole($userID,$_POST['role']);									
 									}
 								}
@@ -63,7 +64,7 @@ class RegisterUser {
 			}
 			$roles = array();
 			foreach ($possibleRoles as $possibleRole) {
-				if ($possibleRole!=$role->getRole()) {
+				if ($possibleRole!=$this->role->getRole()) {
 					$possibleRole = $this->db->escapeString($possibleRole);
 					$result = $this->db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {

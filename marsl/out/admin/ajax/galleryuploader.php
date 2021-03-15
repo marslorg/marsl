@@ -33,9 +33,9 @@ class GalleryUploader {
 				$directory = $row['folder'];
 			}
 		}
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		$basic = new Basic($this->db, $auth);
+		$auth = new Authentication($this->db, $role);
+		$basic = new Basic($this->db, $auth, $role);
 		$moduleAdmin = $auth->moduleAdminAllowed("gallery", $role->getRole());
 		if ($moduleAdmin) {
 			$uploadResult = $this->upload();

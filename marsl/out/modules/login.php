@@ -10,15 +10,16 @@ class Login implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	public function display() {
-		$user = new User($this->db);
-		$role = new Role($this->db);
+		$user = new User($this->db, $this->role);
 		$location = "";
 		if (isset($_GET['id'])) {
 			$location = $_GET['id'];
@@ -28,7 +29,7 @@ class Login implements Module {
 		}
 		if ($user->isGuest()||$user->isAdmin()) {
 			
-			if ($this->auth->moduleReadAllowed("login", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())) {
+			if ($this->auth->moduleReadAllowed("login", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
 				if (isset($_GET['action'])) {
 					if ($_GET['action']=="forgot") {
 						if (isset($_GET['action2'])) {
@@ -139,7 +140,7 @@ class Login implements Module {
 			$init = false;
 			$success = true;
 			$recover = true;
-			$basic = new Basic($this->db, $this->auth);
+			$basic = new Basic($this->db, $this->auth, $this->role);
 			$title = htmlentities($basic->getTitle(), null, "UTF-8");
 			require_once("template/recover.tpl.php");
 		}
@@ -149,7 +150,7 @@ class Login implements Module {
 					$time = $_GET['time'];
 					if ($time+172800 >= time()) {
 						$uid = $_GET['uid'];
-						$user = new User($this->db);
+						$user = new User($this->db, $this->role);
 						$password = $user->getPassbyID($uid);
 						$auth_code = md5("admin".$uid.$time.$password);
 						$authParameter = $_GET['auth'];
@@ -193,7 +194,7 @@ class Login implements Module {
 			$location = $basic->getHomeLocation();
 		}
 		
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$title = htmlentities($basic->getTitle(), null, "UTF-8");
 		$time = $_GET['time'];
 		$recover = false;
@@ -209,7 +210,7 @@ class Login implements Module {
 		}
 		if ($time+172800 >= time()) {
 			$uid = $_GET['uid'];
-			$user = new User($this->db);
+			$user = new User($this->db, $this->role);
 			$password = $user->getPassbyID($uid);
 			$auth_code = md5("admin".$uid.$time.$password);
 			$authParameter = $_GET['auth'];
