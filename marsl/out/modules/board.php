@@ -14,24 +14,25 @@ class Board implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	/*
 	 * Displays the boards of a global location.
 	 */
 	public function display() {
-		$role = new Role($this->db);
 		$location = $this->db->escapeString($_GET['id']);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($this->auth->moduleReadAllowed("board", $role->getRole())&&$this->auth->locationReadAllowed($location, $role->getRole())) {
+		if ($this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
 			if (isset($_GET['action'])) {
-				$threadClass = new Thread($this->db, $this->auth);
-				$postClass = new Post($this->db, $this->auth);
+				$threadClass = new Thread($this->db, $this->auth, $this->role);
+				$postClass = new Post($this->db, $this->auth, $this->role);
 				if ($_GET['action']=="threads") {
 					$threadClass->display();
 				}
@@ -73,18 +74,18 @@ class Board implements Module {
 				}
 			}
 			else {
-				$user = new User($this->db);
+				$user = new User($this->db, $this->role);
 				$categories = array();
 				$result = $this->db->query("SELECT `board`, `title` FROM `board` WHERE `type`='0' AND `location`='$location' ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					$category = $this->db->escapeString($row['board']);
-					if ($this->readAllowed($category, $role->getRole())) {
+					if ($this->readAllowed($category, $this->role->getRole())) {
 						$catTitle = htmlentities($row['title'], null, "UTF-8");
 						$boards = array();
 						$result2 = $this->db->query("SELECT `board`, `title`, `threadcount`, `postcount`, `description` FROM `board` WHERE `type`='1' AND `location`='$category' ORDER BY `pos`");
 						while ($row2 = $this->db->fetchArray($result2)) {
 							$board = $this->db->escapeString($row2['board']);
-							if ($this->readAllowed($board, $role->getRole())) {
+							if ($this->readAllowed($board, $this->role->getRole())) {
 								$boardTitle = htmlentities($row2['title'], null, "UTF-8");
 								$threadcount = htmlentities($row2['threadcount'], null, "UTF-8");
 								$postcount = htmlentities($row2['postcount'], null, "UTF-8");
@@ -115,7 +116,7 @@ class Board implements Module {
 								$result3 = $this->db->query("SELECT `user` FROM `board_operator` WHERE `board`='$board'");
 								while ($row3 = $this->db->fetchArray($result3)) {
 									$operator = htmlentities($row3['user'], null, "UTF-8");
-									$operatorRole = $role->getRolebyUser($operator);
+									$operatorRole = $this->role->getRolebyUser($operator);
 									if ($this->auth->moduleReadAllowed("board", $operatorRole)&&$this->auth->moduleWriteAllowed("board", $operatorRole)&&$this->auth->locationReadAllowed($location, $operatorRole)&&$this->auth->locationWriteAllowed($location, $operatorRole)&&$this->readAllowed($board, $operatorRole)&&$this->writeAllowed($board, $operatorRole)&&$this->extendedAllowed($board, $operatorRole)) {
 										$operatorNick = htmlentities($user->getNickbyID($operator), null, "UTF-8");
 										array_push($operators, array('user'=>$operator, 'nickname'=>$operatorNick));
@@ -137,8 +138,7 @@ class Board implements Module {
 	 */
 	public function isAdmin($boardID, $userID) {
 		$location = $this->getLocation($boardID);
-		$role = new Role($this->db);
-		$roleID = $role->getRoleByUser($userID);
+		$roleID = $this->role->getRoleByUser($userID);
 		if (($this->adminAllowed($boardID, $roleID)&&$this->writeAllowed($boardID, $roleID)&&$this->readAllowed($boardID, $roleID))||($this->auth->moduleReadAllowed("board", $roleID)&&$this->auth->moduleWriteAllowed("board", $roleID)&&$this->auth->locationReadAllowed($location, $roleID)&&$this->auth->locationWriteAllowed($location, $roleID)&&($this->auth->locationAdminAllowed($location, $roleID)||$this->auth->moduleAdminAllowed("board", $roleID)))) {
 			return true;
 		}
@@ -154,8 +154,7 @@ class Board implements Module {
 		$boardID = $this->db->escapeString($boardID);
 		$userID = $this->db->escapeString($userID);
 		if ($this->db->isExisting("SELECT `user` FROM `board_operator` WHERE `board`='$boardID' AND `user`='$userID' LIMIT 1")) {
-			$role = new Role($this->db);
-			$roleID = $role->getRolebyUser($userID);
+			$roleID = $this->role->getRolebyUser($userID);
 			$location = $this->getLocation($boardID);
 			if ($this->auth->moduleReadAllowed("board", $roleID)&&$this->auth->moduleWriteAllowed("board", $roleID)&&$this->auth->locationReadAllowed($location, $roleID)&&$this->auth->locationWriteAllowed($location, $roleID)&&$this->readAllowed($boardID, $roleID)&&$this->writeAllowed($boardID, $roleID)&&$this->extendedAllowed($boardID, $roleID)) {
 				return true;
@@ -173,8 +172,7 @@ class Board implements Module {
 	 * Displays the administrator view of the board.
 	 */
 	public function admin() {
-		$role = new Role($this->db);
-		if ($this->auth->moduleAdminAllowed("board", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("board", $this->role->getRole())) {
 			if (isset($_GET['page'])) {
 				if ($_GET['page']=="role") {
 					$this->roleManagement();
@@ -191,7 +189,7 @@ class Board implements Module {
 					if ($_GET['action']=="change"&&(isset($_POST['board']))) {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$board = $this->db->escapeString($_POST['board']);
-							if ($this->adminAllowed($board, $role->getRole())) {
+							if ($this->adminAllowed($board, $this->role->getRole())) {
 								$type = "2";
 								$location = "-1";
 								$newLocation = $this->db->escapeString($_POST['location']);
@@ -219,7 +217,7 @@ class Board implements Module {
 					if ($_GET['action']=="del") {
 						if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 							$board = $this->db->escapeString($_GET['board']);
-							if ($this->adminAllowed($board, $role->getRole())&&$this->extendedAllowed($board, $role->getRole())&&$this->writeAllowed($board, $role->getRole())&&$this->readAllowed($board, $role->getRole())) {
+							if ($this->adminAllowed($board, $this->role->getRole())&&$this->extendedAllowed($board, $this->role->getRole())&&$this->writeAllowed($board, $this->role->getRole())&&$this->readAllowed($board, $this->role->getRole())) {
 								$this->db->query("UPDATE `board` SET `type`='2' WHERE `board`='$board'");
 							}
 						}
@@ -228,14 +226,14 @@ class Board implements Module {
 						if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 							$this->db->query("INSERT INTO `board`(`pos`, `title`,`type`) VALUES('0','Standard','0')");
 							$board = $this->db->lastInsertedID();
-							$this->setRights($role->getRole(), $board, '1', '1', '1', '1');
+							$this->setRights($this->role->getRole(), $board, '1', '1', '1', '1');
 						}
 					}
 					if ($_GET['action']=="addboard") {
 						if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
 							$this->db->query("INSERT INTO `board`(`pos`, `title`,`type`,`threadcount`,`postcount`) VALUES('0','Standard','1','0','0')");
 							$board = $this->db->lastInsertedID();
-							$this->setRights($role->getRole(), $board, '1', '1', '1', '1');
+							$this->setRights($this->role->getRole(), $board, '1', '1', '1', '1');
 						}
 					}
 				}
@@ -243,7 +241,7 @@ class Board implements Module {
 				$locations = array();
 				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='board' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($this->auth->locationAdminAllowed($row['id'], $role->getRole())) {
+					if ($this->auth->locationAdminAllowed($row['id'], $this->role->getRole())) {
 						$id = htmlentities($row['id'], null, "UTF-8");
 						$name = htmlentities($row['name'], null, "UTF-8");
 						array_push($locations, array('id'=>$id, 'name'=>$name));
@@ -253,12 +251,12 @@ class Board implements Module {
 				$categories = array();
 				$result = $this->db->query("SELECT `board`, `pos`, `location`, `title` FROM `board` WHERE `type`='0' ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($this->adminAllowed($row['board'], $role->getRole())) {
+					if ($this->adminAllowed($row['board'], $this->role->getRole())) {
 						$board = htmlentities($row['board'], null, "UTF-8");
 						$pos = htmlentities($row['pos'], null, "UTF-8");
 						$location = htmlentities($row['location'], null, "UTF-8");
 						$title = htmlentities($row['title'], null, "UTF-8");
-						$boardAdmin = ($this->adminAllowed($row['board'], $role->getRole())&&$this->extendedAllowed($row['board'], $role->getRole())&&$this->writeAllowed($row['board'], $role->getRole())&&$this->readAllowed($row['board'], $role->getRole()));
+						$boardAdmin = ($this->adminAllowed($row['board'], $this->role->getRole())&&$this->extendedAllowed($row['board'], $this->role->getRole())&&$this->writeAllowed($row['board'], $this->role->getRole())&&$this->readAllowed($row['board'], $this->role->getRole()));
 						array_push($categories, array('boardAdmin'=>$boardAdmin, 'board'=>$board, 'pos'=>$pos, 'location'=>$location, 'title'=>$title));
 					}
 				}
@@ -266,13 +264,13 @@ class Board implements Module {
 				$boards = array();
 				$result = $this->db->query("SELECT `board`, `pos`, `location`, `title` FROM `board` WHERE `type`='1' ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
-					if ($this->adminAllowed($row['board'], $role->getRole())) {
+					if ($this->adminAllowed($row['board'], $this->role->getRole())) {
 						$location = $this->db->escapeString($row['location']);
 						$board = htmlentities($row['board'], null, "UTF-8");
 						$pos = htmlentities($row['pos'], null, "UTF-8");
 						$location = htmlentities($row['location'], null, "UTF-8");
 						$title = htmlentities($row['title'], null, "UTF-8");
-						$boardAdmin = ($this->adminAllowed($row['board'], $role->getRole())&&$this->extendedAllowed($row['board'], $role->getRole())&&$this->writeAllowed($row['board'], $role->getRole())&&$this->readAllowed($row['board'], $role->getRole()));
+						$boardAdmin = ($this->adminAllowed($row['board'], $this->role->getRole())&&$this->extendedAllowed($row['board'], $this->role->getRole())&&$this->writeAllowed($row['board'], $this->role->getRole())&&$this->readAllowed($row['board'], $this->role->getRole()));
 						array_push($boards, array('boardAdmin'=>$boardAdmin, 'location'=>$location, 'board'=>$board, 'pos'=>$pos, 'title'=>$title));
 					}
 				}
@@ -305,13 +303,12 @@ class Board implements Module {
 	 * Return the right matrix of a given board and role.
 	 */
 	private function right($board, $roleID) {
-		$role = new Role($this->db);
 		$board = $this->db->escapeString($board);
 		$rights['read'] = 0;
 		$rights['write'] = 0;
 		$rights['extended'] = 0;
 		$rights['admin'] = 0;
-		$roles = $role->getPossibleRoles($roleID);
+		$roles = $this->role->getPossibleRoles($roleID);
 		foreach ($roles as $roleID) {
 			$roleID = $this->db->escapeString($roleID);
 			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `read`='1' LIMIT 1")) {
@@ -334,15 +331,14 @@ class Board implements Module {
 	 * Manages which role has which right on a board.
 	 */
 	private function roleManagement() {
-		$role = new Role($this->db);
 		$board = $this->db->escapeString($_GET['board']);
-		if ($this->adminAllowed($board, $role->getRole())&&$this->extendedAllowed($board, $role->getRole())&&$this->writeAllowed($board, $role->getRole())&&$this->readAllowed($board, $role->getRole())) {
+		if ($this->adminAllowed($board, $this->role->getRole())&&$this->extendedAllowed($board, $this->role->getRole())&&$this->writeAllowed($board, $this->role->getRole())&&$this->readAllowed($board, $this->role->getRole())) {
 			$name = $this->getNameById($board);
-			$roles = $role->getPossibleRoles($role->getRole());
+			$roles = $this->role->getPossibleRoles($this->role->getRole());
 			if (isset($_POST['change'])) {
 				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					foreach ($roles as $roleID) {
-						if ($roleID!=$role->getRole()) {
+						if ($roleID!=$this->role->getRole()) {
 							$read = isset($_POST[$roleID.'_read']);
 							$write = isset($_POST[$roleID.'_write']);
 							$extended = isset($_POST[$roleID.'_extended']);
@@ -354,17 +350,17 @@ class Board implements Module {
 			}
 			$rights = array();
 			foreach ($roles as $roleID) {
-				if ($roleID!=$role->getRole()) {
+				if ($roleID!=$this->role->getRole()) {
 					$roleID = $this->db->escapeString($roleID);
 					if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' LIMIT 1")) {
 						$result = $this->db->query("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'");
 						while ($row = $this->db->fetchArray($result)) {
-							$roleName = htmlentities($role->getNamebyID($row['role']), null, "UTF-8");
+							$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "UTF-8");
 							array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 						}
 					}
 					else {
-						$roleName = htmlentities($role->getNamebyID($roleID), null, "UTF-8");
+						$roleName = htmlentities($this->role->getNamebyID($roleID), null, "UTF-8");
 						array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "UTF-8"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 					}
 				}
@@ -379,9 +375,8 @@ class Board implements Module {
 	 * Manages the operators of a board.
 	 */
 	private function operatorManagement() {
-		$role = new Role($this->db);
 		$board = $this->db->escapeString($_GET['board']);
-		if ($this->adminAllowed($board, $role->getRole())&&$this->auth->moduleAdminAllowed("board", $role->getRole())) {
+		if ($this->adminAllowed($board, $this->role->getRole())&&$this->auth->moduleAdminAllowed("board", $this->role->getRole())) {
 			if (isset($_POST['add'])) {
 				$operator = $this->db->escapeString($_POST['operator']);
 				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -422,9 +417,8 @@ class Board implements Module {
 	 * Changes the description of a board.
 	 */
 	public function changeDescription() {
-		$role = new Role($this->db);
 		$board = $this->db->escapeString($_GET['board']);
-		if ($this->adminAllowed($board, $role->getRole())) {
+		if ($this->adminAllowed($board, $this->role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$description = $this->db->escapeString($_POST['description']);
@@ -433,7 +427,7 @@ class Board implements Module {
 			}
 			$name = $this->getNameById($board);
 			$description = "";
-			$basic = new Basic($this->db, $this->auth);
+			$basic = new Basic($this->db, $this->auth, $this->role);
 			$result = $this->db->query("SELECT `description` FROM `board` WHERE `board`='$board'");
 			while ($row = $this->db->fetchArray($result)) {
 				$description = $basic->cleanHTML($row['description']);

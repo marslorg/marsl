@@ -11,10 +11,12 @@ class CBE implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}
 	
 	public function display() {
@@ -22,12 +24,11 @@ class CBE implements Module {
 	}
 	
 	public function admin() {
-		$role = new Role($this->db);
-		if ($this->auth->moduleAdminAllowed("cbe", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
 			require_once("template/cbe.main.tpl.php");
 			if (isset($_GET['action'])) {
-				$band = new Band($this->db, $this->auth);
-				$club = new Location($this->db, $this->auth);
+				$band = new Band($this->db, $this->auth, $this->role);
+				$club = new Location($this->db, $this->auth, $this->role);
 				if ($_GET['action']=="bands") {
 					$band->admin();
 				}
@@ -164,7 +165,6 @@ class CBE implements Module {
 	}
 	
 	public function displayTag($tagID, $type) {
-		$role = new Role($this->db);
 		$tagID = $this->db->escapeString($tagID);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
@@ -177,7 +177,7 @@ class CBE implements Module {
 			}
 			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_location' ORDER BY `date` DESC");
 			while ($row = $this->db->fetchArray($result)) {
-				if ($this->auth->locationReadAllowed($row['location'], $role->getRole())) {
+				if ($this->auth->locationReadAllowed($row['location'], $this->role->getRole())) {
 					$news = $row['news'];
 					$headline = htmlentities($row['headline'], null, "UTF-8");
 					$title = htmlentities($row['title'], null, "UTF-8");
@@ -200,7 +200,7 @@ class CBE implements Module {
 			}
 			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_band' ORDER BY `date` DESC");
 			while ($row = $this->db->fetchArray($result)) {
-				if ($this->auth->locationReadAllowed($row['location'], $role->getRole())) {
+				if ($this->auth->locationReadAllowed($row['location'], $this->role->getRole())) {
 					$news = $row['news'];
 					$headline = htmlentities($row['headline'], null, "UTF-8");
 					$title = htmlentities($row['title'], null, "UTF-8");

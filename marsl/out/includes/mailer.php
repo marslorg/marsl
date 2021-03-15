@@ -1,20 +1,23 @@
 <?php
 include_once(dirname(__FILE__)."/errorHandler.php");
 include_once(dirname(__FILE__)."/../user/user.php");
+include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
 
 class Mailer {
 
 	private $db;
+	private $role;
 
-	public function __construct($db) {
+	public function __construct($db, $role) {
 		$this->db = $db;
+		$this->role = $role;
 	}
 
 	public function sendConfirmationMail($userID, $mail) {
 		$config = new Configuration();
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$nickname = $user->getNickbyId($userID);
 		$userID = $this->db->escapeString($userID);
 		$mail = $this->db->escapeString($mail);
@@ -41,7 +44,7 @@ class Mailer {
 	 * Send a mail when a new news article was posted to the news correcture system.
 	 */
 	public function sendNewArticleMail($userID) {
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$config = new Configuration();
 		$mail = $user->getMailbyID($userID);
 		$nickname = $user->getNickbyID($userID);
@@ -61,7 +64,7 @@ class Mailer {
 	 * Send out a password reset mail.
 	 */
 	public function sendPasswordMail($page, $nickname) {
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$id = $user->getIDbyName($nickname);
 		$mail = $user->getMailbyID($id);
 		if (!empty($id)&&!empty($mail)) {
@@ -105,7 +108,7 @@ class Mailer {
 	 * Send out a mail with the user name.
 	 */
 	public function sendNicknameMail($mail) {
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$nickname = $user->getNickbyMail($mail);
 		if (!empty($nickname)) {
 			$config = new Configuration();

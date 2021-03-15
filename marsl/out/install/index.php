@@ -56,6 +56,6 @@ $install->startInstall();
 ?>
 </font>
 <br>
-<a href="root.php">N�chster Schritt</a>
+<a href="root.php">Nächster Schritt</a>
 </body>
 </html>

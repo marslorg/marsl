@@ -16,9 +16,9 @@ class NewsPhoto {
 	}
 	
 	public function display() {		
-		$auth = new Authentication($this->db);
 		$role = new Role($this->db);
-		$user = new User($this->db);
+		$auth = new Authentication($this->db, $role);
+		$user = new User($this->db, $role);
 		
 		if ($auth->moduleAdminAllowed("news", $role->getRole())) {
 			

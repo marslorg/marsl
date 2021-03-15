@@ -6,16 +6,18 @@ include_once(dirname(__FILE__)."/user.php");
 class Role {
 
 	private $db;
+	private $possibleRoles;
 
 	public function __construct($db) {
 		$this->db = $db;
+		$this->possibleRoles = array();
 	}
 	
 	/*
 	 * Get the current user role.
 	 */
 	public function getRole() {
-		$user = new User($this->db);
+		$user = new User($this->db, null);
 		if ($user->isGuest()) {
 			return $this->getGuestRole();
 		}
@@ -148,15 +150,21 @@ class Role {
 	 */
 	public function getPossibleRoles($role) {
 		$roles = array();
-		$role = $this->db->escapeString($role);
-		$result = $this->db->query("SELECT `slave` FROM `role_editor` WHERE `master`='$role'");
-		while ($row = $this->db->fetchArray($result)) {
-			$slaves = $this->getPossibleRoles($row['slave']);
-			foreach ($slaves as $slave) {
-				array_push($roles,$slave);
-			}
+		if (array_key_exists($role, $this->possibleRoles)) {
+			$roles = $this->possibleRoles[$role];
 		}
-		array_push($roles,$role);
+		else {
+            $role = $this->db->escapeString($role);
+            $result = $this->db->query("SELECT `slave` FROM `role_editor` WHERE `master`='$role'");
+            while ($row = $this->db->fetchArray($result)) {
+                $slaves = $this->getPossibleRoles($row['slave']);
+                foreach ($slaves as $slave) {
+                    array_push($roles, $slave);
+                }
+            }
+            array_push($roles, $role);
+			$this->possibleRoles[$role] = $roles;
+        }
 		return $roles;
 	}
 	

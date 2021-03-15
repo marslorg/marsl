@@ -12,32 +12,33 @@ class UserData implements Module {
 
 	private $db;
 	private $auth;
+	private $role;
 
-	public function __construct($db, $auth) {
+	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
+		$this->role = $role;
 	}	
 	
 	/*
 	 * Displays the user administration.
 	 */
 	public function admin() {
-		$user = new User($this->db);
-		$role = new Role($this->db);
-		$mailer = new Mailer($this->db);
-		$basic = new Basic($this->db, $this->auth);
+		$user = new User($this->db, $this->role);
+		$mailer = new Mailer($this->db, $this->role);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($this->auth->moduleAdminAllowed("userdata", $role->getRole())||$this->auth->moduleExtendedAllowed("userdata", $role->getRole())) {
-			if ($this->auth->moduleAdminAllowed("userdata", $role->getRole())) {
+		if ($this->auth->moduleAdminAllowed("userdata", $this->role->getRole())||$this->auth->moduleExtendedAllowed("userdata", $this->role->getRole())) {
+			if ($this->auth->moduleAdminAllowed("userdata", $this->role->getRole())) {
 				require_once("template/userdata.alphabet.tpl.php");
 			}
 			if (isset($_GET['action'])) {
-				if (($_GET['action']=="list")&&$this->auth->moduleAdminAllowed("userdata", $role->getRole())) {
+				if (($_GET['action']=="list")&&$this->auth->moduleAdminAllowed("userdata", $this->role->getRole())) {
 					$userdata = array();
 					$search = $this->db->escapeString($_GET['search']);
-					$ownRole = $role->getRole();
-					$possibleRoles = $role->getPossibleRoles($ownRole);
+					$ownRole = $this->role->getRole();
+					$possibleRoles = $this->role->getPossibleRoles($ownRole);
 					$result = $this->db->query("SELECT `user`, `user`.`role` AS `roleid`, `nickname`, `prename`, `acronym`, `regdate`, `email`, `postcount`, `user`.`name` AS `username`, `role`.`name` AS `rolename` FROM `user` JOIN `role` USING(`role`) LEFT OUTER JOIN `email` USING(`user`) WHERE `nickname` LIKE '$search%' ORDER BY `nickname`");
 					while ($row = $this->db->fetchArray($result)) {
 						$userid = htmlentities($row['user'], null, "UTF-8");
@@ -51,7 +52,7 @@ class UserData implements Module {
 						$name = htmlentities($row['username'], null, "UTF-8");
 						$rolename = htmlentities($row['rolename'], null, "UTF-8");
 						$roleid = htmlentities($row['roleid'], null, "UTF-8");
-						$isMaster = $role->isMaster($ownRole, $roleid, $possibleRoles);
+						$isMaster = $this->role->isMaster($ownRole, $roleid, $possibleRoles);
 						if ($user->getID()==$userid) {
 							$isMaster = true;
 						}
@@ -60,11 +61,11 @@ class UserData implements Module {
 					require_once("template/userdata.list.tpl.php");
 				}
 				if ($_GET['action']=="details") {
-					if ($this->auth->moduleAdminAllowed("userdata", $role->getRole())||($this->auth->moduleExtendedAllowed("userdata", $role->getRole())&&($_GET['user']==$user->getID()))) {
+					if ($this->auth->moduleAdminAllowed("userdata", $this->role->getRole())||($this->auth->moduleExtendedAllowed("userdata", $this->role->getRole())&&($_GET['user']==$user->getID()))) {
 						$userID = $this->db->escapeString($_GET['user']);
 						$ownID = $user->getID();
-						$ownRole = $role->getRole();
-						$possibleRoles = $role->getPossibleRoles($ownRole);
+						$ownRole = $this->role->getRole();
+						$possibleRoles = $this->role->getPossibleRoles($ownRole);
 						
 						if (isset($_POST['entermail'])) {
 							if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -102,7 +103,7 @@ class UserData implements Module {
 						$result = $this->db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `name` FROM `user` WHERE `user`='$userID'");
 						while ($row = $this->db->fetchArray($result)) {
 							$userRole = htmlentities($row['role'], null, "UTF-8");
-							$isMaster = $role->isMaster($ownRole, $userRole, $possibleRoles);
+							$isMaster = $this->role->isMaster($ownRole, $userRole, $possibleRoles);
 							if ($isMaster||($user->getID()==$userID)) {
 								$userID = htmlentities($row['user'], null, "UTF-8");
 								$nickname = htmlentities($row['nickname'], null, "UTF-8");
@@ -166,7 +167,7 @@ class UserData implements Module {
 								$roles = array();
 								foreach ($possibleRoles as $possibleRole) {
 									if ($possibleRole!=$ownRole) {
-										array_push($roles, array('role'=>$possibleRole, 'name'=>$role->getNamebyID($possibleRole)));
+										array_push($roles, array('role'=>$possibleRole, 'name'=>$this->role->getNamebyID($possibleRole)));
 									}
 								}
 								$authTime = time();
@@ -181,9 +182,9 @@ class UserData implements Module {
 	}
 	
 	public function display() {
-		$user = new User($this->db);
+		$user = new User($this->db, $this->role);
 		$userID = $user->getID();
-		$basic = new Basic($this->db, $this->auth);
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		
@@ -195,14 +196,13 @@ class UserData implements Module {
 			$location = $basic->getHomeLocation();
 		}
 		
-		$role = new Role($this->db);
 		$samePasswords = true;
 		$rightPassword = true;
 		$passwordChange = false;
 		
-		if ($this->auth->locationReadAllowed($location, $role->getRole())&&$this->auth->moduleReadAllowed("userdata", $role->getRole())&&$this->auth->moduleWriteAllowed("userdata", $role->getRole())) {
+		if ($this->auth->locationReadAllowed($location, $this->role->getRole())&&$this->auth->moduleReadAllowed("userdata", $this->role->getRole())&&$this->auth->moduleWriteAllowed("userdata", $this->role->getRole())) {
 			
-			$mailer = new Mailer($this->db);
+			$mailer = new Mailer($this->db, $this->role);
 			if (isset($_POST['entermail'])) {
 				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					$email = $this->db->escapeString($_POST['email']);

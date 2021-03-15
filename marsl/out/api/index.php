@@ -4,16 +4,19 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
+include_once(dirname(__FILE__)."/../user/role.php");
 
 class Main {
 
 	private $db;
 	private $auth;
+	private $role;
 
 	public function __construct() {
 		$this->db = new DB();
 		$this->db->connect();
-		$this->auth = new Authentication($this->db);
+		$this->role = new Role($this->db);
+		$this->auth = new Authentication($this->db, $this->role);
 	}
 	
 	/*
