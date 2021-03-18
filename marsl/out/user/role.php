@@ -7,52 +7,76 @@ class Role {
 
 	private $db;
 	private $possibleRoles;
+	private $currentRole;
+	private $guestRole;
+	private $rolesByUser;
+	private $standardUserRole;
+	private $nameOfRoles;
+	private $idOfRoles;
+	private $roles;
+	private $adminRoles;
 
 	public function __construct($db) {
 		$this->db = $db;
 		$this->possibleRoles = array();
+		$this->rolesByUser = array();
+		$this->nameOfRoles = array();
+		$this->idOfRoles = array();
+		$this->roles = array();
+		$this->adminRoles = array();
 	}
 	
 	/*
 	 * Get the current user role.
 	 */
 	public function getRole() {
-		$user = new User($this->db, null);
-		if ($user->isGuest()) {
-			return $this->getGuestRole();
-		}
-		else {
-			$session = $this->db->escapeString($user->getSession());
-			$result = $this->db->query("SELECT `role` FROM `role` JOIN `user` USING(`role`) WHERE `sessionid`='$session' AND `deleted`='0'");
-			$role = "";
-			while ($row = $this->db->fetchArray($result)) {
-				$role = $row['role'];
-			}
-			return $role;
-		}
+        if ($this->currentRole == null) {
+            $user = new User($this->db, null);
+            if ($user->isGuest()) {
+                $this->currentRole =  $this->getGuestRole();
+            } else {
+                $session = $this->db->escapeString($user->getSession());
+                $result = $this->db->query("SELECT `role` FROM `role` JOIN `user` USING(`role`) WHERE `sessionid`='$session' AND `deleted`='0'");
+                $role = "";
+                while ($row = $this->db->fetchArray($result)) {
+                    $role = $row['role'];
+                }
+                $this->currentRole = $role;
+            }
+        }
+		return $this->currentRole;
 	}
 	
 	/*
 	 * Get the standard guest role.
 	 */
 	public function getGuestRole() {
-		$result = $this->db->query("SELECT `role` FROM `role` JOIN `stdroles` ON `role`=`guest`");
-		$role = "";
-		while ($row = $this->db->fetchArray($result)) {
-			$role = $row['role'];
-		}
-		return $role;
+        if ($this->guestRole == null) {
+            $result = $this->db->query("SELECT `role` FROM `role` JOIN `stdroles` ON `role`=`guest`");
+            $role = "";
+            while ($row = $this->db->fetchArray($result)) {
+                $role = $row['role'];
+            }
+			$this->guestRole = $role;
+        }
+		return $this->guestRole;
 	}
 	
 	/*
 	 * Get a role of a user.
 	 */
 	public function getRolebyUser($user) {
-		$user = $this->db->escapeString($user);
-		$result = $this->db->query("SELECT `role` FROM `role` JOIN `user` USING(`role`) WHERE `user`='$user' AND `deleted`='0'");
 		$role = "";
-		while ($row = $this->db->fetchArray($result)) {
-			$role = $row['role'];
+        if (!array_key_exists($user, $this->rolesByUser)) {
+            $user = $this->db->escapeString($user);
+            $result = $this->db->query("SELECT `role` FROM `role` JOIN `user` USING(`role`) WHERE `user`='$user' AND `deleted`='0'");
+            while ($row = $this->db->fetchArray($result)) {
+                $role = $row['role'];
+            }
+			$this->rolesByUser[$user] = $role;
+        }
+		else {
+			$role = $this->rolesByUser[$user];
 		}
 		return $role;
 	}
@@ -61,12 +85,15 @@ class Role {
 	 * Get the standard user role.
 	 */
 	public function getUserRole() {
-		$result = $this->db->query("SELECT `role` FROM `role` JOIN `stdroles` ON `role`=`user`");
-		$role = "";
-		while ($row = $this->db->fetchArray($result)) {
-			$role = $row['role'];
-		}
-		return $role;
+        if ($this->standardUserRole == null) {
+            $result = $this->db->query("SELECT `role` FROM `role` JOIN `stdroles` ON `role`=`user`");
+            $role = "";
+            while ($row = $this->db->fetchArray($result)) {
+                $role = $row['role'];
+            }
+			$this->standardUserRole = $role;
+        }
+		return $this->standardUserRole;
 	}
 	
 	/*
@@ -74,10 +101,16 @@ class Role {
 	 */
 	public function getNamebyID($id) {
 		$name = "";
-		$id = $this->db->escapeString($id);
-		$result = $this->db->query("SELECT `name` FROM `role` WHERE `role`='$id'");
-		while ($row = $this->db->fetchArray($result)) {
-			$name = $row['name'];
+        if (!array_key_exists($id, $this->nameOfRoles)) {
+            $id = $this->db->escapeString($id);
+            $result = $this->db->query("SELECT `name` FROM `role` WHERE `role`='$id'");
+            while ($row = $this->db->fetchArray($result)) {
+                $name = $row['name'];
+            }
+			$this->nameOfRoles[$id] = $name;
+        }
+		else {
+			$name = $this->nameOfRoles[$id];
 		}
 		return $name;
 	}
@@ -87,10 +120,16 @@ class Role {
 	 */
 	public function getIDbyName($name) {
 		$role = "";
-		$name = $this->db->escapeString($name);
-		$result = $this->db->query("SELECT `role` FROM `role` WHERE `name`='$name'");
-		while ($row = $this->db->fetchArray($result)) {
-			$role = $row['role'];
+        if (!array_key_exists($name, $this->idOfRoles)) {
+            $name = $this->db->escapeString($name);
+            $result = $this->db->query("SELECT `role` FROM `role` WHERE `name`='$name'");
+            while ($row = $this->db->fetchArray($result)) {
+                $role = $row['role'];
+            }
+			$this->idOfRoles[$name] = $role;
+        }
+		else {
+			$role = $this->idOfRoles[$name];
 		}
 		return $role;
 	}
@@ -105,7 +144,7 @@ class Role {
 		$write = $this->db->escapeString($write);
 		$extended = $this->db->escapeString($extended);
 		$admin = $this->db->escapeString($admin);
-		if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`= '$role' AND `module`='$module' LIMIT 1")) {
+		if ($this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role`= '$role' AND `module`='$module' LIMIT 1")) {
 			$this->db->query("UPDATE `rights_module` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `module` = '$module'");
 		}
 		else {
@@ -123,7 +162,7 @@ class Role {
 		$write = $this->db->escapeString($write);
 		$extended = $this->db->escapeString($extended);
 		$admin = $this->db->escapeString($admin);
-		if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$role' AND `location`='$location' LIMIT 1")) {
+		if ($this->db->isExisting("SELECT `role` FROM `rights` WHERE `role`='$role' AND `location`='$location' LIMIT 1")) {
 			$this->db->query("UPDATE `rights` SET `read` = '$read', `write` = '$write', `extended`='$extended', `admin` = '$admin' WHERE `role`='$role' AND `location`='$location'");
 		}
 		else {
@@ -136,7 +175,7 @@ class Role {
 	 */
 	public function createRole($name) {
 		$name = $this->db->escapeString($name);
-		if (!$this->db->isExisting("SELECT * FROM `role` WHERE `name`='$name' LIMIT 1")) {
+		if (!$this->db->isExisting("SELECT `role` FROM `role` WHERE `name`='$name' LIMIT 1")) {
 			$this->db->query("INSERT INTO `role`(`name`) VALUES('$name')");
 			return true;
 		}
@@ -186,30 +225,32 @@ class Role {
 	 * Get all roles.
 	 */
 	public function getRoles() {
-		$roles = array();
-		$result = $this->db->query("SELECT * FROM `role`");
-		while($row = $this->db->fetchArray($result)) {
-			array_push($roles, $row);
-		}
-		return $roles;
+        if (count($this->roles) == 0) {
+            $result = $this->db->query("SELECT `role`, `name` FROM `role`");
+            while ($row = $this->db->fetchArray($result)) {
+                array_push($this->roles, $row);
+            }
+        }
+		return $this->roles;
 	}
 	
 	/*
 	 * Get all administrative roles.
 	 */
 	public function getAdminRoles() {
-		$allRoles = $this->getRoles();
-		$roles = array();
-		foreach($allRoles as $role) {
-			$roleID = $this->db->escapeString($role['role']);
-			$location = $this->db->isExisting("SELECT * FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
-			$module = $this->db->isExisting("SELECT * FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
-			$master = $this->db->isExisting("SELECT * FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
-			if ($location || $module || $master) {
-				array_push($roles, $role);
-			}
-		}
-		return $roles;
+        if (count($this->adminRoles) == 0) {
+			$allRoles = $this->getRoles();
+            foreach ($allRoles as $role) {
+                $roleID = $this->db->escapeString($role['role']);
+                $location = $this->db->isExisting("SELECT `role` FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+                $module = $this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+                $master = $this->db->isExisting("SELECT `master` FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
+                if ($location || $module || $master) {
+                    array_push($roles, $role);
+                }
+            }
+        }
+		return $this->adminRoles;
 	}
 }
 ?>
