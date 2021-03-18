@@ -33,7 +33,7 @@ class Navigation implements Module {
 				$categories = array();
 				$catcontents = array();	
 				$links = array();	
-				$result = $this->db->query("SELECT `id`, `name`, `pos`, `category`, `maps_to`, `type` FROM `navigation` WHERE `type`='0' OR `type`='1' OR `type`='2' ORDER BY `pos`");
+				$result = $this->db->query("SELECT `id`, `name`, `pos`, `category`, `maps_to`, `type` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['id'], $curRole)) {
 						if (empty($row['maps_to'])) {
@@ -42,10 +42,10 @@ class Navigation implements Module {
 							if ($row['type'] == 0) {
 								array_push($categories, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
 							}
-							if ($row['type'] == 1) {
+							else if ($row['type'] == 1) {
 								array_push($catcontents, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
 							}
-							if ($row['type'] == 2) {
+							else if ($row['type'] == 2) {
 								array_push($links, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'category' => $row['category'], 'role' => $roleEditor));
 							}
 						}
@@ -63,25 +63,26 @@ class Navigation implements Module {
 	 */
 	public function display() {
 		if ($this->auth->moduleReadAllowed("navigation", $this->role->getRole())) {
-			$result = $this->db->query("SELECT `id`, `name`, `type` FROM `navigation` WHERE `type`='0' OR `type`='1' ORDER BY `pos`");
+			$categories = array();
+			$links = array();
+			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
-				
 				if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
-					$cat_id = htmlentities($row['id'], null, "ISO-8859-1");
-					$cat_name = htmlentities($row['name'], null, "ISO-8859-1");
-					$cat_type = htmlentities($row['type'], null, "ISO-8859-1");
-					
-					$result_links = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='2' AND `category`='$cat_id' ORDER BY `pos`");
-					$links = array();
-					while ($row_links = $this->db->fetchArray($result_links)) {
-						if ($this->auth->locationReadAllowed($row_links['id'], $this->role->getRole())) {
-							array_push($links, array('id' => htmlentities($row_links['id'], null, "ISO-8859-1"), 'name' => htmlentities($row_links['name'], null, "ISO-8859-1")));
-						}
+					$id = htmlentities($row['id'], null, "ISO-8859-1");
+					$name = htmlentities($row['name'], null, "ISO-8859-1");
+					if ($row['type'] == 0 || $row['type'] == 1) {
+						array_push($categories, array('id' => $id, 'name' => $name, 'type' => $row['type']));
 					}
-					
-					require("template/navigation.tpl.php");
+					else if ($row['type'] == 2) {
+						if (!array_key_exists($row['category'], $links)) {
+							$links[$row['category']] = array();
+						}
+						array_push($links[$row['category']], array('id' => $id, 'name' => $name));
+					}
 				}
 			}
+
+			require("template/navigation.tpl.php");
 		}
 	}
 	
@@ -161,8 +162,8 @@ class Navigation implements Module {
 					foreach ($roles as $roleID) {
 						if ($roleID!=$this->role->getRole()) {
 							$roleID = $this->db->escapeString($roleID);
-							if ($this->db->isExisting("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id' LIMIT 1")) {
-								$result = $this->db->query("SELECT * FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
+							if ($this->db->isExisting("SELECT `role` FROM `rights` WHERE `role`='$roleID' AND `location`='$id' LIMIT 1")) {
+								$result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
 								while ($row = $this->db->fetchArray($result)) {
 									$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "ISO-8859-1");
 									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "ISO-8859-1"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
