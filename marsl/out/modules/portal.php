@@ -50,7 +50,7 @@ class Portal implements Module {
 		$news = array();
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		$result = $this->db->query("SELECT * FROM `news` JOIN `news_picture` ON `picture2`=`picture` WHERE `deleted`='0' AND `visible`='1' AND `featured`='1' ORDER BY `postdate` DESC LIMIT 4");
+		$result = $this->db->query("SELECT `location`, `date`, `photograph`, `url`, `news`, `headline`, `teaser`, `title`  FROM `news` JOIN `news_picture` ON `picture2`=`picture` WHERE `deleted`='0' AND `visible`='1' AND `featured`='1' ORDER BY `postdate` DESC LIMIT 4");
 		while ($row = $this->db->fetchArray($result)) {
 			$location = htmlentities($row['location'], null, "UTF-8");
 			$photograph = "";
@@ -71,7 +71,7 @@ class Portal implements Module {
 	 */
 	private function constructPortal() {
 		$pages = array();
-		$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
+		$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND `type` IN ('1', '2') ORDER BY `pos`");
 		while ($row = $this->db->fetchArray($result)) {
 			if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
 				array_push($pages, array('location'=>$row['id'], 'name'=>htmlentities($row['name'], null, "UTF-8")));
@@ -82,18 +82,11 @@ class Portal implements Module {
 		foreach ($pages as $page) {
 			$location = $this->db->escapeString($page['location']);
 			$news = array();
-			$result = $this->db->query("SELECT * FROM `news` WHERE `location`='$location' AND `visible`='1' AND `deleted`='0' AND `featured`='0' ORDER BY `postdate` DESC LIMIT 3");
+			$result = $this->db->query("SELECT `picture1`, `url`, `photograph`, `teaser`, `news`, `headline`, `title` FROM `news` LEFT JOIN `news_picture` ON `picture` = `picture1` WHERE `location`='$location' AND `visible`='1' AND `deleted`='0' AND `featured`='0' ORDER BY `postdate` DESC LIMIT 3");
 			while ($row = $this->db->fetchArray($result)) {
 				$picID = $this->db->escapeString($row['picture1']);
-				$picture = "empty";
-				$photograph = "";
-				$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID'");
-				while ($row2 = $this->db->fetchArray($result2)) {
-					$picture = htmlentities($row2['url'], null, "UTF-8");
-					if (!empty($row2['photograph'])) {
-						$photograph = "<br /><b>Foto: ".htmlentities($row2['photograph'], null, "UTF-8")."</b><br />";
-					}
-				}
+				$picture = htmlentities($row['url'], null, "UTF-8");
+				$photograph = "<br /><b>Foto: ".htmlentities($row['photograph'], null, "UTF-8")."</b><br />";
 				$width = 0;
 				$height = 0;
 				if (file_exists("news/".$picture)) {
@@ -120,12 +113,12 @@ class Portal implements Module {
 			if ($this->auth->moduleAdminAllowed("portal", $this->role->getRole())) {
 				if (isset($_POST['action'])) {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-						$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
+						$result = $this->db->query("SELECT `location`, `picture2`, `news` FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
 						while ($row = $this->db->fetchArray($result)) {
 							$location = $row['location'];
 							$picture = "empty";
 							$picID = $this->db->escapeString($row['picture2']);
-							$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID'");
+							$result2 = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID'");
 							while ($row2 = $this->db->fetchArray($result2)) {
 								$picture = htmlentities($row2['url'], null, "UTF-8");
 							}
@@ -141,7 +134,7 @@ class Portal implements Module {
 						}
 					}
 				}
-				$result = $this->db->query("SELECT * FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
+				$result = $this->db->query("SELECT `location`, `postdate`, `picture2`, `headline`, `news`, `title`, `featured` FROM `news` WHERE `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC LIMIT 30");
 				$news = array();
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $row['location'];
@@ -149,7 +142,7 @@ class Portal implements Module {
 					$date = $dateTime->format("d\.m\.Y");
 					$picture = "empty";
 					$picID = $this->db->escapeString($row['picture2']);
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID'");
+					$result2 = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID'");
 					while ($row2 = $this->db->fetchArray($result2)) {
 						$picture = $row2['url'];
 					}
