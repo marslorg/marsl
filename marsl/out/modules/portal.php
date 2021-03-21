@@ -89,7 +89,7 @@ class Portal implements Module {
 				$photograph = "<br /><b>Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1")."</b><br />";
 				$width = 0;
 				$height = 0;
-				if (file_exists("news/".$picture)) {
+				if (!empty($picture) && file_exists("news/".$picture)) {
 					$picinfo = @getimagesize("news/".$picture);
 					$width = $picinfo[0]/1.5;
 					$height = $picinfo[1]/1.5;
