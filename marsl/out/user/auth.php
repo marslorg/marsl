@@ -16,7 +16,7 @@ class Authentication {
 		$this->role = $role;
 
 		$curLocationRights = array();
-		$result = $this->db->query("SELECT * FROM `rights` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
+		$result = $this->db->query("SELECT `role`, `location`, `read`, `write`, `extended`, `admin` FROM `rights` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
 		while ($row = $this->db->fetchArray($result)) {
 			$roleID = $row['role'];
 			$location = $row['location'];
@@ -40,7 +40,7 @@ class Authentication {
 		$this->locationRights = $curLocationRights;
 
 		$curModuleRights = array();
-		$moduleResult = $this->db->query("SELECT * FROM `rights_module` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
+		$moduleResult = $this->db->query("SELECT `role`, `module`, `read`, `write`, `extended`, `admin`  FROM `rights_module` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
 		while ($moduleRow = $this->db->fetchArray($moduleResult)) {
 			$roleID = $moduleRow['role'];
 			$module = $moduleRow['module'];
