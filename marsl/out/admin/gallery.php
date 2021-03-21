@@ -49,6 +49,7 @@ class Gallery {
 						}
 						else {
 							$maxTime = ini_get("max_execution_time")-1;
+							if ($maxTime > 10) $maxTime = 10;
 							$start = time();
 							$i = 0;
 							$pause = -1; //will continue here after break
@@ -67,7 +68,7 @@ class Gallery {
 												$sub2 = substr($file,0,6);
 												if ($sub2 != "thumb_") {
 													if ($sub==".jpg"||$sub==".png"||$sub==".gif") {
-														if (!$this->db->isExisting("SELECT * FROM `picture` WHERE `album`='$id' AND `filename`='$file' LIMIT 1")) {
+														if (!$this->db->isExisting("SELECT `album` FROM `picture` WHERE `album`='$id' AND `filename`='$file' LIMIT 1")) {
 															$this->db->query("INSERT INTO `picture`(`album`,`filename`,`deleted`,`visible`) VALUES('$id','$file','0','0')");
 															$from = $path.$file;
 															$to = $path."thumb_".$file;
