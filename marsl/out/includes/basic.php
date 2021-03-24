@@ -103,7 +103,7 @@ class Basic {
 	public function getModule($file) {
 		$module = false;
 		$file = $this->db->escapeString($file);
-		$result = $this->db->query("SELECT * FROM `module` WHERE `file`='$file'");
+		$result = $this->db->query("SELECT `name`, `class`, `file` FROM `module` WHERE `file`='$file'");
 		while ($row = $this->db->fetchArray($result)) {
 			$module['name'] = $row['name'];
 			$module['class']  = $row['class'];
@@ -117,7 +117,7 @@ class Basic {
 	 */
 	public function getModules() {
 		$modules = array();
-		$result = $this->db->query("SELECT * FROM `module`");
+		$result = $this->db->query("SELECT `name`, `file`, `class` FROM `module`");
 		while ($row = $this->db->fetchArray($result)) {
 			array_push($modules, array('name' => $row['name'],'file' => $row['file'],'class' => $row['class']));
 		}
@@ -131,7 +131,7 @@ class Basic {
 		$db = new DB();
 		$session = $this->randomHash();
 		$session = $this->db->escapeString($session);
-		while ($this->db->isExisting("SELECT * FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
+		while ($this->db->isExisting("SELECT `sessionid` FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
 			$session = $this->randomHash();
 			$session = $this->db->escapeString($session);
 		}
@@ -145,7 +145,7 @@ class Basic {
 		$db = new DB();
 		$confirmID = $this->randomHash();
 		$confirmID = $this->db->escapeString($confirmID);
-		while ($this->db->isExisting("SELECT * FROM `email` WHERE `confirm_id`='$confirmID' LIMIT 1")) {
+		while ($this->db->isExisting("SELECT `confirm_id` FROM `email` WHERE `confirm_id`='$confirmID' LIMIT 1")) {
 			$confirmID = $this->randomHash();
 			$confirmID = $this->db->escapeString($confirmID);
 		}
@@ -349,7 +349,7 @@ class Basic {
 	
 	public function tempFileKey() {
 		$tempKey = $this->db->escapeString($this->randomHash());
-		while($this->db->isExisting("SELECT * FROM `attachment` WHERE `temporary`='$tempKey' LIMIT 1")) {
+		while($this->db->isExisting("SELECT `temporary` FROM `attachment` WHERE `temporary`='$tempKey' LIMIT 1")) {
 			$tempKey = $this->db->escapeString($this->randomHash());
 		}
 		return $tempKey;
