@@ -36,7 +36,7 @@ class API {
             }
 
             $apps = array();
-            $result = $this->db->query("SELECT * FROM `app`");
+            $result = $this->db->query("SELECT `id`, `name`, `key`, `secret` FROM `app`");
             while ($row = $this->db->fetchArray($result)) {
                 array_push($apps,array('id'=>$row['id'],'name'=>htmlentities($row['name'], null, "UTF-8"),'key'=>$row['key'],'secret'=>$row['secret']));
             }
