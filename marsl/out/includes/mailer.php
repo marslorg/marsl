@@ -33,10 +33,10 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= $link."\n";
 			$msg .= "\n";
-			$msg .= "Falls du mit dieser E-Mail nichts anfangen kannst, l�sch sie einfach. Du wirst keine weitere Post mehr von uns bekommen.\n";
+			$msg .= "Falls du mit dieser E-Mail nichts anfangen kannst, lösch sie einfach. Du wirst keine weitere Post mehr von uns bekommen.\n";
 			$msg .= "\n";
 			$msg .= "Dein ".$config->getTitle()."-Team";
-			mail($mail, "Best�tige deine E-Mail-Adresse", $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
+			mail($mail, "Bestätige deine E-Mail-Adresse", $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 		}
 	}
 	
@@ -51,7 +51,7 @@ class Mailer {
 		$link = $config->getDomain()."/admin/index.php?var=module&module=news&action=queue";
 		$msg = "Hallo ".$nickname.",\n";
 		$msg .= "\n";
-		$msg .= "es wurde eine neue Nachricht ins System eingestellt. Da Du einer unserer Lektoren bist wurdest du ausgew�hlt diese Nachricht freizuschalten.\n";
+		$msg .= "es wurde eine neue Nachricht ins System eingestellt. Da Du einer unserer Lektoren bist wurdest du ausgewählt diese Nachricht freizuschalten.\n";
 		$msg .= "Bitte logg dich ins Administrationssystem ein und besuche folgende Seite: ".$link."\n";
 		$msg .= "\n";
 		$msg .= "Bitte lies den Artikel gegen und schalte ihn ggf. frei. Sollten noch andere Artikel vorhanden sein, lies diese bitte auch gegen und schalte sie ggf. frei.\n";
@@ -83,19 +83,19 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= "diese E-Mail bekommst du, weil du dein Passwort auf ".$config->getTitle()." angefordert hast.\n";
 			$msg .= "\n";
-			$msg .= "Aus Sicherheitsgr�nden speichern wir die Passw�rter nur mit einer Einweg-Verschl�sselung ab. Du kannst aber ein neues Passwort setzen, um dich wieder einloggen zu k�nnen.\n";
+			$msg .= "Aus Sicherheitsgründen speichern wir die Passwörter nur mit einer Einweg-Verschlüsselung ab. Du kannst aber ein neues Passwort setzen, um dich wieder einloggen zu können.\n";
 			$msg .= "\n";
 			$msg .= "Klicke auf folgenden Link um dein Passwort neu zu setzen: ".$link."\n";
 			$msg .= "\n";
-			$msg .= "Der Link ist 48 Stunden lang g�ltig. Sollte der Link nicht funktionieren, kopiere ihn bitte in deinen Browser.\n";
+			$msg .= "Der Link ist 48 Stunden lang gültig. Sollte der Link nicht funktionieren, kopiere ihn bitte in deinen Browser.\n";
 			$msg .= "\n";
-			$msg .= "Wir w�nschen dir noch viel Spa� auf unserer Internetseite.\n";
+			$msg .= "Wir wünschen dir noch viel Spaß auf unserer Internetseite.\n";
 			$msg .= "Dein ".$config->getTitle()."-Team";
 			$msg .= "\n";
 			$msg .= "\n";
 			$msg .= "--\n";
-			$msg .= "Um zum g�ltigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
-			$msg .= "Sollte dir die E-Mail f�lschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir k�mmern uns dann um den Fehler.";
+			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
+			$msg .= "Sollte dir die E-Mail fälschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kümmern uns dann um den Fehler.";
 			mail($mail, "Erinnerungsmail: Dein Passwort bei ".$config->getTitle(), $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 			return true;
 		}
@@ -118,13 +118,13 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= "Dein Benutzername lautet ".$nickname.".\n";
 			$msg .= "\n";
-			$msg .= "Wir w�nschen dir noch viel Spa� auf unserer Internetseite.\n";
+			$msg .= "Wir wünschen dir noch viel Spaß auf unserer Internetseite.\n";
 			$msg .= "Dein ".$config->getTitle()."-Team";
 			$msg .= "\n";
 			$msg .= "\n";
 			$msg .= "--\n";
-			$msg .= "Um zum g�ltigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
-			$msg .= "Sollte dir die E-Mail f�lschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir k�mmern uns dann um den Fehler.";
+			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
+			$msg .= "Sollte dir die E-Mail fälschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kümmern uns dann um den Fehler.";
 			mail($mail, "Erinnerungsmail: Dein Benutzername bei ".$config->getTitle(), $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 			return true;
 		}
