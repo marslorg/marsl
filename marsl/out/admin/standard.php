@@ -33,7 +33,7 @@ class Standard {
 							$guest = $this->db->escapeString($_POST['guest']);
 							if (($this->role->getRole()!=$stdUser)&&($this->role->getRole()!=$guest)) {
 								if (in_array($stdUser,$possibleRoles)&&in_array($guest,$possibleRoles)) {
-									if ($this->db->isExisting("SELECT * FROM `stdroles` LIMIT 1")) {
+									if ($this->db->isExisting("SELECT `user` FROM `stdroles` LIMIT 1")) {
 										$this->db->query("UPDATE `stdroles` SET `guest`='$guest', `user`='$stdUser'");
 									}
 									else {
@@ -46,7 +46,7 @@ class Standard {
 				}
 				$stdUser = "";
 				$guest = "";
-				$result = $this->db->query("SELECT * FROM `stdroles`");
+				$result = $this->db->query("SELECT `user`, `guest` FROM `stdroles`");
 				while ($row = $this->db->fetchArray($result)) {
 					$stdUser = $row['user'];
 					$guest = $row['guest'];
@@ -54,7 +54,7 @@ class Standard {
 				$roles = array();
 				foreach ($possibleRoles as $possibleRole) {
 					$possibleRole = $this->db->escapeString($possibleRole);
-					$result = $this->db->query("SELECT * FROM `role` WHERE `role`='$possibleRole'");
+					$result = $this->db->query("SELECT `role`, `name` FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {
 						if ($this->role->getRole()!=$row['role']) {
 							array_push($roles,array('role' => htmlentities($row['role'], null, "ISO-8859-1"), 'name' => htmlentities($row['name'], null, "ISO-8859-1")));

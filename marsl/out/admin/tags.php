@@ -36,7 +36,7 @@ class Tags {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 							$newEntry = true;
 							$entry = $this->db->escapeString($_POST['entry']);
-							if (!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$entry' LIMIT 1")) {
+							if (!$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$entry' LIMIT 1")) {
 								$this->db->query("INSERT INTO `general`(`tag`) VALUES('$entry')");
 								$entrySuccessful = true;
 							}
@@ -197,8 +197,6 @@ class Tags {
 			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
 			require_once("template/tags.edit.tpl.php");
 		}
-	}
-	
+	}	
 }
-
 ?>
