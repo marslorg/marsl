@@ -68,7 +68,7 @@ class RoleAdmin {
 			$roles = array();
 			foreach ($possibleRoles as $possibleRole) {
 				$possibleRole = $this->db->escapeString($possibleRole);
-				$result = $this->db->query("SELECT * FROM `role` WHERE `role` = '$possibleRole'");
+				$result = $this->db->query("SELECT `role`, `name` FROM `role` WHERE `role` = '$possibleRole'");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($possibleRole!=$this->role->getRole()) {
 						array_push($roles,array('role'=>htmlentities($row['role'], null, "UTF-8"),'name'=>htmlentities($row['name'], null, "UTF-8")));

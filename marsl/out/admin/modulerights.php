@@ -28,7 +28,7 @@ class ModuleRights {
 		if ($user->isAdmin()) {
 			if (!isset($_GET['action'])) {
 				$modules = array();
-				$result = $this->db->query("SELECT * FROM `module`");
+				$result = $this->db->query("SELECT `file`, `name` FROM `module`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->moduleAdminAllowed($row['file'], $this->role->getRole())&&$this->auth->moduleExtendedAllowed($row['file'], $this->role->getRole())
 					&&$this->auth->moduleWriteAllowed($row['file'], $this->role->getRole())&&$this->auth->moduleReadAllowed($row['file'], $this->role->getRole())) {
@@ -61,7 +61,7 @@ class ModuleRights {
 					foreach ($roles as $roleID) {
 						if ($roleID!=$this->role->getRole()) {
 							$roleID = $this->db->escapeString($roleID);
-							if ($this->db->isExisting("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID' LIMIT 1")) {
+							if ($this->db->isExisting("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID' LIMIT 1")) {
 								$result = $this->db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = $this->db->fetchArray($result)) {
 									$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "UTF-8");
