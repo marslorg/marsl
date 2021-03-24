@@ -40,7 +40,7 @@ class PushToken
             $auth = $this->db->escapeString($pushToken['keys']['auth']);
             $key = $this->db->escapeString($pushToken['keys']['p256dh']);
             $type = $this->db->escapeString($type);
-            if ($this->db->isExisting("SELECT * FROM `pushtoken` WHERE `type`='$type' AND `endpoint`='$endpoint' AND `auth`='$auth' AND `key`='$key' LIMIT 1")) {
+            if ($this->db->isExisting("SELECT `type` FROM `pushtoken` WHERE `type`='$type' AND `endpoint`='$endpoint' AND `auth`='$auth' AND `key`='$key' LIMIT 1")) {
                 $result['message'] = "The resource does already exist.";
                 $result['state'] = "DUPLICATE";
             }
