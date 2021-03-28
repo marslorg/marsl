@@ -103,7 +103,7 @@ class Authentication {
 		$rolesLength = sizeof($roles);
 		for ($roleIdx = 0; !$hasRight && $roleIdx < $rolesLength; $roleIdx++) {
 			$curRoleID = $roles[$roleIdx];
-			if (array_key_exists($roleID, $this->moduleRights) && array_key_exists($module, $this->moduleRights[$curRoleID]) && array_key_exists($right, $this->moduleRights[$curRoleID][$module])) {
+			if (array_key_exists($curRoleID, $this->moduleRights) && array_key_exists($module, $this->moduleRights[$curRoleID]) && array_key_exists($right, $this->moduleRights[$curRoleID][$module])) {
 				$hasRight = $this->moduleRights[$curRoleID][$module][$right];
 			}
 		}
@@ -147,7 +147,7 @@ class Authentication {
 		$rolesLength = sizeof($roles);
 		for ($roleIdx = 0; !$hasRight && $roleIdx < $rolesLength; $roleIdx++) {
 			$curRoleID = $roles[$roleIdx];
-			if (array_key_exists($roleID, $this->locationRights) && array_key_exists($location, $this->locationRights[$curRoleID]) && array_key_exists($right, $this->locationRights[$curRoleID][$location])) {
+			if (array_key_exists($curRoleID, $this->locationRights) && array_key_exists($location, $this->locationRights[$curRoleID]) && array_key_exists($right, $this->locationRights[$curRoleID][$location])) {
 				$hasRight = $this->locationRights[$curRoleID][$location][$right];
 			}
 		}
