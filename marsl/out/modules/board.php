@@ -15,11 +15,37 @@ class Board implements Module {
 	private $db;
 	private $auth;
 	private $role;
+	private $boardRights;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+
+		$curBoardRights = array();
+		$result = $this->db->query("SELECT `role`, `board`, `read`, `write`, `extended`, `admin` FROM `rights_board` WHERE `read`='1' OR `write`='1' OR `extended`='1' OR `admin`='1'");
+		while ($row = $this->db->fetchArray($result)) {
+			$roleID = $row['role'];
+			$board = $row['board'];
+			$read = $row['read'] == 1;
+			$write = $row['write'] == 1;
+			$extended = $row['extended'] == 1;
+			$admin = $row['admin'] == 1;
+
+			if (array_key_exists($roleID, $curBoardRights) && array_key_exists($board, $curBoardRights[$roleID])) {
+				$curBoardRights[$roleID][$board]['read'] = $curBoardRights[$roleID]['read'] || $read;
+				$curBoardRights[$roleID][$board]['write'] = $curBoardRights[$roleID]['write'] || $write;
+				$curBoardRights[$roleID][$board]['extended'] = $curBoardRights[$roleID]['extended'] || $extended;
+				$curBoardRights[$roleID][$board]['admin'] = $curBoardRights[$roleID]['admin'] || $admin;
+			}
+			else {
+				$curBoardRights[$roleID][$board]['read'] = $read;
+				$curBoardRights[$roleID][$board]['write'] = $write;
+				$curBoardRights[$roleID][$board]['extended'] = $extended;
+				$curBoardRights[$roleID][$board]['admin'] = $admin;
+			}
+		}
+		$this->boardRights = $curBoardRights;
 	}
 	
 	/*
@@ -76,57 +102,55 @@ class Board implements Module {
 			else {
 				$user = new User($this->db, $this->role);
 				$categories = array();
-				$result = $this->db->query("SELECT `board`, `title` FROM `board` WHERE `type`='0' AND `location`='$location' ORDER BY `pos`");
+				$result = $this->db->query("SELECT `board`, `title`, `threadcount`, `postcount`, `description`, `type`, `location` FROM `board` WHERE `type` IN ('0', '1') AND `location`='$location' OR `location`IN (SELECT `board` FROM `board` WHERE `location`='$location') ORDER BY `type`, `pos`");
 				while ($row = $this->db->fetchArray($result)) {
-					$category = $this->db->escapeString($row['board']);
-					if ($this->readAllowed($category, $this->role->getRole())) {
-						$catTitle = htmlentities($row['title'], null, "UTF-8");
-						$boards = array();
-						$result2 = $this->db->query("SELECT `board`, `title`, `threadcount`, `postcount`, `description` FROM `board` WHERE `type`='1' AND `location`='$category' ORDER BY `pos`");
-						while ($row2 = $this->db->fetchArray($result2)) {
-							$board = $this->db->escapeString($row2['board']);
-							if ($this->readAllowed($board, $this->role->getRole())) {
-								$boardTitle = htmlentities($row2['title'], null, "UTF-8");
-								$threadcount = htmlentities($row2['threadcount'], null, "UTF-8");
-								$postcount = htmlentities($row2['postcount'], null, "UTF-8");
-								$description = $row2['description'];
-								$thread = "";
-								$post = "";
-								$threadTitle = "";
-								$postTime = "";
-								$postAuthor = "";
-								$authorName = "";
-								$page = "";
-								$result3 = $this->db->query("SELECT `post`, `date`, `post`.`thread` AS `thread`, `title`, `post`.`author` AS postauthor FROM `post` JOIN `thread` ON (`thread`.`thread`=`post`.`thread`) WHERE `deleted`='0' AND `board`='$board' AND (`type`='0' OR `type`='1' OR `type`='2' OR `type`='3') ORDER BY `date` DESC LIMIT 0,1");
-								while ($row3 = $this->db->fetchArray($result3)) {
-									$thread = htmlentities($row3['thread'], null, "UTF-8");
-									$post = htmlentities($row3['post'], null, "UTF-8");
-									$threadTitle = htmlentities($row3['title'], null, "UTF-8");
-									$dateTime->setTimestamp($row3['date']);
-									$postTime = $dateTime->format("d\.m\.Y\, H\:i\:s");
-									$postAuthor = htmlentities($row3['postauthor'], null, "UTF-8");
-									$authorName = htmlentities($user->getNickbyID($postAuthor), null, "UTF-8");
-									$page = 1;
-									$result4 = $this->db->query("SELECT COUNT(*) AS paging FROM `post` WHERE `thread`='$thread' AND `deleted`='0'");
-									while ($row4 = $this->db->fetchArray($result4)) {
-										$page = ceil($row4['paging']/10);
-									}
+					$type = $row['type'];
+					$board = $this->db->escapeString($row['board']);
+					$title = htmlentities($row['title'], null, "UTF-8");
+                    if ($this->readAllowed($board, $this->role->getRole())) {
+                        if ($type == 0) {
+                            $categories[$board] = array('title'=>$title, 'boards'=>array());
+                        }
+						else if ($type == 1) {
+							$threadcount = htmlentities($row['threadcount'], null, "UTF-8");
+							$postcount = htmlentities($row['postcount'], null, "UTF-8");
+							$description = htmlentities($row['description'], null, "UTF-8");
+							$category = $row['location'];
+							$thread = "";
+							$post = "";
+							$threadTitle = "";
+							$postTime = "";
+							$postAuthor = "";
+							$authorName = "";
+							$page = "";
+							$result3 = $this->db->query("SELECT `post`, `date`, `post`.`thread` AS `thread`, `title`, `post`.`author` AS postauthor FROM `post` JOIN `thread` ON (`thread`.`thread`=`post`.`thread`) WHERE `deleted`='0' AND `board`='$board' AND `type` IN ('0', '1', '2', '3') ORDER BY `date` DESC LIMIT 1");
+							while ($row3 = $this->db->fetchArray($result3)) {
+								$thread = htmlentities($row3['thread'], null, "UTF-8");
+								$post = htmlentities($row3['post'], null, "UTF-8");
+								$threadTitle = htmlentities($row3['title'], null, "UTF-8");
+								$dateTime->setTimestamp($row3['date']);
+								$postTime = $dateTime->format("d\.m\.Y\, H\:i\:s");
+								$postAuthor = htmlentities($row3['postauthor'], null, "UTF-8");
+								$authorName = htmlentities($user->getNickbyID($postAuthor), null, "UTF-8");
+								$page = 1;
+								$result4 = $this->db->query("SELECT COUNT(`thread`) AS paging FROM `post` WHERE `thread`='$thread' AND `deleted`='0'");
+								while ($row4 = $this->db->fetchArray($result4)) {
+									$page = ceil($row4['paging']/10);
 								}
-								$operators = array();
-								$result3 = $this->db->query("SELECT `user` FROM `board_operator` WHERE `board`='$board'");
-								while ($row3 = $this->db->fetchArray($result3)) {
-									$operator = htmlentities($row3['user'], null, "UTF-8");
-									$operatorRole = $this->role->getRolebyUser($operator);
-									if ($this->auth->moduleReadAllowed("board", $operatorRole)&&$this->auth->moduleWriteAllowed("board", $operatorRole)&&$this->auth->locationReadAllowed($location, $operatorRole)&&$this->auth->locationWriteAllowed($location, $operatorRole)&&$this->readAllowed($board, $operatorRole)&&$this->writeAllowed($board, $operatorRole)&&$this->extendedAllowed($board, $operatorRole)) {
-										$operatorNick = htmlentities($user->getNickbyID($operator), null, "UTF-8");
-										array_push($operators, array('user'=>$operator, 'nickname'=>$operatorNick));
-									}
-								}
-								array_push($boards, array('board'=>$board, 'title'=>$boardTitle, 'description'=>$description, 'threadcount'=>$threadcount, 'postcount'=>$postcount, 'thread'=>$thread, 'threadTitle'=>$threadTitle, 'page'=>$page, 'post'=>$post, 'date'=>$postTime, 'user'=>$postAuthor, 'nickname'=>$authorName, 'operators'=>$operators));
 							}
-						}
-						array_push($categories, array('category'=>$category, 'title'=>$catTitle, 'boards'=>$boards));
-					}
+							$operators = array();
+							$result3 = $this->db->query("SELECT `user` FROM `board_operator` WHERE `board`='$board'");
+							while ($row3 = $this->db->fetchArray($result3)) {
+								$operator = htmlentities($row3['user'], null, "UTF-8");
+								$operatorRole = $this->role->getRolebyUser($operator);
+								if ($this->auth->moduleReadAllowed("board", $operatorRole)&&$this->auth->moduleWriteAllowed("board", $operatorRole)&&$this->auth->locationReadAllowed($location, $operatorRole)&&$this->auth->locationWriteAllowed($location, $operatorRole)&&$this->readAllowed($board, $operatorRole)&&$this->writeAllowed($board, $operatorRole)&&$this->extendedAllowed($board, $operatorRole)) {
+									$operatorNick = htmlentities($user->getNickbyID($operator), null, "UTF-8");
+									array_push($operators, array('user'=>$operator, 'nickname'=>$operatorNick));
+								}
+							}
+							array_push($categories[$category]['boards'], array('board'=>$board, 'title'=>$title, 'description'=>$description, 'threadcount'=>$threadcount, 'postcount'=>$postcount, 'thread'=>$thread, 'threadTitle'=>$threadTitle, 'page'=>$page, 'post'=>$post, 'date'=>$postTime, 'user'=>$postAuthor, 'nickname'=>$authorName, 'operators'=>$operators));
+                        }
+                    }
 				}
 				require_once("template/board.main.tpl.php");
 			}
@@ -199,12 +223,12 @@ class Board implements Module {
 									$location = $row['location'];
 								}
 								if ($type=="0") {
-									if ($this->db->isExisting("SELECT * FROM `navigation` WHERE `module`='board' AND `id`='$newLocation' LIMIT 1")) {
+									if ($this->db->isExisting("SELECT `id` FROM `navigation` WHERE `module`='board' AND `id`='$newLocation' LIMIT 1")) {
 										$location = $newLocation;
 									}
 								}
 								if ($type=="1") {
-									if ($this->db->isExisting("SELECT * FROM `board` WHERE `type`='0' AND `board`='$newLocation' LIMIT 1")) {
+									if ($this->db->isExisting("SELECT `board` FROM `board` WHERE `type`='0' AND `board`='$newLocation' LIMIT 1")) {
 										$location = $newLocation;
 									}
 								}
@@ -291,40 +315,12 @@ class Board implements Module {
 		$write = $this->db->escapeString($write);
 		$extended = $this->db->escapeString($extended);
 		$admin = $this->db->escapeString($admin);
-		if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`= '$role' AND `board`='$board' LIMIT 1")) {
+		if ($this->db->isExisting("SELECT `board` FROM `rights_board` WHERE `role`= '$role' AND `board`='$board' LIMIT 1")) {
 			$this->db->query("UPDATE `rights_board` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `board` = '$board'");
 		}
 		else {
 			$this->db->query("INSERT INTO `rights_board`(`role`,`board`,`read`,`write`,`extended`,`admin`) VALUES('$role','$board','$read','$write','$extended','$admin')");
 		}
-	}
-	
-	/*
-	 * Return the right matrix of a given board and role.
-	 */
-	private function right($board, $roleID) {
-		$board = $this->db->escapeString($board);
-		$rights['read'] = 0;
-		$rights['write'] = 0;
-		$rights['extended'] = 0;
-		$rights['admin'] = 0;
-		$roles = $this->role->getPossibleRoles($roleID);
-		foreach ($roles as $roleID) {
-			$roleID = $this->db->escapeString($roleID);
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `read`='1' LIMIT 1")) {
-				$rights['read'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `write`='1' LIMIT 1")) {
-				$rights['write'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `extended`='1' LIMIT 1")) {
-				$rights['extended'] = 1;
-			}
-			if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' AND `admin`='1' LIMIT 1")) {
-				$rights['admin'] = 1;
-			}
-		}
-		return $rights;
 	}
 	
 	/*
@@ -352,8 +348,8 @@ class Board implements Module {
 			foreach ($roles as $roleID) {
 				if ($roleID!=$this->role->getRole()) {
 					$roleID = $this->db->escapeString($roleID);
-					if ($this->db->isExisting("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' LIMIT 1")) {
-						$result = $this->db->query("SELECT * FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'");
+					if ($this->db->isExisting("SELECT `board` FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board' LIMIT 1")) {
+						$result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights_board` WHERE `role`='$roleID' AND `board`='$board'");
 						while ($row = $this->db->fetchArray($result)) {
 							$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "UTF-8");
 							array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
@@ -400,7 +396,7 @@ class Board implements Module {
 			while ($row = $this->db->fetchArray($result)) {
 				$user = $this->db->escapeString($row['user']);
 				$nickname = htmlentities($row['nickname'], null, "UTF-8");
-				if ($this->db->isExisting("SELECT * FROM `board_operator` WHERE `user`='$user' AND `board`='$board' LIMIT 1")) {
+				if ($this->db->isExisting("SELECT `board` FROM `board_operator` WHERE `user`='$user' AND `board`='$board' LIMIT 1")) {
 					array_push($boardOperators, array('user'=>$user, 'nickname'=>$nickname));
 				}
 				else {
@@ -454,13 +450,16 @@ class Board implements Module {
 	 * Evaluates the right matrix.
 	 */
 	private function evalRights($right, $board, $roleID) {
-		$rights = $this->right($board, $roleID);
-		if (empty($rights)) {
-			return 0;
+		$hasRight = false;
+		$roles = $this->role->getPossibleRoles($roleID);
+		$rolesLength = sizeof($roles);
+		for ($roleIdx = 0; !$hasRight && $roleIdx < $rolesLength; $roleIdx++) {
+			$curRoleID = $roles[$roleIdx];
+			if (array_key_exists($curRoleID, $this->boardRights) && array_key_exists($board, $this->boardRights[$curRoleID]) && array_key_exists($right, $this->boardRights[$curRoleID][$board])) {
+				$hasRight = $this->boardRights[$curRoleID][$board][$right];
+			}
 		}
-		else {
-			return $rights[$right];
-		}
+		return $hasRight;
 	}
 	
 	/*
