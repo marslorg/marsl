@@ -31,7 +31,7 @@ class Band {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$newEntry = true;
 						$entry = $this->db->escapeString($_POST['entry']);
-						if (!$this->db->isExisting("SELECT * FROM `band` WHERE `tag`='$entry' LIMIT 1")) {
+						if (!$this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$entry' LIMIT 1")) {
 							$this->db->query("INSERT INTO `band`(`tag`) VALUES('$entry')");
 							$entrySuccessful = true;
 						}
