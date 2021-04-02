@@ -201,7 +201,7 @@ class News implements Module {
 					}
 				}
 				$locations = array();
-				$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
+				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['id'], $this->role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $this->role->getRole())) {
 						array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
@@ -214,7 +214,11 @@ class News implements Module {
 			else if ($_GET['action']=="queue") {
 				$this->doGetActions();
 				$news = array();
-				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='0' AND `deleted`='0'");
+				$result = $this->db->query("SELECT
+				`news`, `author`, `corrected`, `author_ip`, `location`, `headline`, `title`, `teaser`, `text`, `picture1`, `picture2`, `city`, `date`, `postdate`, `url`, `photograph`
+				FROM `news`
+				LEFT JOIN `news_picture` ON `picture`=`picture1`
+				WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
 						$id = htmlentities($row['news'], null, "ISO-8859-1");
@@ -229,25 +233,13 @@ class News implements Module {
 						$text = $row['text'];
 						$picID1 = $this->db->escapeString($row['picture1']);
 						$picID2 = $this->db->escapeString($row['picture2']);
-						$picture1 = "empty";
-						$photograph1 = "";
-						$picture2 = "empty";
-						$subtitle2 = "";
-						$photograph2 = "";
-						$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
-						while ($row2 = $this->db->fetchArray($result2)) {
-							$picture1 = $row2['url'];
-							if (!empty($row2['photograph'])) {
-								$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-							}
+						$picture1 = htmlentities($row['url'], null, "ISO-8859-1");
+						if (empty($picture1)) {
+							$picture1 = "empty";
 						}
-						$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
-						while ($row2 = $this->db->fetchArray($result2)) {
-							$picture2 = $row2['url'];
-							$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
-							if (!empty($row2['photograph'])) {
-								$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-							}
+						$photograph1 = "";
+						if (!empty($row['photograph'])) {
+							$photograph1 = "<br />Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1");
 						}
 						$city = htmlentities($row['city'], null, "ISO-8859-1");
 						$dateTime->setTimestamp($row['date']);
@@ -263,156 +255,159 @@ class News implements Module {
 			}
 			else if ($_GET['action']=="edit") {
 				$id = $this->db->escapeString(htmlentities($_GET['id'], null, "ISO-8859-1"));
-				if ($this->db->isExisting("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0' LIMIT 1")) {
-					$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
-					while ($row = $this->db->fetchArray($result)) {
-						if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
-							$corrected = $row['corrected'];
-							$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-							$title = htmlentities($row['title'], null, "ISO-8859-1");
-							$category = htmlentities($row['location'], null, "ISO-8859-1");
-							$dateTime->setTimestamp($row['date']);
-							$day = $dateTime->format("d");
-							$month = $dateTime->format("m");
-							$year = $dateTime->format("Y");
-							$teaser = $row['teaser'];
-							$text = $row['text'];
-							$picture1 = $row['picture1'];
-							$picture2 = $row['picture2'];
-							$city = htmlentities($row['city'], null, "ISO-8859-1");
-							$tmpModuleTags = array();
-							foreach ($moduleTags as $moduleTag) {
+				$result = $this->db->query("SELECT `corrected`, `headline`, `title`, `location`, `date`, `teaser`, `text`, `picture1`, `picture2`, `city` FROM `news` WHERE `news`='$id' AND `deleted`='0'");
+				while ($row = $this->db->fetchArray($result)) {
+					if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
+						$corrected = $row['corrected'];
+						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
+						$title = htmlentities($row['title'], null, "ISO-8859-1");
+						$category = htmlentities($row['location'], null, "ISO-8859-1");
+						$dateTime->setTimestamp($row['date']);
+						$day = $dateTime->format("d");
+						$month = $dateTime->format("m");
+						$year = $dateTime->format("Y");
+						$teaser = $row['teaser'];
+						$text = $row['text'];
+						$picture1 = $row['picture1'];
+						$picture2 = $row['picture2'];
+						$city = htmlentities($row['city'], null, "ISO-8859-1");
+						$tmpModuleTags = array();
+						foreach ($moduleTags as $moduleTag) {
 
-								$type = explode("_", $moduleTag['type']);
-								$file = $type[0];
-								$scope = $type[1];
-								$module = $basic->getModule($file);
-								include_once(dirname(__FILE__)."/".$file.".php");
-								$class = new $module['class']($this->db, $this->auth, $this->role);
-								$moduleTag['tags'] = htmlentities($class->getTagString($scope, $id), null, "ISO-8859-1");
+							$type = explode("_", $moduleTag['type']);
+							$file = $type[0];
+							$scope = $type[1];
+							$module = $basic->getModule($file);
+							include_once(dirname(__FILE__)."/".$file.".php");
+							$class = new $module['class']($this->db, $this->auth, $this->role);
+							$moduleTag['tags'] = htmlentities($class->getTagString($scope, $id), null, "ISO-8859-1");
 
-								array_push($tmpModuleTags, $moduleTag);
-							}
-							$moduleTags = $tmpModuleTags;
-							$new = true;
-							$failed = false;
-							if (isset($_POST['action'])) {
-								$new = false;
-								if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-									$failed = false;
+							array_push($tmpModuleTags, $moduleTag);
+						}
+						$moduleTags = $tmpModuleTags;
+						$new = true;
+						$failed = false;
+						if (isset($_POST['action'])) {
+							$new = false;
+							if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
+								$failed = false;
 
-									if ($failed) {
-										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
-										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
-										$category = $_POST['category'];
-										$day = htmlentities($_POST['day'], null, "ISO-8859-1");
-										$month = htmlentities($_POST['month'], null, "ISO-8859-1");
-										$year = htmlentities($_POST['year'], null, "ISO-8859-1");
-										$teaser = $basic->cleanHTML($_POST['teaser']);
-										$text = $basic->cleanHTML($_POST['text']);
-										$city = $basic->cleanHTML($_POST['city']);
-										$corrected = isset($_POST['corrected']);
-										$tmpModuleTags = array();
-										foreach ($moduleTags as $moduleTag) {
-											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
-											array_push($tmpModuleTags, $moduleTag);
-										}
-										$moduleTags = $tmpModuleTags;
+								if ($failed) {
+									$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+									$title = htmlentities($_POST['title'], null, "ISO-8859-1");
+									$category = $_POST['category'];
+									$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+									$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+									$year = htmlentities($_POST['year'], null, "ISO-8859-1");
+									$teaser = $basic->cleanHTML($_POST['teaser']);
+									$text = $basic->cleanHTML($_POST['text']);
+									$city = $basic->cleanHTML($_POST['city']);
+									$corrected = isset($_POST['corrected']);
+									$tmpModuleTags = array();
+									foreach ($moduleTags as $moduleTag) {
+										$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
+										array_push($tmpModuleTags, $moduleTag);
+									}
+									$moduleTags = $tmpModuleTags;
+								}
+								else {
+									$author = $this->db->escapeString($user->getID());
+									$authorIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
+									$headline = $this->db->escapeString($_POST['headline']);
+									$title = $this->db->escapeString($_POST['title']);
+									$location = $this->db->escapeString($_POST['category']);
+									if (isset($_POST['corrected'])) {
+										$corrected = 1;
 									}
 									else {
-										$author = $this->db->escapeString($user->getID());
-										$authorIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
-										$headline = $this->db->escapeString($_POST['headline']);
-										$title = $this->db->escapeString($_POST['title']);
-										$location = $this->db->escapeString($_POST['category']);
-										$corrected = isset($_POST['corrected']);
-										$date = "";
-										$postdate = time();
-										$city = $this->db->escapeString($_POST['city']);
-										if (checkdate($_POST['month'], $_POST['day'], $_POST['year'])) {
-											$date = mktime(0,0,0,$_POST['month'],$_POST['day'],$_POST['year']);
-										}
-										else {
-											$date = time();
-										}
-										$teaser = $this->db->escapeString($basic->cleanHTML($_POST['teaser']));
-										$text = $this->db->escapeString($basic->cleanHTML($_POST['text']));
-										
-										if (isset($_POST['picture1'])) {
-											$picture1 = $this->db->escapeString($_POST['picture1']);
-										}
-										
-										if (isset($_POST['picture2'])) {
-											$picture2 = $this->db->escapeString($_POST['picture2']);
-											$result = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
-											while ($row = $this->db->fetchArray($result)) {
-												$fileName = $row['url'];
-												$fileLink = "../news/".$fileName;
-												$oldIMG = imagecreatefromjpeg($fileLink);
-												$newIMG = imagecreatetruecolor(640, 320);
-												$pic2X = $_POST['pic2X'];
-												$pic2Y = $_POST['pic2Y'];
-												$pic2W = $_POST['pic2W'];
-												$pic2H = $_POST['pic2H'];
-												unlink($fileLink);
-												$fileName = "r".$fileName;
-												$fileLink = "../news/".$fileName;
-												$this->db->query("UPDATE `news_picture` SET `url`='$fileName' WHERE `picture`='$picture2'");
-												imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
-												ImageDestroy($oldIMG);
-												imagejpeg($newIMG, $fileLink);
-											}
-										}
-										
-										$tmpModuleTags = array();
-										foreach ($moduleTags as $moduleTag) {
-											$moduleTag['tags'] = $_POST[$moduleTag['type']];
-											array_push($tmpModuleTags, $moduleTag);
-										}
-										$moduleTags = $tmpModuleTags;
-										$admin = $this->db->escapeString($user->getID());
-										$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
-										$this->db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city', `corrected`='$corrected' WHERE `news`='$id'"); 
-										foreach ($moduleTags as $moduleTag) {
-
-											$type = explode("_", $moduleTag['type']);
-											$file = $type[0];
-											$scope = $type[1];
-											$module = $basic->getModule($file);
-											include_once(dirname(__FILE__)."/".$file.".php");
-											$class = new $module['class']($this->db, $this->auth, $this->role);
-											$class->addTags($moduleTag['tags'], $scope, $id);
-
-										}
-										$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
-										$title = htmlentities($_POST['title'], null, "ISO-8859-1");
-										$category = $_POST['category'];
-										$day = htmlentities($_POST['day'], null, "ISO-8859-1");
-										$month = htmlentities($_POST['month'], null, "ISO-8859-1");
-										$year = htmlentities($_POST['year'], null, "ISO-8859-1");
-										$teaser = $basic->cleanHTML($_POST['teaser']);
-										$text = $basic->cleanHTML($_POST['text']);
-										$city = $basic->cleanHTML($_POST['city']);
-										$tmpModuleTags = array();
-										foreach ($moduleTags as $moduleTag) {
-											$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
-											array_push($tmpModuleTags, $moduleTag);
-										}
-										$moduleTags = $tmpModuleTags;
+										$corrected = 0;
 									}
+									$date = "";
+									$postdate = time();
+									$city = $this->db->escapeString($_POST['city']);
+									if (checkdate($_POST['month'], $_POST['day'], $_POST['year'])) {
+										$date = mktime(0,0,0,$_POST['month'],$_POST['day'],$_POST['year']);
+									}
+									else {
+										$date = time();
+									}
+									$teaser = $this->db->escapeString($basic->cleanHTML($_POST['teaser']));
+									$text = $this->db->escapeString($basic->cleanHTML($_POST['text']));
+									
+									if (isset($_POST['picture1'])) {
+										$picture1 = $this->db->escapeString($_POST['picture1']);
+									}
+									
+									if (isset($_POST['picture2'])) {
+										$picture2 = $this->db->escapeString($_POST['picture2']);
+										$result = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
+										while ($row = $this->db->fetchArray($result)) {
+											$fileName = $row['url'];
+											$fileLink = "../news/".$fileName;
+											$oldIMG = imagecreatefromjpeg($fileLink);
+											$newIMG = imagecreatetruecolor(640, 320);
+											$pic2X = $_POST['pic2X'];
+											$pic2Y = $_POST['pic2Y'];
+											$pic2W = $_POST['pic2W'];
+											$pic2H = $_POST['pic2H'];
+											unlink($fileLink);
+											$fileName = "r".$fileName;
+											$fileLink = "../news/".$fileName;
+											$this->db->query("UPDATE `news_picture` SET `url`='$fileName' WHERE `picture`='$picture2'");
+											imagecopyresampled($newIMG, $oldIMG, 0, 0, $pic2X, $pic2Y, 640, 320, $pic2W, $pic2H);
+											ImageDestroy($oldIMG);
+											imagejpeg($newIMG, $fileLink);
+										}
+									}
+									
+									$tmpModuleTags = array();
+									foreach ($moduleTags as $moduleTag) {
+										$moduleTag['tags'] = $_POST[$moduleTag['type']];
+										array_push($tmpModuleTags, $moduleTag);
+									}
+									$moduleTags = $tmpModuleTags;
+									$admin = $this->db->escapeString($user->getID());
+									$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
+									$this->db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city', `corrected`='$corrected' WHERE `news`='$id'"); 
+									foreach ($moduleTags as $moduleTag) {
+
+										$type = explode("_", $moduleTag['type']);
+										$file = $type[0];
+										$scope = $type[1];
+										$module = $basic->getModule($file);
+										include_once(dirname(__FILE__)."/".$file.".php");
+										$class = new $module['class']($this->db, $this->auth, $this->role);
+										$class->addTags($moduleTag['tags'], $scope, $id);
+
+									}
+									$headline = htmlentities($_POST['headline'], null, "ISO-8859-1");
+									$title = htmlentities($_POST['title'], null, "ISO-8859-1");
+									$category = $_POST['category'];
+									$day = htmlentities($_POST['day'], null, "ISO-8859-1");
+									$month = htmlentities($_POST['month'], null, "ISO-8859-1");
+									$year = htmlentities($_POST['year'], null, "ISO-8859-1");
+									$teaser = $basic->cleanHTML($_POST['teaser']);
+									$text = $basic->cleanHTML($_POST['text']);
+									$city = $basic->cleanHTML($_POST['city']);
+									$tmpModuleTags = array();
+									foreach ($moduleTags as $moduleTag) {
+										$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "ISO-8859-1");
+										array_push($tmpModuleTags, $moduleTag);
+									}
+									$moduleTags = $tmpModuleTags;
 								}
 							}
-							$locations = array();
-							$result = $this->db->query("SELECT * FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
-							while ($row = $this->db->fetchArray($result)) {
-								if ($this->auth->locationAdminAllowed($row['id'], $this->role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $this->role->getRole())) {
-									array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
-								}
-							}
-							$authTime = time();
-							$authToken = $this->auth->getToken($authTime);
-							require_once("template/news.edit.tpl.php");
 						}
+						$locations = array();
+						$result2 = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND `type` IN('1','2') ORDER BY `pos`");
+						while ($row2 = $this->db->fetchArray($result2)) {
+							if ($this->auth->locationAdminAllowed($row2['id'], $this->role->getRole())||$this->auth->locationExtendedAllowed($row2['id'], $this->role->getRole())) {
+								array_push($locations,array('location'=>htmlentities($row2['id'], null, "ISO-8859-1"),'name'=>htmlentities($row2['name'], null, "ISO-8859-1")));
+							}
+						}
+						$authTime = time();
+						$authToken = $this->auth->getToken($authTime);
+						require_once("template/news.edit.tpl.php");
 					}
 				}
 			}
@@ -422,13 +417,17 @@ class News implements Module {
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
 				}
-				$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0'");
+				$result = $this->db->query("SELECT COUNT(`visible`) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0'");
 				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
 				$news = array();
 				$start = $this->db->escapeString($start);
-				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' ORDER BY `postdate` DESC LIMIT $start,$end");
+				$result = $this->db->query("SELECT
+				`news`, `corrected`, `author`, `author_ip`, `location`, `date`, `postdate`, `headline`, `title`, `picture1`, `city`, `teaser`, `text`, `url`, `photograph`
+				FROM `news`
+				LEFT JOIN `news_picture` ON `picture`=`picture1`
+				WHERE `visible`='1' AND `deleted`='0' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row = $this->db->fetchArray($result)) {
 					$id = htmlentities($row['news'], null, "ISO-8859-1");
 					$corrected = $row['corrected'];
@@ -443,19 +442,17 @@ class News implements Module {
 					$postdate = $dateTime->format("d\. M Y \u\m H\:i\:s");
 					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
-					$picture1 = "empty";
+					$picture1 = htmlentities($row['url'], null, "ISO-8859-1");
+					if (empty($picture1)) {
+						$picture1 = "empty";
+					}
 					$photograph1 = "";
-					$picID1 = $this->db->escapeString($row['picture1']);
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
+					if (!empty($row['photograph'])) {
+						$photograph1 = "<br />Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1");
+					}
 					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					while ($row2 = $this->db->fetchArray($result2)) {
-						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
-						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-						}
-					}
 					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP, 'corrected'=>$corrected));
 				}
 				$authTime = time();
@@ -465,7 +462,14 @@ class News implements Module {
 			else if ($_GET['action']=="details") {
 				$this->doGetActions();
 				$id = $this->db->escapeString($_GET['id']);
-				$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id' AND `deleted`='0'");
+				$result = $this->db->query("SELECT
+				`visible`, `location`, `author`, `corrected`, `author_ip`, `headline`, `title`, `teaser`, `text`, `city`, `date`, `postdate`,
+				`news_picture1`.`url` AS `url1`, `news_picture1`.`photograph` AS `photograph1`,
+				`news_picture2`.`url` AS `url2`, `news_picture2`.`photograph` AS `photograph2`, `news_picture2`.`subtitle` AS `subtitle`
+				FROM `news`
+				LEFT JOIN `news_picture` AS `news_picture1` ON `news_picture1`.`picture` = `picture1`
+				LEFT JOIN `news_picture` AS `news_picture2` ON `news_picture2`.`picture` = `picture2`
+				WHERE `news`='$id' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
 					$submitLink = (($row['visible']==0)&&($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())));
 					$editLink = ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole()));
@@ -479,27 +483,22 @@ class News implements Module {
 					$title = htmlentities($row['title'], null, "ISO-8859-1");
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					$picID1 = $this->db->escapeString($row['picture1']);
-					$picID2 = $this->db->escapeString($row['picture2']);
-					$picture1 = "empty";
-					$photograph1 = "";
-					$picture2 = "empty";
-					$subtitle2 = "";
-					$photograph2 = "";
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
-					while ($row2 = $this->db->fetchArray($result2)) {
-						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
-						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-						}
+					$picture1 = htmlentities($row['url1'], null, "ISO-8859-1");
+					if (empty($picture1)) {
+						$picture1 = "empty";
 					}
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
-					while ($row2 = $this->db->fetchArray($result2)) {
-						$picture2 = htmlentities($row2['url'], null, "ISO-8859-1");
-						$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
-						if (!empty($row2['photograph'])) {
-							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-						}
+					$photograph1 = "";
+					if (!empty($row['photograph1'])) {
+						$photograph1 = "<br />Foto: ".htmlentities($row['photograph1'], null, "ISO-8859-1");
+					}
+					$picture2 = htmlentities($row['url2'], null, "ISO-8859-1");
+					if (empty($picture2)) {
+						$picture2 = "empty";
+					}
+					$subtitle2 = htmlentities($row['subtitle'], null, "ISO-8859-1");
+					$photograph2 = "";
+					if (!empty($row['photograph2'])) {
+						$photograph2 = " Foto: ".htmlentities($row['photograph2'], null, "ISO-8859-1");
 					}
 					$city = htmlentities($row['city'], null, "ISO-8859-1");
 					$dateTime->setTimestamp($row['date']);
@@ -542,13 +541,17 @@ class News implements Module {
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
-				$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
+				$result = $this->db->query("SELECT COUNT(`visible`) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
 				$pages = $this->db->getRowCount($result)/10;
 				$start = $page*10-10;
 				$end = 10;
 				$start = $this->db->escapeString($start);
 				$news = array();
-				$result = $this->db->query("SELECT * FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `postdate` DESC LIMIT $start,$end");
+				$result = $this->db->query("SELECT
+				`date`, `postdate`, `author`, `teaser`, `text`, `city`, `headline`, `title`, `news`, `url`, `photograph`
+				FROM `news`
+				LEFT JOIN `news_picture` ON `picture`=`picture1`
+				WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row=$this->db->fetchArray($result)) {
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
@@ -556,15 +559,13 @@ class News implements Module {
 					$postdate = $dateTime->format("d\.m\.Y");
 					$author = $row['author'];
 					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
-					$picID1 = $this->db->escapeString($row['picture1']);
-					$picture1 = "empty";
+					$picture1 = htmlentities($row['url'], null, "ISO-8859-1");
+                    if (empty($picture1)) {
+                        $picture1 = "empty";
+                    }
 					$photograph1 = "";
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
-					while ($row2 = $this->db->fetchArray($result2)) {
-						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
-						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-						}
+					if (!empty($row['photograph'])) {
+						$photograph1 = "<br />Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1");
 					}
 					$teaser = $this->nofollowOutboundLinks($row['teaser']);
 					$text = $this->nofollowOutboundLinks($row['text']);
@@ -583,33 +584,35 @@ class News implements Module {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
 				$news = $this->db->escapeString($_GET['show']);
-				$result = $this->db->query("SELECT * FROM `news` WHERE `location`='$location' AND `news`='$news' AND `visible`='1' AND `deleted`='0'");
+				$result = $this->db->query("SELECT
+				`date`, `author`, `teaser`, `text`, `city`, `headline`, `title`,
+				`news_picture1`.`url` AS `url1`, `news_picture1`.`photograph` AS `photograph1`,
+				`news_picture2`.`url` AS `url2`, `news_picture2`.`photograph` AS `photograph2`, `news_picture2`.`subtitle` AS `subtitle`
+				FROM `news`
+				LEFT JOIN `news_picture` AS `news_picture1` ON `news_picture1`.`picture` = `picture1`
+				LEFT JOIN `news_picture` AS `news_picture2` ON `news_picture2`.`picture` = `picture2`
+				WHERE `location`='$location' AND `news`='$news' AND `visible`='1' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
 					$author = $row['author'];
 					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "ISO-8859-1"));
-					$picID1 = $this->db->escapeString($row['picture1']);
-					$picID2 = $this->db->escapeString($row['picture2']);
-					$picture1 = "empty";
-					$photograph1 = "";
-					$picture2 = "empty";
-					$subtitle2 = "";
-					$photograph2 = "";
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID1'");
-					while ($row2 = $this->db->fetchArray($result2)) {
-						$picture1 = htmlentities($row2['url'], null, "ISO-8859-1");
-						if (!empty($row2['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-						}
+					$picture1 = htmlentities($row['url1'], null, "ISO-8859-1");
+					if (empty($picture1)) {
+						$picture1 = "empty";
 					}
-					$result2 = $this->db->query("SELECT * FROM `news_picture` WHERE `picture`='$picID2'");
-					while ($row2 = $this->db->fetchArray($result2)) {
-						$picture2 = htmlentities($row2['url'], null, "ISO-8859-1");
-						$subtitle2 = htmlentities($row2['subtitle'], null, "ISO-8859-1");
-						if (!empty($row2['photograph'])) {
-							$photograph2 = " Foto: ".htmlentities($row2['photograph'], null, "ISO-8859-1");
-						}
+					$photograph1 = "";
+					if (!empty($row['photograph1'])) {
+						$photograph1 = "<br />Foto: ".htmlentities($row['photograph1'], null, "ISO-8859-1");
+					}
+					$picture2 = htmlentities($row['url2'], null, "ISO-8859-1");
+					if (empty($picture2)) {
+						$picture2 = "empty";
+					}
+					$subtitle2 = htmlentities($row['subtitle'], null, "ISO-8859-1");
+					$photograph2 = "";
+					if (!empty($row['photograph'])) {
+						$photograph2 = " Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1");
 					}
 					$teaser = $this->nofollowOutboundLinks($row['teaser']);
 					$text = $this->nofollowOutboundLinks($row['text']);
@@ -659,7 +662,7 @@ class News implements Module {
     {
         if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
         	$id = $this->db->escapeString($_GET['id']);
-        	$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
+        	$result = $this->db->query("SELECT `location` FROM `news` WHERE `news`='$id'");
         	while ($row = $this->db->fetchArray($result)) {
         		if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
         			$this->db->query("UPDATE `news` SET `deleted`='1' WHERE `news`='$id'");
@@ -671,7 +674,7 @@ class News implements Module {
     private function submitArticleToFrontend($user) {
         if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
         	$id = $this->db->escapeString($_GET['id']);
-        	$result = $this->db->query("SELECT * FROM `news` WHERE `news`='$id'");
+        	$result = $this->db->query("SELECT `location`, `headline`, `title`, `teaser` FROM `news` WHERE `news`='$id'");
         	while ($row = $this->db->fetchArray($result)) {
         		if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
         			$admin = $this->db->escapeString($user->getID());
@@ -734,7 +737,7 @@ class News implements Module {
 			]
 		];
 		$webPush = new WebPush($auth);
-		$result = $this->db->query("SELECT * FROM `pushtoken` WHERE `type` = 'webpush'");
+		$result = $this->db->query("SELECT `endpoint`, `key`, `auth` FROM `pushtoken` WHERE `type` = 'webpush'");
 		while ($row = $this->db->fetchArray($result)) {
 			$subscription = Subscription::create([
 				'endpoint'=>$row['endpoint'],
@@ -843,11 +846,11 @@ class News implements Module {
 				
 				if ($type=="all") {
 					$topic = "Alle Nachrichten";
-					$result = $this->db->query("SELECT COUNT(*) AS rowcount FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					$result = $this->db->query("SELECT COUNT(`visible`) AS rowcount FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
 					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC");
 					$pages = $this->db->getRowCount($result)/10;
 					
-					$result = $this->db->query("SELECT * FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					$result = $this->db->query("SELECT `teaser`, `headline`, `title`, `news`, `location` FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
 					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC LIMIT $start,$end");
 					while ($row = $this->db->fetchArray($result)) {
 						$teaser = $row['teaser'];
@@ -890,7 +893,7 @@ class News implements Module {
 			$tag = $this->db->escapeString($tag);
 			$tag = trim($tag);
 			$id = "";
-			if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT * FROM `general` WHERE `tag`='$tag' LIMIT 1"))) {
+			if ((strlen($tag)>0)&&(!$this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$tag' LIMIT 1"))) {
 				$this->db->query("INSERT INTO `general`(`tag`) VALUES('$tag')");
 			}
 	
@@ -968,12 +971,11 @@ class News implements Module {
 					}
 					if ($this->auth->locationReadAllowed($location, $this->role->getRole())) {
 						$picture = "empty";
-						$result = $this->db->query("SELECT `picture2` FROM `news` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
+						$result = $this->db->query("SELECT `url` FROM `news` JOIN `news_picture` ON `picture`=`picture2` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
 						while ($row = $this->db->fetchArray($result)) {
-							$picID = $row['picture2'];
-							$result2 = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID'");
-							while ($row2 = $this->db->fetchArray($result2)) {
-								$picture = "news/".htmlentities($row2['url'], null, "ISO-8859-1");
+							$picture = "news/".htmlentities($row['url'], null, "ISO-8859-1");
+							if (empty($picture)) {
+								$picture = "empty";
 							}
 						}
 						if ($picture=="empty") {
