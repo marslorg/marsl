@@ -76,12 +76,12 @@ class URLLoader implements Module {
 					}
 				}
 				$homepage = "";
-				$result = $this->db->query("SELECT * FROM `homepage`");
+				$result = $this->db->query("SELECT `homepage` FROM `homepage`");
 				while ($row = $this->db->fetchArray($result)) {
 					$homepage = $row['homepage'];
 				}
 				$locations = array();
-				$result = $this->db->query("SELECT * FROM `navigation` WHERE `type`='1' OR `type`='2'");
+				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='1' OR `type`='2'");
 				while ($row = $this->db->fetchArray($result)) {
 					$name = htmlentities($row['name'], null, "UTF-8");
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));

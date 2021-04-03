@@ -110,7 +110,7 @@ class UserData implements Module {
 								$prename = htmlentities($row['prename'], null, "UTF-8");
 								$acronym = htmlentities($row['acronym'], null, "UTF-8");
 								$emails = array();
-								$result2 = $this->db->query("SELECT * FROM `email` WHERE `user`='$userID' ORDER BY `confirmed` DESC, `primary` DESC");
+								$result2 = $this->db->query("SELECT `email`, `confirmed`, `primary` FROM `email` WHERE `user`='$userID' ORDER BY `confirmed` DESC, `primary` DESC");
 								while ($row2 = $this->db->fetchArray($result2)) {
 									$email = htmlentities($row2['email'], null, "UTF-8");
 									$confirmed = $row2['confirmed'];
@@ -304,7 +304,7 @@ class UserData implements Module {
 			$house = "";
 			$city = "";
 			
-			$result = $this->db->query("SELECT * FROM `user` WHERE `user`='$userID'");
+			$result = $this->db->query("SELECT `user`, `prename`, `name`, `info`, `signature`, `birthdate`, `gender`, `interests`, `job`, `zip`, `street`, `house`, `city` FROM `user` WHERE `user`='$userID'");
 			while ($row = $this->db->fetchArray($result)) {
 				
 				$userID = $row['user'];
@@ -328,7 +328,7 @@ class UserData implements Module {
 			
 			$emails = array();
 			
-			$result = $this->db->query("SELECT * FROM `email` WHERE `user` = '$userID' ORDER BY `confirmed` DESC, `primary` DESC");
+			$result = $this->db->query("SELECT `email`, `confirmed`, `primary` FROM `email` WHERE `user` = '$userID' ORDER BY `confirmed` DESC, `primary` DESC");
 			while ($row = $this->db->fetchArray($result)) {
 				
 				$email = htmlentities($row['email'], null, "UTF-8");
