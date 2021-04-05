@@ -10,6 +10,21 @@ class User {
 	private $session;
 	private $db;
 	private $role;
+	private $headAdmin;
+	private $headAdminSet;
+	private $root;
+	private $rootSet;
+	private $isAdmin;
+	private $isAdminSet;
+	private $userID;
+	private $userIDSet;
+	private $userIDsByName;
+	private $passwordsByID;
+	private $mailsByID;
+	private $nicksByID;
+	private $acronymsByID;
+	private $nicksByMail;
+	private $registerDatesByUser;
 	
 	/*
 	 * Constructs the session of the user.
@@ -17,9 +32,24 @@ class User {
 	public function __construct($db, $role) {
 		$this->db = $db;
 		$this->role = $role;
+		$this->headAdminSet = false;
+		$this->headAdmin = 0;
+		$this->root = false;
+		$this->rootSet = false;
+		$this->isAdmin = false;
+		$this->isAdminSet = false;
+		$this->userID = "";
+		$this->userIDSet = false;
+		$this->userIDsByName = array();
+		$this->passwordsByID = array();
+		$this->mailsByID = array();
+		$this->nicksByID = array();
+		$this->acronymsByID = array();
+		$this->nicksByMail = array();
+		$this->registerDatesByUser = array();
 		if (isset($_COOKIE["sessionid"])) {
 			$session = $this->db->escapeString($_COOKIE["sessionid"]);
-			if ($this->db->isExisting("SELECT * FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
+			if ($this->db->isExisting("SELECT `sessionid` FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
 				$lastseen = $this->db->escapeString(time());
 				$this->db->query("UPDATE `user` SET `lastseen` = '$lastseen' WHERE `sessionid` = '$session'");
 				$this->session = $session;
@@ -31,30 +61,32 @@ class User {
 	 * Returns whether logged in user is root or directly under the root user.
 	 */
 	public function isHead() {	
-		$roleID = $this->db->escapeString($this->role->getRole());
+        if (!$this->headAdminSet) {
+			$roleID = $this->db->escapeString($this->role->getRole());
+            if ($this->db->isExisting("SELECT `role` FROM `role` WHERE `name`='root' AND `role`='$roleID' LIMIT 1")) {
+                $this->headAdmin = 1;
+            } elseif ($this->db->isExisting("SELECT `name` FROM `role_editor` JOIN `role` ON `master`=`role` WHERE `slave`='$roleID' AND `name`='root' LIMIT 1")) {
+                $this->headAdmin = 1;
+            }
+        }
+
+		$this->headAdminSet = true;
 		
-		$headAdmin = 0;
-		
-		if ($this->db->isExisting("SELECT * FROM `role` WHERE `name`='root' AND `role`='$roleID' LIMIT 1")) {
-			$headAdmin = 1;
-		}
-		else if ($this->db->isExisting("SELECT * FROM `role_editor` JOIN `role` ON `master`=`role` WHERE `slave`='$roleID' AND `name`='root' LIMIT 1")) {
-			$headAdmin = 1;
-		}
-		
-		return $headAdmin;
+		return $this->headAdmin;
 	}
 
 	public function isRoot() {
-		$roleID = $this->db->escapeString($this->role->getRole());
+        if (!$this->rootSet) {
+            $roleID = $this->db->escapeString($this->role->getRole());
 
-		$root = false;
+            if ($this->db->isExisting("SELECT `role` FROM `role` WHERE `name`='root' AND `role`='$roleID' LIMIT 1")) {
+                $this->root = true;
+            }
+        }
 
-		if ($this->db->isExisting("SELECT * FROM `role` WHERE `name`='root' AND `role`='$roleID' LIMIT 1")) {
-			$root = true;
-		}
+		$this->rootSet = true;
 
-		return $root;
+		return $this->root;
 	}
 	
 	/*
@@ -68,11 +100,17 @@ class User {
 	 * Returns whether the logged in user has access rights on the admin panel.
 	 */
 	public function isAdmin() {
-		$roleID = $this->db->escapeString($this->role->getRole());
-		$location = $this->db->isExisting("SELECT `role` FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
-		$module = $this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
-		$master = $this->db->isExisting("SELECT `master` FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
-		return ($location || $module || $master);
+        if (!$this->isAdminSet) {
+            $roleID = $this->db->escapeString($this->role->getRole());
+            $location = $this->db->isExisting("SELECT `role` FROM `rights` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+            $module = $this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
+            $master = $this->db->isExisting("SELECT `master` FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
+            $this->isAdmin = $location || $module || $master;
+        }
+
+		$this->isAdminSet = true;
+
+		return $this->isAdmin;
 	}
 	
 	/*
@@ -103,14 +141,14 @@ class User {
 		}
 		else {
 			$nickname = $this->db->escapeString($nickname);
-			if ($this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1")) {
+			if ($this->db->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1")) {
 				$result = $this->db->query("SELECT `regdate` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname')");
 				$regdate = "";
 				while ($row = $this->db->fetchArray($result)) {
 					$regdate = $row['regdate'];
 				}
 				$password = $this->db->escapeString($this->hashPassword($regdate, $password));
-				if ($this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password' LIMIT 1")) {
+				if ($this->db->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND `password`='$password' LIMIT 1")) {
 					$lastlogin = $this->db->escapeString(time());
 					$basic = new Basic($this->db, $auth, $this->role);
 					$session = $this->db->escapeString($basic->session());
@@ -133,94 +171,116 @@ class User {
 	 * Gets the ID of the logged in user.
 	 */
 	public function getID() {
-		$user = "";
-		$sessionid = $this->db->escapeString($this->session);
-		$result = $this->db->query("SELECT `user` FROM `user` WHERE `sessionid`='$sessionid'");
-		while ($row = $this->db->fetchArray($result)) {
-			$user = $row['user'];
-		}
-		return $user;
+        if (!$this->userIDSet) {
+            $sessionid = $this->db->escapeString($this->session);
+            $result = $this->db->query("SELECT `user` FROM `user` WHERE `sessionid`='$sessionid'");
+            while ($row = $this->db->fetchArray($result)) {
+                $this->userID = $row['user'];
+            }
+        }
+
+		$this->userIDSet = true;
+
+		return $this->userID;
 	}
 	
 	/*
 	 * Gets a user ID by a given name.
 	 */
 	public function getIDbyName($name) {
-		$user = "";
-		$name = $this->db->escapeString($name);
-		$result = $this->db->query("SELECT `user` FROM `user` WHERE LOWER(`nickname`)=LOWER('$name')");
-		while ($row = $this->db->fetchArray($result)) {
-			$user = $row['user'];
-		}
-		return $user;
+		if (!array_key_exists($name, $this->userIDsByName)) {
+            $name = $this->db->escapeString($name);
+			$user = "";
+            $result = $this->db->query("SELECT `user` FROM `user` WHERE LOWER(`nickname`)=LOWER('$name')");
+            while ($row = $this->db->fetchArray($result)) {
+                $user = $row['user'];
+            }
+			$this->userIDsByName[$name]  = $user;
+        }
+		return $this->userIDsByName[$name];
 	}
 	
 	/*
 	 * Get the password of a user.
 	 */
 	public function getPassbyID($id) {
-		$password = "";
-		$user = $this->db->escapeString($id);
-		$result = $this->db->query("SELECT `password` FROM `user` WHERE `user`='$user'");
-		while ($row = $this->db->fetchArray($result)) {
-			$password = $row['password'];
-		}
-		return $password;
+        if (!array_key_exists($id, $this->passwordsByID)) {
+            $password = "";
+            $user = $this->db->escapeString($id);
+            $result = $this->db->query("SELECT `password` FROM `user` WHERE `user`='$user'");
+            while ($row = $this->db->fetchArray($result)) {
+                $password = $row['password'];
+            }
+			$this->passwordsByID[$id] = $password;
+        }
+		return $this->passwordsByID[$id];
 	}
 	
 	/*
 	 * Get the primary e-mail of a user.
 	 */
 	public function getMailbyID($id) {
-		$mail = "";
-		$user = $this->db->escapeString($id);
-		$result = $this->db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1' AND `primary`='1'");
-		while ($row = $this->db->fetchArray($result)) {
-			$mail = htmlentities($row['email'], null, "ISO-8859-1");
-		}
-		return $mail;
+        if (!array_key_exists($id, $this->mailsByID)) {
+            $mail = "";
+            $user = $this->db->escapeString($id);
+            $result = $this->db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1' AND `primary`='1'");
+            while ($row = $this->db->fetchArray($result)) {
+                $mail = htmlentities($row['email'], null, "ISO-8859-1");
+            }
+			$this->mailsByID[$id] = $mail;
+        }
+		return $this->mailsByID[$id];
 	}
 	
 	/*
 	 * Get the nickname of a user.
 	 */
 	public function getNickbyID($id) {
-		$name = "";
-		$user = $this->db->escapeString($id);
-		$result = $this->db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
-		while ($row = $this->db->fetchArray($result)) {
-			$name = htmlentities($row['nickname'], null, "ISO-8859-1");
-		}
-		return $name;
+        if (!array_key_exists($id, $this->nicksByID)) {
+            $name = "";
+            $user = $this->db->escapeString($id);
+            $result = $this->db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
+            while ($row = $this->db->fetchArray($result)) {
+                $name = htmlentities($row['nickname'], null, "ISO-8859-1");
+            }
+			$this->nicksByID[$id] = $name;
+        }
+		return $this->nicksByID[$id];
 	}
 	
 	/*
 	 * Get the acronym of a user.
 	 */
 	public function getAcronymbyID($id) {
-		$acronym = "";
-		$user = $this->db->escapeString($id);
-		$result = $this->db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
-		while ($row = $this->db->fetchArray($result)) {
-			$name = htmlentities($row['acronym'], null, "ISO-8859-1");
-			if (empty($name)) {
-				$name = $this->getNickbyID($user);
-			}
-		}
-		return $name;
+        if (!array_key_exists($id, $this->acronymsByID)) {
+            $acronym = "";
+            $user = $this->db->escapeString($id);
+            $result = $this->db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
+            while ($row = $this->db->fetchArray($result)) {
+                $name = htmlentities($row['acronym'], null, "ISO-8859-1");
+                if (empty($name)) {
+                    $name = $this->getNickbyID($user);
+                }
+            }
+			$this->acronymsByID[$id] = $acronym;
+        }
+		return $this->acronymsByID[$id];
 	}
 
 	/*
 	 * Get nickname by giving an e-mail adress.
 	 */
 	public function getNickbyMail($mail) {
-		$name = "";
-		$mail = $this->db->escapeString($mail);
-		$result = $this->db->query("SELECT `nickname` FROM `email` NATURAL JOIN `user` WHERE `email`='$mail' AND `confirmed`='1'");
-		while ($row = $this->db->fetchArray($result)) {
-			$name = htmlentities($row['nickname'], null, "ISO-8859-1");
-		}
-		return $name;
+        if (!array_key_exists($mail, $this->nicksByMail)) {
+            $name = "";
+            $mail = $this->db->escapeString($mail);
+            $result = $this->db->query("SELECT `nickname` FROM `email` NATURAL JOIN `user` WHERE `email`='$mail' AND `confirmed`='1'");
+            while ($row = $this->db->fetchArray($result)) {
+                $name = htmlentities($row['nickname'], null, "ISO-8859-1");
+            }
+			$this->nicksByMail[$mail]  = $name;
+        }
+		return $this->nicksByMail[$mail];
 	}
 	
 	/*
@@ -236,13 +296,16 @@ class User {
 	 * Get the registration date of a user.
 	 */
 	public function getRegisterDate($user) {
-		$regdate = "";
-		$user = $this->db->escapeString($user);
-		$result = $this->db->query("SELECT `regdate` FROM `user` WHERE `user`='$user'");
-		while ($row = $this->db->fetchArray($result)) {
-			$regdate = $row['regdate'];
-		}
-		return $regdate;
+        if (!array_key_exists($user, $this->registerDatesByUser)) {
+            $regdate = "";
+            $user = $this->db->escapeString($user);
+            $result = $this->db->query("SELECT `regdate` FROM `user` WHERE `user`='$user'");
+            while ($row = $this->db->fetchArray($result)) {
+                $regdate = $row['regdate'];
+            }
+			$this->registerDatesByUser[$user] = $regdate;
+        }
+		return $this->registerDatesByUser[$user];
 	}
 	
 	/*
@@ -284,7 +347,7 @@ class User {
 			return true;
 		}
 		else {
-			if ((!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$acronym') AND NOT (`user`='$user') LIMIT 1"))&&(!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$acronym') AND NOT(`user`='$user') LIMIT 1"))) {
+			if ((!$this->db->isExisting("SELECT `acronym` FROM `user` WHERE LOWER(`acronym`)=LOWER('$acronym') AND NOT (`user`='$user') LIMIT 1"))&&(!$this->db->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('$acronym') AND NOT(`user`='$user') LIMIT 1"))) {
 				$this->db->query("UPDATE `user` SET `acronym`='$acronym' WHERE `user`='$user'");
 				$proofacronym = null;
 				$result = $this->db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
@@ -311,7 +374,7 @@ class User {
 		if (strlen($nickname)>=4) {
 			$nickname = $this->db->escapeString($nickname);
 			$user = $this->db->escapeString($user);
-			if ((!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND NOT (`user`='$user') LIMIT 1"))&&(!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') AND NOT(`user`='$user') LIMIT 1"))) {
+			if ((!$this->db->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') AND NOT (`user`='$user') LIMIT 1"))&&(!$this->db->isExisting("SELECT `acronym` FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') AND NOT(`user`='$user') LIMIT 1"))) {
 				$this->db->query("UPDATE `user` SET `nickname`='$nickname' WHERE `user`='$user'");
 				$proofnick = null;
 				$result = $this->db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
@@ -360,7 +423,7 @@ class User {
 	public function register($nickname, $password, $mail, $auth) {
 		$nickname = $this->db->escapeString($nickname);
 		if (strlen($nickname)>=4) {
-			if ((!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1"))&&(!$this->db->isExisting("SELECT * FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') LIMIT 1"))) {
+			if ((!$this->db->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1"))&&(!$this->db->isExisting("SELECT `acronym` FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') LIMIT 1"))) {
 				$regdate = $this->db->escapeString(time());
 				$hashPassword = $this->db->escapeString($this->hashPassword($regdate, $password));
 				$basic = new Basic($this->db, $auth, $this->role);
