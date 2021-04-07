@@ -257,9 +257,9 @@ class User {
             $user = $this->db->escapeString($id);
             $result = $this->db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
             while ($row = $this->db->fetchArray($result)) {
-                $name = htmlentities($row['acronym'], null, "UTF-8");
-                if (empty($name)) {
-                    $name = $this->getNickbyID($user);
+                $acronym = htmlentities($row['acronym'], null, "UTF-8");
+                if (empty($acronym)) {
+                    $acronym = $this->getNickbyID($user);
                 }
             }
 			$this->acronymsByID[$id] = $acronym;
