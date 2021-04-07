@@ -128,14 +128,13 @@ ENGINE = InnoDB;
 -- Table `email`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `email` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(100) NOT NULL,
   `user` BIGINT NULL,
   `confirmed` TINYINT(1) NOT NULL DEFAULT FALSE,
   `time` INT NOT NULL,
   `confirm_id` CHAR(32) NOT NULL,
   `primary` TINYINT(1) NOT NULL DEFAULT FALSE,
-  PRIMARY KEY (`id`, `email`),
+  PRIMARY KEY (`email`),
   INDEX `user_email_idx` (`user` ASC),
   UNIQUE INDEX `confirm_id_UNIQUE` (`confirm_id` ASC),
   INDEX `email_idx` (`email` ASC),
@@ -160,10 +159,9 @@ ENGINE = InnoDB;
 -- Table `contact_form`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `contact_form` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `contact_form` VARCHAR(100) NOT NULL,
   `structure` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id`, `contact_form`))
+  PRIMARY KEY (`contact_form`))
 ENGINE = InnoDB;
 
 
@@ -171,11 +169,10 @@ ENGINE = InnoDB;
 -- Table `contact`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `contact` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `contact` VARCHAR(100) NOT NULL,
   `contact_form` VARCHAR(100) NOT NULL,
   `user` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `contact`, `contact_form`),
+  PRIMARY KEY (`contact`, `contact_form`),
   INDEX `user_contact_idx` (`user` ASC),
   INDEX `contact_form_idx` (`contact_form` ASC),
   CONSTRAINT `user_contact`
@@ -195,12 +192,11 @@ ENGINE = InnoDB;
 -- Table `news_picture`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `news_picture` (
-  `picture` BIGINT NOT NULL,
+  `picture` BIGINT NOT NULL AUTO_INCREMENT,
   `url` VARCHAR(100) NOT NULL,
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `subtitle` TEXT NULL,
   `photograph` VARCHAR(100) NULL,
-  PRIMARY KEY (`id`, `picture`),
+  PRIMARY KEY (`picture`),
   INDEX `picture_idx` (`picture` ASC))
 ENGINE = InnoDB;
 
@@ -318,7 +314,7 @@ ENGINE = InnoDB;
 -- Table `album`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `album` (
-  `album` BIGINT NOT NULL,
+  `album` BIGINT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
   `author` BIGINT NOT NULL,
   `author_ip` VARCHAR(100) NOT NULL,
@@ -396,14 +392,13 @@ ENGINE = InnoDB;
 -- Table `rights`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rights` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `role` BIGINT NOT NULL,
   `location` BIGINT NOT NULL,
   `read` TINYINT(1) NOT NULL DEFAULT false,
   `write` TINYINT(1) NOT NULL DEFAULT false,
   `extended` TINYINT(1) NOT NULL DEFAULT false,
   `admin` TINYINT(1) NOT NULL DEFAULT false,
-  PRIMARY KEY (`id`, `role`, `location`),
+  PRIMARY KEY (`role`, `location`),
   INDEX `rights_role_idx` (`role` ASC),
   INDEX `rights_navigation_idx` (`location` ASC),
   INDEX `read_idx` (`read` ASC),
@@ -431,9 +426,8 @@ ENGINE = InnoDB;
 -- Table `registration_tos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `registration_tos` (
-  `registration_tos` BIGINT NOT NULL,
   `id` BIGINT NULL,
-  PRIMARY KEY (`registration_tos`, `id`),
+  PRIMARY KEY (`id`),
   INDEX `tos_navigation_idx` (`id` ASC),
   CONSTRAINT `tos_navigation`
     FOREIGN KEY (`id`)
@@ -447,11 +441,10 @@ ENGINE = InnoDB;
 -- Table `module`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `module` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
   `file` VARCHAR(100) NOT NULL,
   `class` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id`, `name`),
+  PRIMARY KEY (`name`),
   INDEX `file_idx` (`file` ASC))
 ENGINE = InnoDB;
 
@@ -460,14 +453,13 @@ ENGINE = InnoDB;
 -- Table `rights_module`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rights_module` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `role` BIGINT NOT NULL,
   `module` VARCHAR(100) NOT NULL,
   `read` TINYINT(1) NOT NULL DEFAULT false,
   `write` TINYINT(1) NOT NULL DEFAULT false,
   `extended` TINYINT(1) NOT NULL DEFAULT false,
   `admin` TINYINT(1) NOT NULL DEFAULT false,
-  PRIMARY KEY (`id`, `role`, `module`),
+  PRIMARY KEY (`role`, `module`),
   INDEX `rights_role_idx` (`role` ASC),
   INDEX `rights_module_idx` (`module` ASC),
   INDEX `role_module_idx` (`role` ASC, `module` ASC),
@@ -494,10 +486,9 @@ ENGINE = InnoDB;
 -- Table `role_editor`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `role_editor` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `master` BIGINT NOT NULL,
   `slave` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `master`, `slave`),
+  PRIMARY KEY (`master`, `slave`),
   INDEX `master.role_idx` (`master` ASC),
   INDEX `slave.role_idx` (`slave` ASC),
   INDEX `master_slave_idx` (`master` ASC, `slave` ASC),
@@ -518,12 +509,10 @@ ENGINE = InnoDB;
 -- Table `stdroles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `stdroles` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `guest` BIGINT NOT NULL,
   `user` BIGINT NOT NULL,
   INDEX `guest_idx` (`guest` ASC),
   INDEX `user_idx` (`user` ASC),
-  PRIMARY KEY (`id`),
   CONSTRAINT `guest`
     FOREIGN KEY (`guest`)
     REFERENCES `role` (`role`)
@@ -541,9 +530,8 @@ ENGINE = InnoDB;
 -- Table `homepage`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `homepage` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `homepage` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `homepage`),
+  PRIMARY KEY (`homepage`),
   INDEX `standard_link_idx` (`homepage` ASC),
   CONSTRAINT `standard_link`
     FOREIGN KEY (`homepage`)
@@ -585,14 +573,13 @@ ENGINE = InnoDB;
 -- Table `rights_board`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rights_board` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `role` BIGINT NOT NULL,
   `board` BIGINT NOT NULL,
   `read` TINYINT(1) NOT NULL,
   `write` TINYINT(1) NOT NULL,
   `extended` TINYINT(1) NOT NULL,
   `admin` TINYINT(1) NOT NULL,
-  PRIMARY KEY (`id`, `role`, `board`),
+  PRIMARY KEY (`role`, `board`),
   INDEX `board_role_idx` (`role` ASC),
   INDEX `role_board_idx` (`board` ASC),
   INDEX `read_idx` (`read` ASC),
@@ -620,10 +607,9 @@ ENGINE = InnoDB;
 -- Table `board_operator`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `board_operator` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `board` BIGINT NOT NULL,
   `user` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `board`, `user`),
+  PRIMARY KEY (`board`, `user`),
   INDEX `operator_board_idx` (`board` ASC),
   INDEX `operator_user_idx` (`user` ASC),
   INDEX `board_user_idx` (`board` ASC, `user` ASC),
@@ -735,11 +721,10 @@ ENGINE = InnoDB;
 -- Table `news_tag`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `news_tag` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `tag` BIGINT NOT NULL,
   `news` BIGINT NOT NULL,
   `type` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id`, `tag`, `news`, `type`),
+  PRIMARY KEY (`tag`, `news`, `type`),
   INDEX `news_idx` (`news` ASC),
   INDEX `tag_idx` (`tag` ASC),
   INDEX `type_idx` (`type` ASC),
@@ -847,10 +832,9 @@ ENGINE = InnoDB;
 -- Table `event_location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `event_location` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `location` BIGINT NOT NULL,
   `event` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `location`, `event`),
+  PRIMARY KEY (`location`, `event`),
   INDEX `el_location_idx` (`location` ASC),
   INDEX `el_event_idx` (`event` ASC),
   CONSTRAINT `el_location`
@@ -870,10 +854,9 @@ ENGINE = InnoDB;
 -- Table `event_band`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `event_band` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `band` BIGINT NOT NULL,
   `event` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `band`, `event`),
+  PRIMARY KEY (`band`, `event`),
   INDEX `eb_band_idx` (`band` ASC),
   INDEX `eb_event_idx` (`event` ASC),
   CONSTRAINT `eb_band`
@@ -910,10 +893,9 @@ ENGINE = InnoDB;
 -- Table `post_attachment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `post_attachment` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `post` BIGINT NOT NULL,
   `file` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `post`, `file`),
+  PRIMARY KEY (`post`, `file`),
   INDEX `pa_post_idx` (`post` ASC),
   INDEX `pa_file_idx` (`file` ASC),
   INDEX `file_post_idx` (`post` ASC, `file` ASC),
@@ -934,9 +916,7 @@ ENGINE = InnoDB;
 -- Table `newsletter_configuration`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `newsletter_configuration` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `allow_anon_registration` TINYINT(1) NULL,
-  PRIMARY KEY (`id`))
+  `allow_anon_registration` TINYINT(1) NULL)
 ENGINE = InnoDB;
 
 
@@ -944,12 +924,11 @@ ENGINE = InnoDB;
 -- Table `newsletter_entry`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `newsletter_entry` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
   `confirm_id` CHAR(32) NOT NULL,
   `prename` VARCHAR(50) NULL,
   `name` VARCHAR(50) NULL,
   `role` BIGINT NOT NULL,
-  PRIMARY KEY (`id`, `confirm_id`, `role`),
+  PRIMARY KEY (`confirm_id`, `role`),
   INDEX `newsletter_role_idx` (`role` ASC),
   CONSTRAINT `newsletter_email`
     FOREIGN KEY (`confirm_id`)
