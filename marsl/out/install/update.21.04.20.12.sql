@@ -128,10 +128,7 @@ ADD INDEX `role_name_idx` (`role` ASC, `name` ASC);
 ;
 
 ALTER TABLE `email` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `user` `user` BIGINT(20) NULL DEFAULT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `email`),
 ADD INDEX `email_idx` (`email` ASC),
 ADD INDEX `confirm_id_idx` (`confirm_id` ASC),
 ADD INDEX `confirmed_idx` (`confirmed` ASC),
@@ -145,16 +142,7 @@ ADD INDEX `email_confirmed_idx` (`email` ASC, `confirmed` ASC);
 ;
 
 ALTER TABLE `contact` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-CHANGE COLUMN `user` `user` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `contact`, `contact_form`);
-;
-
-ALTER TABLE `contact_form` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `contact_form`);
+CHANGE COLUMN `user` `user` BIGINT(20) NOT NULL;
 ;
 
 ALTER TABLE `user_album` 
@@ -194,15 +182,12 @@ ADD INDEX `teaser_picture_location_deleted_visible_featured_postdate_idx` (`post
 ;
 
 ALTER TABLE `news_picture` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT AFTER `url`,
-CHANGE COLUMN `picture` `picture` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `picture`),
+CHANGE COLUMN `picture` `picture` BIGINT(20) NOT NULL AUTO_INCREMENT,
 ADD INDEX `picture_idx` (`picture` ASC);
 ;
 
 ALTER TABLE `album` 
-CHANGE COLUMN `album` `album` BIGINT(20) NOT NULL ,
+CHANGE COLUMN `album` `album` BIGINT(20) NOT NULL AUTO_INCREMENT,
 CHANGE COLUMN `author` `author` BIGINT(20) NOT NULL ,
 CHANGE COLUMN `admin` `admin` BIGINT(20) NULL DEFAULT NULL ,
 CHANGE COLUMN `location` `location` BIGINT(20) NOT NULL ,
@@ -243,11 +228,8 @@ ADD INDEX `pos_type_idx` (`pos` ASC, `type` ASC);
 ;
 
 ALTER TABLE `rights` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `role` `role` BIGINT(20) NOT NULL ,
 CHANGE COLUMN `location` `location` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `role`, `location`),
 ADD INDEX `read_idx` (`read` ASC),
 ADD INDEX `write_idx` (`write` ASC),
 ADD INDEX `extended_idx` (`extended` ASC),
@@ -259,24 +241,15 @@ ADD INDEX `role_admin_idx` (`role` ASC, `admin` ASC);
 ;
 
 ALTER TABLE `registration_tos` 
-ADD COLUMN `registration_tos` BIGINT(20) NOT NULL FIRST,
-CHANGE COLUMN `id` `id` BIGINT(20) NULL DEFAULT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`registration_tos`, `id`);
+CHANGE COLUMN `id` `id` BIGINT(20) NULL DEFAULT NULL;
 ;
 
-ALTER TABLE `module` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `name`),
+ALTER TABLE `module`
 ADD INDEX `file_idx` (`file` ASC);
 ;
 
 ALTER TABLE `rights_module` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-CHANGE COLUMN `role` `role` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `role`, `module`),
+CHANGE COLUMN `role` `role` BIGINT(20) NOT NULL,
 ADD INDEX `role_module_idx` (`role` ASC, `module` ASC),
 ADD INDEX `read_idx` (`read` ASC),
 ADD INDEX `write_idx` (`write` ASC),
@@ -287,34 +260,23 @@ ADD INDEX `role_admin_idx` (`role` ASC, `admin` ASC);
 ;
 
 ALTER TABLE `role_editor` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `master` `master` BIGINT(20) NOT NULL ,
-CHANGE COLUMN `slave` `slave` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `master`, `slave`),
+CHANGE COLUMN `slave` `slave` BIGINT(20) NOT NULL,
 ADD INDEX `master_slave_idx` (`master` ASC, `slave` ASC);
 ;
 
 ALTER TABLE `stdroles` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `guest` `guest` BIGINT(20) NOT NULL ,
-CHANGE COLUMN `user` `user` BIGINT(20) NOT NULL ,
-ADD PRIMARY KEY (`id`);
+CHANGE COLUMN `user` `user` BIGINT(20) NOT NULL;
 ;
 
 ALTER TABLE `homepage` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-CHANGE COLUMN `homepage` `homepage` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `homepage`);
+CHANGE COLUMN `homepage` `homepage` BIGINT(20) NOT NULL;
 ;
 
 ALTER TABLE `rights_board` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `role` `role` BIGINT(20) NOT NULL ,
-CHANGE COLUMN `board` `board` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `role`, `board`),
+CHANGE COLUMN `board` `board` BIGINT(20) NOT NULL,
 ADD INDEX `read_idx` (`read` ASC),
 ADD INDEX `write_idx` (`write` ASC),
 ADD INDEX `extended_idx` (`extended` ASC),
@@ -337,11 +299,8 @@ ADD INDEX `type_pos_idx` (`type` ASC, `pos` ASC);
 ;
 
 ALTER TABLE `board_operator` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `board` `board` BIGINT(20) NOT NULL ,
 CHANGE COLUMN `user` `user` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `board`, `user`),
 ADD INDEX `board_user_idx` (`board` ASC, `user` ASC);
 ;
 
@@ -373,10 +332,8 @@ ADD INDEX `thread_deleted_idx` (`thread` ASC, `deleted` ASC),
 ADD INDEX `date_asc_idx` (`date` ASC),
 ADD INDEX `thread_deleted_date_asc_idx` (`date` ASC, `thread` ASC, `deleted` ASC),
 ADD INDEX `post_deleted_idx` (`post` ASC, `deleted` ASC),
-ADD INDEX `contend_idx` (`content` ASC),
 ADD INDEX `operator_idx` (`operator` ASC),
 ADD INDEX `lastedit_idx` (`lastedit` ASC),
-ADD INDEX `post_content_operator_lastedit_idx` (`post` ASC, `content` ASC, `operator` ASC, `lastedit` ASC),
 ADD INDEX `post_date_idx` (`date` DESC, `post` ASC);
 ;
 
@@ -395,11 +352,8 @@ ADD INDEX `tag_id_idx` (`tag` ASC, `id` ASC);
 ;
 
 ALTER TABLE `news_tag` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `tag` `tag` BIGINT(20) NOT NULL ,
 CHANGE COLUMN `news` `news` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `tag`, `news`, `type`),
 DROP INDEX `tag_news_idx` ,
 ADD INDEX `news_idx` (`news` ASC),
 ADD INDEX `tag_idx` (`tag` ASC),
@@ -420,19 +374,13 @@ CHANGE COLUMN `event` `event` BIGINT(20) NOT NULL AUTO_INCREMENT ,
 CHANGE COLUMN `author` `author` BIGINT(20) NOT NULL ;
 
 ALTER TABLE `event_location` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `location` `location` BIGINT(20) NOT NULL ,
-CHANGE COLUMN `event` `event` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `location`, `event`);
+CHANGE COLUMN `event` `event` BIGINT(20) NOT NULL;
 ;
 
 ALTER TABLE `event_band` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `band` `band` BIGINT(20) NOT NULL ,
-CHANGE COLUMN `event` `event` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `band`, `event`);
+CHANGE COLUMN `event` `event` BIGINT(20) NOT NULL;
 ;
 
 ALTER TABLE `attachment` 
@@ -444,24 +392,13 @@ ADD INDEX `temporary_idx` (`temporary` ASC);
 ;
 
 ALTER TABLE `post_attachment` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
 CHANGE COLUMN `post` `post` BIGINT(20) NOT NULL ,
-CHANGE COLUMN `file` `file` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `post`, `file`),
+CHANGE COLUMN `file` `file` BIGINT(20) NOT NULL,
 ADD INDEX `file_post_idx` (`post` ASC, `file` ASC);
 ;
 
-ALTER TABLE `newsletter_configuration` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-ADD PRIMARY KEY (`id`);
-;
-
 ALTER TABLE `newsletter_entry` 
-ADD COLUMN `id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST,
-CHANGE COLUMN `role` `role` BIGINT(20) NOT NULL ,
-DROP PRIMARY KEY,
-ADD PRIMARY KEY (`id`, `confirm_id`, `role`);
+CHANGE COLUMN `role` `role` BIGINT(20) NOT NULL;
 ;
 
 ALTER TABLE `app` 
@@ -473,10 +410,8 @@ ADD INDEX `key_idx` (`key` ASC);
 ALTER TABLE `pushtoken` 
 CHANGE COLUMN `id` `id` BIGINT(20) NOT NULL AUTO_INCREMENT ,
 ADD INDEX `type_idx` (`type` ASC),
-ADD INDEX `endpoint_idx` (`endpoint` ASC),
 ADD INDEX `auth_idx` (`auth` ASC),
 ADD INDEX `key_idx` (`key` ASC),
-ADD INDEX `type_endpoint_auth_key_idx` (`type` ASC, `endpoint` ASC, `auth` ASC, `key` ASC);
 ;
 
 ALTER TABLE `user` 
