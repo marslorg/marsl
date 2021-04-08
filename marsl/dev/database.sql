@@ -664,10 +664,8 @@ CREATE TABLE IF NOT EXISTS `mydb`.`post` (
   INDEX `date_asc_idx` (`date` ASC),
   INDEX `thread_deleted_date_asc_idx` (`date` ASC, `thread` ASC, `deleted` ASC),
   INDEX `post_deleted_idx` (`post` ASC, `deleted` ASC),
-  INDEX `contend_idx` (`content` ASC),
   INDEX `operator_idx` (`operator` ASC),
   INDEX `lastedit_idx` (`lastedit` ASC),
-  INDEX `post_content_operator_lastedit_idx` (`post` ASC, `content` ASC, `operator` ASC, `lastedit` ASC),
   INDEX `post_date_idx` (`date` DESC, `post` ASC),
   CONSTRAINT `post_author`
     FOREIGN KEY (`author`)
