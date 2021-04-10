@@ -201,7 +201,7 @@ class News implements Module {
 					}
 				}
 				$locations = array();
-				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND (`type`='1' OR `type`='2') ORDER BY `pos`");
+				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND `type` IN ('1','2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['id'], $this->role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $this->role->getRole())) {
 						array_push($locations,array('location'=>htmlentities($row['id'], null, "ISO-8859-1"),'name'=>htmlentities($row['name'], null, "ISO-8859-1")));

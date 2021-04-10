@@ -62,7 +62,7 @@ class ModuleRights {
 						if ($roleID!=$this->role->getRole()) {
 							$roleID = $this->db->escapeString($roleID);
 							if ($this->db->isExisting("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID' LIMIT 1")) {
-								$result = $this->db->query("SELECT * FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
+								$result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = $this->db->fetchArray($result)) {
 									$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "ISO-8859-1");
 									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));

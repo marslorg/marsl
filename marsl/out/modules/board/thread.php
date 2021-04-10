@@ -46,11 +46,11 @@ class Thread {
 				}
 			}
 			$threads = array();
-			$result = $this->db->query("SELECT COUNT(`board`) AS rowcount FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE (`type`='0' OR `type`='3') AND `board`='$boardID'");
+			$result = $this->db->query("SELECT COUNT(`board`) AS rowcount FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE `type` IN ('0','3') AND `board`='$boardID'");
 			$pages = $this->db->getRowCount($result)/15;
 			$start = $page*15-15;
 			$end = 15;
-			$result = $this->db->query("SELECT `post`, `thread`.`thread` AS `thread`, `board`, `postcount`, `title`, `thread`.`author` AS `threadauthor`, `post`.`author` AS `postauthor`, `viewcount`, `date`, `type` FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE (`type`='0' OR `type`='3') AND `board`='$boardID' ORDER BY `date` DESC LIMIT $start,$end");
+			$result = $this->db->query("SELECT `post`, `thread`.`thread` AS `thread`, `board`, `postcount`, `title`, `thread`.`author` AS `threadauthor`, `post`.`author` AS `postauthor`, `viewcount`, `date`, `type` FROM `thread` JOIN `post` ON (`lastpost`=`post`) WHERE `type` IN ('0','3') AND `board`='$boardID' ORDER BY `date` DESC LIMIT $start,$end");
 			while ($row = $this->db->fetchArray($result)) {
 				$thread = $row['thread'];
 				$post = $row['post'];

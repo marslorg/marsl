@@ -27,7 +27,7 @@ class URLLoader implements Module {
 		if ($this->auth->moduleWriteAllowed("urlloader", $curRole)) {
 			$categories = array();
 			$categoryLinks = array();
-			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type`='0' OR `type`='1' OR `type`='2' ORDER BY `pos`");
+			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
 
 				if ($row['type'] == '2' || (($row['type'] == '0' || $row['type'] == '1') && $this->auth->locationAdminAllowed($row['id'], $curRole))) {
@@ -67,7 +67,7 @@ class URLLoader implements Module {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 						$homepage = $_POST['homepage'];
 						$homepage = $this->db->escapeString($homepage);
-						if ($this->db->isExisting("SELECT * FROM `homepage` LIMIT 1")) {
+						if ($this->db->isExisting("SELECT `homepage` FROM `homepage` LIMIT 1")) {
 							$this->db->query("UPDATE `homepage` SET `homepage`='$homepage'");
 						}
 						else {
@@ -81,7 +81,7 @@ class URLLoader implements Module {
 					$homepage = $row['homepage'];
 				}
 				$locations = array();
-				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='1' OR `type`='2'");
+				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type` IN ('1','2')");
 				while ($row = $this->db->fetchArray($result)) {
 					$name = htmlentities($row['name'], null, "ISO-8859-1");
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));
@@ -202,7 +202,7 @@ class URLLoader implements Module {
 			}
 			
 			if ($this->auth->locationReadAllowed($id, $this->role->getRole())) {
-				$result = $this->db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+				$result = $this->db->query("SELECT `head`, `foot`, `module` FROM `navigation` WHERE `id`='$id' AND `type` IN ('1','2')");
 				while ($row = $this->db->fetchArray($result)) {
 					$head = $row['head'];
 					$foot = $row['foot'];
@@ -292,7 +292,7 @@ class URLLoader implements Module {
 		}
 			
 		if ($this->auth->locationReadAllowed($id, $this->role->getRole())) {
-			$result = $this->db->query("SELECT `module` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+			$result = $this->db->query("SELECT `module` FROM `navigation` WHERE `id`='$id' AND `type` IN ('1','2')");
 			while ($row = $this->db->fetchArray($result)) {
 				$module = $this->db->escapeString($row['module']);
 				$result2 = $this->db->query("SELECT `name`, `file`, `class` FROM `module` WHERE `file`='$module'");
@@ -330,7 +330,7 @@ class URLLoader implements Module {
 			}
 				
 			if ($this->auth->locationReadAllowed($id, $this->role->getRole())) {
-				$result = $this->db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND (`type`='1' OR `type`='2')");
+				$result = $this->db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND `type` IN ('1','2')");
 				while ($row = $this->db->fetchArray($result)) {
 					$title = $row['name']." - ";
 					$module = $this->db->escapeString($row['module']);

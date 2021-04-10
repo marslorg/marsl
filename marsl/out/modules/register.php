@@ -111,7 +111,7 @@ class Register implements Module {
 			
 			$links = array();
 			
-			$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type`='1' OR `type`='2'");
+			$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type` IN ('1','2')");
 			while ($row = $this->db->fetchArray($result)) {
 				$guestRole = $this->role->getGuestRole();
 				$location = $row['id'];
