@@ -42,7 +42,7 @@ class NewsPhoto {
 						$width = $picinfo[0];
 						$height = $picinfo[1];
 						$fileName = $this->db->escapeString($fileName);
-						$photograph = $this->db->escapeString(urldecode($_POST['photograph']));
+						$photograph = $this->db->escapeString($_POST['photograph']);
 						if ($_POST['type']=="teaser") {
 							if (($width>200)||($height>200)) {
 								$this->thumb($fileLink, $fileLink, 200, 200, TRUE);
@@ -54,7 +54,7 @@ class NewsPhoto {
 						}
 						
 						if ($_POST['type']=="text") {
-							$subtitle = $this->db->escapeString(urldecode($_POST['subtitle']));
+							$subtitle = $this->db->escapeString($_POST['subtitle']);
 							if (($width>1280)||($height>1280)) {
 								$this->thumb($fileLink, $fileLink, 1280, 1280, TRUE);
 							}

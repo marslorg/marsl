@@ -76,7 +76,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			var photograph = $('#teaser_photo_photograph').val();
 			var fileName = $('#teaser_photo').val();
 			document.getElementById('teaser_photo_form').innerHTML = '<tr><td class="center"><br />Je nach Gr&ouml;&szlig;e des Fotos kann dieser Vorgang etwas dauern.<br /><img src="../includes/graphics/big_loader.gif" /></td></tr>';
-			$.post('ajax/newsphoto.php', {fileName: teaserPhoto.name, data: reader.result, authTime: '<?php echo $authTime; ?>', authToken: '<?php echo $authToken; ?>', type: 'teaser', photograph: escape(photograph)}, function(data) {
+			$.post('ajax/newsphoto.php', {fileName: teaserPhoto.name, data: reader.result, authTime: '<?php echo $authTime; ?>', authToken: '<?php echo $authToken; ?>', type: 'teaser', photograph: photograph}, function(data) {
 				var result = eval('(' + data + ')');
 				if (result.type=="error") {
 					if (result.code=="1") {
@@ -109,7 +109,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			var fileName = $('#text_photo').val();
 			var subtitle = $('#text_photo_text').val();
 			document.getElementById('text_photo_form').innerHTML = '<tr><td class="center"><br />Je nach Gr&ouml;&szlig;e des Fotos kann dieser Vorgang etwas dauern.<br /><img src="../includes/graphics/big_loader.gif" /></td></tr>';
-			$.post('ajax/newsphoto.php', {fileName: textPhoto.name, data: reader.result, authTime: '<?php echo $authTime; ?>', authToken: '<?php echo $authToken; ?>', type: 'text', photograph: escape(photograph), subtitle: escape(subtitle)}, function(data) {
+			$.post('ajax/newsphoto.php', {fileName: textPhoto.name, data: reader.result, authTime: '<?php echo $authTime; ?>', authToken: '<?php echo $authToken; ?>', type: 'text', photograph: photograph, subtitle: subtitle}, function(data) {
 				var result = eval('(' + data + ')');
 				if (result.type=="error") {
 					if (result.code=="1") {
