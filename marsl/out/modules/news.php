@@ -814,19 +814,26 @@ class News implements Module {
 		$roleID = $this->role->getRole();
 		if ($this->auth->moduleReadAllowed("news", $roleID)) {
 			$query = $this->db->escapeString($query);
-			$queryWords = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY);
-			$queryWordCount = 1;
 			$queryString = "";
-			foreach ($queryWords as $queryWord) {
+			if (strlen($query) >= 8 && substr($query, 0, 4) == "\\\\\\\"" && substr($query, -4) == "\\\\\\\"") {
+				$queryWord = substr($query, 4, -4);
+				$query = "\"".$queryWord."\"";
 				$queryWordClean = $this->db->escapeString($queryWord);
-				if ($queryWordCount == 1) {
-					$queryString = "(`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
-				}
-				else {
-					$queryString = $queryString." AND (`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
-				}
-				$queryWordCount++;
+				$queryString = $queryString = "(`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
 			}
+			else {
+                $queryWords = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY);
+                $queryWordCount = 1;
+                foreach ($queryWords as $queryWord) {
+                    $queryWordClean = $this->db->escapeString($queryWord);
+                    if ($queryWordCount == 1) {
+                        $queryString = "(`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
+                    } else {
+                        $queryString = $queryString." AND (`title` LIKE '%".$queryWordClean."%' OR `headline` LIKE '%".$queryWordClean."%' OR `teaser` LIKE '%".$queryWordClean."%' OR `text` LIKE '%".$queryWordClean."%')";
+                    }
+                    $queryWordCount++;
+                }
+            }
 
 			if ($type=="standard") {
 			}
@@ -850,14 +857,14 @@ class News implements Module {
 					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC");
 					$pages = $this->db->getRowCount($result)/10;
 					
-					$result = $this->db->query("SELECT `teaser`, `headline`, `title`, `news`, `location` FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
+					$result = $this->db->query("SELECT `teaser`, `headline`, `title`, `news`, `news`.`location` AS `newslocation` FROM `news` JOIN `rights` ON (`rights`.`location`=`news`.`location`)
 					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC LIMIT $start,$end");
 					while ($row = $this->db->fetchArray($result)) {
 						$teaser = $row['teaser'];
 						$headline = htmlentities($row['headline'], null, "ISO-8859-1");
 						$title = htmlentities($row['title'], null, "ISO-8859-1");
 						$newsid = $row['news'];
-						$location = $row['location'];
+						$location = $row['newslocation'];
 						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));
 					}
 				}
