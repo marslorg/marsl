@@ -712,7 +712,7 @@ class News implements Module {
 		$messageTitle = $headline.": ".$title;
 		$teaser = str_replace("<br />", "\n", $teaser);
 		$teaser = strip_tags($teaser);
-		$message = $teaser;
+		$message = html_entity_decode($teaser);
 		$url = $config->getDomain().$config->getBasePath()."/index.php?id=".$location."&show=".$id."&action=read";
 		$icon = $config->getDomain().$config->getBasePath()."/includes/graphics/icon_512x512.png";
 
