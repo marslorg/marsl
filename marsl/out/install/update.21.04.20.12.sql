@@ -411,7 +411,7 @@ ALTER TABLE `pushtoken`
 CHANGE COLUMN `id` `id` BIGINT(20) NOT NULL AUTO_INCREMENT ,
 ADD INDEX `type_idx` (`type` ASC),
 ADD INDEX `auth_idx` (`auth` ASC),
-ADD INDEX `key_idx` (`key` ASC),
+ADD INDEX `key_idx` (`key` ASC)
 ;
 
 ALTER TABLE `user` 

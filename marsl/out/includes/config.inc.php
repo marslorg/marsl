@@ -42,8 +42,8 @@ class Configuration {
 	/***
 	 * Marsl CMS API
 	 */
-	private $appKey = "8898181fbd452711f9008a763b2026ac";
-	private $secret = "b2bd549629b1a62f060c8078109b066e1503313440f8f3febb227db9d59c7b545f51f2cf6992807799827506f5c030e9f05782d739280d5c25ef488d86485fb2";
+	private $appKey = "c1706b9961e7942112f93bb557702926";
+	private $secret = "8391bfcc1edfc165fcec9ea6dd7860598ebaa3374f13a7d23b23eb2f0b67d00b6cccd48bd12c04aa2bf1d1e2e5502e896fe967d1f8988879fe49b6dfd74eb3f7";
 	
 	/***
 	 * Last.fm event importer
