@@ -246,7 +246,7 @@ class Role {
                 $module = $this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role` = '$roleID' AND `admin` = '1' LIMIT 1");
                 $master = $this->db->isExisting("SELECT `master` FROM `role_editor` WHERE `master` = '$roleID' LIMIT 1");
                 if ($location || $module || $master) {
-                    array_push($this->roles, $role);
+                    array_push($this->adminRoles, $role);
                 }
             }
         }
