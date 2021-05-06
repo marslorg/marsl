@@ -1,21 +1,33 @@
 <?php
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-	<?php foreach($items as $item):?>
-	<url>
-		<loc><?php echo $item['link']; ?></loc>
-		<news:news>
-		<news:publication>
-			<news:name><?php echo $feedtitle; ?></news:name>
-			<news:language>de</news:language>
-		</news:publication>
-		<news:genres>PressRelease, Blog</news:genres>
-		<news:publication_date><?php echo $item['date']; ?></news:publication_date>
-		<news:title>Un<?php echo $item['title']; ?></news:title>
-		<news:keywords>entertainment, music, celebrities, arts, lifestyle, culture</news:keywords>
-		</news:news>
-	</url>
-	<?php endforeach; ?>
-</urlset>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+	<channel>
+		<title><?php echo $feedtitle; ?></title>
+		<link><?php echo $feedlink; ?></link>
+		<description><?php echo $feeddescription; ?></description>
+		<atom:link href="<?php echo $feedlink; ?>/rss.php" rel="self" type="application/rss+xml" />
+		<?php foreach($items as $item): ?>
+		<item>
+			<title><?php echo $item['title']; ?></title>
+			<description>
+				<p><?php echo $item['teaser']; ?></p>
+				<p><?php echo $item['text']; ?></p>
+			</description>
+			<link><?php echo $item['link']; ?></link>
+			<guid isPermaLink="true"><?php echo $item['link']; ?></guid>
+			<pubDate><?php echo $item['date']; ?></pubDate>
+			<?php $tags=$item['tags']; ?>
+			<?php foreach($tags as $tag): ?>
+			<category><?php echo $tag; ?></category>
+			<?php endforeach; ?>
+			<?php if ($item['newsPicture']!="empty"||$item['teaserPicture']!="empty"): ?>
+			<media:content url="<?php if ($item['newsPicture']!="empty"): ?><?php echo $item['newsPicture']; ?><?php endif; ?><?php if ($item['newsPicture']=="empty"): ?><?php echo $item['teaserPicture']; ?><?php endif; ?>">
+				<media:thumbnail url="<?php if ($item['teaserPicture']!="empty"): ?><?php echo $item['teaserPicture']; ?><?php endif; ?><?php if ($item['teaserPicture']=="empty"): ?><?php echo $item['newsPicture']; ?><?php endif; ?>" />
+			</media:content>
+			<?php endif; ?>
+		</item>
+		<?php endforeach; ?>
+	</channel>
+</rss>
