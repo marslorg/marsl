@@ -37,6 +37,7 @@ class Main {
 		$domain = $config->getDomain();
 		$navigation = new Navigation($this->db, $this->auth, $this->role);
 		$urlloader = new URLLoader($this->db, $this->auth, $this->role);
+		$showContentForWeb = !$this->auth->isAppAllowed();
 		
 		require_once("template/index.tpl.php");
 		

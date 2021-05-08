@@ -35,6 +35,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	</head>
 	<body>
 		<input type="hidden" id="serverName" name="serverName" value="<?php echo $serverName; ?>" />
+		<?php if ($showContentForWeb): ?>
 		<div class="head">
 			<div class="mainhead">
 				<a href="https://www.music2web.de">
@@ -54,8 +55,9 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			</div>
 			<hr class="naviseparator" />
 		</div>
+		<?php endif; ?>
 		<div class="body">
-			<div class="content">
+			<div class="content" <?php if (!$showContentForWeb): ?>style="margin-top: 0px;"<?php endif; ?>>
 				<?php $urlloader->display(); ?>
 			</div>
 			<div class="right_box">
@@ -126,6 +128,8 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<?php endif; ?>
 				</div>
 			</div>
+
+			<?php if ($showContentForWeb): ?>
 			<div class="footer">
 				<a href="https://www.music2web.de/index.php?id=469">Jobs</a> | <a href="https://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="https://www.music2web.de/index.php?id=738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/index.php?id=186">Impressum</a>
 			</div>
@@ -138,6 +142,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<span id="reject"><a href="javascript:void(0)" title="Nein">Nein</a></span>
 				</span>
 			</div>
+			<?php endif; ?>
 		</div>
 		<!--  immediately before </body> -->
 		<script src="includes/shariff/shariff.complete.js"></script>
