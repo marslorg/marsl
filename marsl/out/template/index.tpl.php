@@ -61,8 +61,10 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<?php $urlloader->display(); ?>
 			</div>
 			<div class="right_box">
-				<iframe src="includes/socialcounters/facebook.php" scrolling="no" style="border:none;overflow:hidden;padding: 0px 0px 0px 0px;" width="75px" height="75px" name="Facebook Counter" title="Facebook Counter"></iframe><br />
-				<iframe src="includes/socialcounters/twitter.php" scrolling="no" style="border:none;overflow:hidden;padding: 0px 0px 0px 0px;" width="75px" height="75px" name="Facebook Counter" title="Facebook Counter"></iframe><br />
+				<a href="https://www.facebook.com/music2web" target="_blank"><img src="includes/graphics/socialicons/facebook.png" alt="Folge uns auf Facebook" /></a>
+				<a href="https://www.twitter.com/music2web" target="_blank"><img src="includes/graphics/socialicons/twitter.png" alt="Folge uns auf Twitter" /></a>
+				<!--<iframe src="includes/socialcounters/facebook.php" scrolling="no" style="border:none;overflow:hidden;padding: 0px 0px 0px 0px;" width="75px" height="75px" name="Facebook Counter" title="Facebook Counter"></iframe><br />-->
+				<!--<iframe src="includes/socialcounters/twitter.php" scrolling="no" style="border:none;overflow:hidden;padding: 0px 0px 0px 0px;" width="75px" height="75px" name="Facebook Counter" title="Facebook Counter"></iframe><br />-->
 				<div class="right_ads">
 					<!-- Anzeigen:<br />-->
 					<?php
