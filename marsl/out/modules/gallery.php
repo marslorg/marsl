@@ -406,16 +406,8 @@ class Gallery implements Module {
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
-				$page = 1;
-				if (isset($_GET['page'])) {
-					$page = $_GET['page'];
-				}
 				$location = $this->db->escapeString($location);
-				$result = $this->db->query("SELECT COUNT(`album`) AS rowcount FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
-				$pages = $this->db->getRowCount($result)/10;
-				$start = $page*10-10;
-				$end = 10;
-				$start = $this->db->escapeString($start);
+				list($start, $end, $page, $pages, $startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage) = $this->getPagination($location);
 				$galleries = array();
 				$result = $this->db->query("SELECT `album`, `folder`, `photograph`, `date`, `description`, (SELECT `filename` FROM `picture` AS p WHERE `a`.`album` = `p`.`album` AND `deleted` = '0' AND `visible` = '1' ORDER BY RAND() LIMIT 1) AS `filename` FROM `album` AS a WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `album` DESC LIMIT $start,$end");
 				while ($row = $this->db->fetchArray($result)) {
@@ -469,6 +461,32 @@ class Gallery implements Module {
 			}
 		}
 	}
+
+	private function getPagination($location) {
+        $result = $this->db->query("SELECT COUNT(`album`) AS rowcount FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
+        $pages = $this->db->getRowCount($result)/10;
+        $page = 1;
+        if (isset($_GET['page'])) {
+        	$page = $_GET['page'];
+        }
+        $startPage = 1;
+        if ($page - 5 > 1) {
+        	$startPage = $page - 5;
+        }
+        $endPage = $pages;
+        if ($page + 5 <= $endPage) {
+        	$endPage = $page + 5;
+        }
+        $showFirstPage = $page > 1;
+        $showPreviousPage = $page > 2;
+        $showNextPage = $page < $pages - 1;
+        $showLastPage = $page < $pages;
+        $start = $page*10-10;
+        $end = 10;
+        $start = $this->db->escapeString($start);
+
+        return array($start, $end, $page, $pages, $startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage);
+    }
 	
 	/*
 	 * Interface method stub.
