@@ -532,20 +532,12 @@ class News implements Module {
 				else {
 					$location = $basic->getHomeLocation();
 				}
-				$page = 1;
-				if (isset($_GET['page'])) {
-					$page = $_GET['page'];
-				}
 				$location = $this->db->escapeString($location);
 				$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
-				$result = $this->db->query("SELECT COUNT(`visible`) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
-				$pages = $this->db->getRowCount($result)/10;
-				$start = $page*10-10;
-				$end = 10;
-				$start = $this->db->escapeString($start);
+			    list($start, $end, $page, $pages, $startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage) = $this->getPagination($location);
 				$news = array();
 				$result = $this->db->query("SELECT
 				`date`, `postdate`, `author`, `teaser`, `text`, `city`, `headline`, `title`, `news`, `url`, `photograph`
@@ -642,6 +634,32 @@ class News implements Module {
 			}
 		}
 	}
+
+    private function getPagination($location) {
+        $result = $this->db->query("SELECT COUNT(`visible`) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
+        $pages = $this->db->getRowCount($result)/10;
+        $page = 1;
+        if (isset($_GET['page'])) {
+        	$page = $_GET['page'];
+        }
+        $startPage = 1;
+        if ($page - 5 > 1) {
+        	$startPage = $page - 5;
+        }
+        $endPage = $pages;
+        if ($page + 5 <= $endPage) {
+        	$endPage = $page + 5;
+        }
+        $showFirstPage = $page > 1;
+        $showPreviousPage = $page > 2;
+        $showNextPage = $page < $pages - 1;
+        $showLastPage = $page < $pages;
+        $start = $page*10-10;
+        $end = 10;
+        $start = $this->db->escapeString($start);
+
+        return array($start, $end, $page, $pages, $startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage);
+    }
 	
 	/*
 	 * Executes some smaller functions on a news article.
@@ -850,6 +868,8 @@ class News implements Module {
 				
 				$news = array();
 				$topic = "";
+
+				$pages = 0;
 				
 				if ($type=="all") {
 					$topic = "Alle Nachrichten";
@@ -868,10 +888,30 @@ class News implements Module {
 						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));
 					}
 				}
+
+				list($startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage) = $this->getPaginationForSearch($pages, $page);
+
 				require_once("template/news.search.tpl.php");
 			}
 		}
 	}
+
+	private function getPaginationForSearch($pages, $page) {
+        $startPage = 1;
+        if ($page - 5 > 1) {
+        	$startPage = $page - 5;
+        }
+        $endPage = $pages;
+        if ($page + 5 <= $endPage) {
+        	$endPage = $page + 5;
+        }
+        $showFirstPage = $page > 1;
+        $showPreviousPage = $page > 2;
+        $showNextPage = $page < $pages - 1;
+        $showLastPage = $page < $pages;
+
+        return array($startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage);
+    }
 	
 	/*
 	 * Interface method stub.
