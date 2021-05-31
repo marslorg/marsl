@@ -2,15 +2,15 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <h4 class="center">
-	<?php if ($showFirstPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=1">«</a><?php endif; ?>
-	<?php if ($showPreviousPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page - 1; ?>">‹</a><?php endif; ?>
+	<?php if ($showFirstPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=1">&#171;</a><?php endif; ?>
+	<?php if ($showPreviousPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page - 1; ?>">&lt;</a><?php endif; ?>
 	<?php for ($i = $startPage - 1; $i<$endPage; $i++): $j = $i+1; ?>
 	<?php if ($j!=$page): ?>
 	<a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $j; ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
 	<?php endif; ?>
 	<?php endfor; ?>
-	<?php if ($showNextPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page + 1; ?>">›</a><?php endif; ?>
-	<?php if ($showLastPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo ceil($pages); ?>">»</a><?php endif; ?>
+	<?php if ($showNextPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page + 1; ?>">&gt;</a><?php endif; ?>
+	<?php if ($showLastPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo ceil($pages); ?>">&#187;</a><?php endif; ?>
 </h4>
 <?php foreach($news as $article): ?>
 <div class="post">
@@ -40,13 +40,13 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 </div>
 <?php endforeach; ?>
 <h4 class="center">
-	<?php if ($showFirstPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=1">«</a><?php endif; ?>
-	<?php if ($showPreviousPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page - 1; ?>">‹</a><?php endif; ?>
+	<?php if ($showFirstPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=1">&#171;</a><?php endif; ?>
+	<?php if ($showPreviousPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page - 1; ?>">&lt;</a><?php endif; ?>
 	<?php for ($i = $startPage - 1; $i<$endPage; $i++): $j = $i+1; ?>
 	<?php if ($j!=$page): ?>
 	<a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $j; ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
 	<?php endif; ?>
 	<?php endfor; ?>
-	<?php if ($showNextPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page + 1; ?>">›</a><?php endif; ?>
-	<?php if ($showLastPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo ceil($pages); ?>">»</a><?php endif; ?>
+	<?php if ($showNextPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page + 1; ?>">&gt;</a><?php endif; ?>
+	<?php if ($showLastPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo ceil($pages); ?>">&#187;</a><?php endif; ?>
 </h4>
