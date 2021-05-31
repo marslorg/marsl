@@ -13,6 +13,7 @@ class Gallery implements Module {
 	private $db;
 	private $auth;
 	private $role;
+	private $PAGINATION_DISTANCE = 3;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
@@ -470,12 +471,12 @@ class Gallery implements Module {
         	$page = $_GET['page'];
         }
         $startPage = 1;
-        if ($page - 5 > 1) {
-        	$startPage = $page - 5;
+        if ($page - $this->PAGINATION_DISTANCE > 1) {
+        	$startPage = $page - $this->PAGINATION_DISTANCE;
         }
         $endPage = $pages;
-        if ($page + 5 <= $endPage) {
-        	$endPage = $page + 5;
+        if ($page + $this->PAGINATION_DISTANCE <= $endPage) {
+        	$endPage = $page + $this->PAGINATION_DISTANCE;
         }
         $showFirstPage = $page > 1;
         $showPreviousPage = $page > 2;
