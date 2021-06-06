@@ -80,8 +80,7 @@ var PhotoSwipeUI_Default =
 				{id:'facebook', label:'Teilen auf Facebook', url:'https://www.facebook.com/sharer/sharer.php?u={{url}}'},
 				{id:'twitter', label:'Teilen auf Twitter', url:'https://twitter.com/intent/tweet?text={{text}}&url={{url}}'},
 				{id:'pinterest', label:'Teilen auf Pinterest', url:'http://www.pinterest.com/pin/create/button/'+
-													'?url={{url}}&media={{image_url}}&description={{text}}'},
-				{id:'download', label:'Download', url:'{{raw_image_url}}', download:true}
+													'?url={{url}}&media={{image_url}}&description={{text}}'}
 			],
 			getImageURLForShare: function( /* shareButtonData */ ) {
 				return pswp.currItem.src || '';
