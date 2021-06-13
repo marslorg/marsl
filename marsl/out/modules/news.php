@@ -9,7 +9,7 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../includes/mailer.php");
 include_once(dirname(__FILE__)."/module.php");
-include_once(dirname(__FILE__)."/../includes/web-push-php-6.0.3/vendor/autoload.php");
+include_once(dirname(__FILE__)."/../includes/web-push-php-6.0.5/vendor/autoload.php");
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
