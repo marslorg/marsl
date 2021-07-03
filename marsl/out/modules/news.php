@@ -700,16 +700,97 @@ class News implements Module {
         			$adminIP = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
 					$this->db->query("UPDATE `news` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `news`='$id'");
                     if ($this->auth->locationReadAllowed($row['location'], $this->role->getGuestRole())) {
-                        $this->webPushArticle($id, $row['location'], $row['headline'], $row['title'], $row['teaser']);
+						$messageTitle = $row['headline'].": ".$row['title'];
+						$teaser = str_replace("<br />", "\n", $row['teaser']);
+						$teaser = strip_tags($teaser);
+						$teaser = html_entity_decode($teaser);
+						$uri = "index.php?id=".$row['location']."&show=".$id."&action=read";
+						$this->expoPushArticle($uri, $messageTitle);
+                        $this->webPushArticle($uri, $messageTitle, $teaser);
                     }
         		}
         	}
         }
 	}
+
+	private function expoPushArticle($uri, $messageTitle) {
+		$result = $this->db->query("SELECT `pushtoken` FROM `pushtoken` WHERE `type` = 'expo'");
+		$multipleMessagesArray = array();
+		$multipleMessagesArrayIdx = 0;
+		$multipleMessagesArray[$multipleMessagesArrayIdx] = array();
+		$currentMessageIdx = 0;
+		while ($row = $this->db->fetchArray($result)) {
+			if ($currentMessageIdx >= 100) {
+				$multipleMessagesArrayIdx++;
+				$multipleMessagesArray[$multipleMessagesArrayIdx] = array();
+				$currentMessageIdx = 0;
+			}
+			array_push($multipleMessagesArray[$multipleMessagesArrayIdx], $this->buildExpoPushArray($row['pushtoken'], $uri, $messageTitle));
+			$currentMessageIdx++;
+		}
+
+		for ($i = 0; $i <= $multipleMessagesArrayIdx; $i++) {
+			list($httpResult, $body) = $this->sendExpoPushArray($multipleMessagesArray[$i]);
+			$this->handleExpoResponse($httpResult, $body);
+		}
+	}
+
+	private function handleExpoResponse($httpResult, $body) {
+		if ($httpResult == 200) {
+			$response = json_decode($body);
+			$dataArray = $response->data;
+			foreach ($dataArray as $data) {
+				if ($data->status == "error") {
+					$stripOutExpoPushTokenFirstPartArray = explode("ExponentPushToken[", $data->message);
+					if (sizeof($stripOutExpoPushTokenFirstPartArray) > 1) {
+						$messageWithoutExpoPushTokenFirstPart = $stripOutExpoPushTokenFirstPartArray[1];
+						$tokenArray = explode("]", $messageWithoutExpoPushTokenFirstPart);
+						if (sizeof($tokenArray) > 0) {
+							$token = $tokenArray[0];
+							$expoToken = "ExponentPushToken[".$token."]";
+							$expoToken = $this->db->escapeString($expoToken);
+                        	$this->db->query("DELETE FROM `pushtoken` WHERE `pushtoken`='$expoToken'");
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private function sendExpoPushArray($expoPushArray) {
+		$expoPushJSON = json_encode($expoPushArray);
+		$ch = curl_init("https://exp.host/--/api/v2/push/send");
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $expoPushJSON);
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Content-Length: ' . strlen($expoPushJSON)));
+		$response = curl_exec($ch);
+		$httpResult = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+		$body = substr($response, $header_size);
+        curl_close($ch);
+		return array($httpResult, $body);
+	}
+
+	private function buildExpoPushArray($pushToken, $uri, $messageTitle) {
+		$expoArray = array();
+		$expoArray['to'] = $pushToken;
+		$expoArray['title'] = "Neuer Artikel";
+		$expoArray['body'] = $messageTitle;
+		$expoArray['sound'] = "default";
+
+		$payloadArray = array();
+		$payloadArray['uri'] = $uri;
+		$payloadJSON = json_encode($payloadArray);
+
+		$expoArray['data'] = $payloadJSON;
+		return $expoArray;
+	}
 	
-	private function webPushArticle($id, $location, $headline, $title, $teaser) {
+	private function webPushArticle($uri, $messageTitle, $teaser) {
         if (extension_loaded('gmp')) {
-            $payloadJSON = $this->buildPayloadJSON($id, $location, $headline, $title, $teaser);
+            $payloadJSON = $this->buildPayloadJSON($uri, $messageTitle, $teaser);
             $webPush = $this->buildWebPushObject($payloadJSON);
 
             foreach ($webPush->flush() as $report) {
@@ -725,19 +806,15 @@ class News implements Module {
         }
 	}
 
-	private function buildPayloadJSON($id, $location, $headline, $title, $teaser) {
+	private function buildPayloadJSON($uri, $messageTitle, $teaser) {
 		$config = new Configuration();
 
-		$messageTitle = $headline.": ".$title;
-		$teaser = str_replace("<br />", "\n", $teaser);
-		$teaser = strip_tags($teaser);
-		$message = html_entity_decode($teaser);
-		$url = $config->getDomain().$config->getBasePath()."/index.php?id=".$location."&show=".$id."&action=read";
+		$url = $config->getDomain().$config->getBasePath()."/".$uri;
 		$icon = $config->getDomain().$config->getBasePath()."/includes/graphics/icon_512x512.png";
 
 		$payloadArray = array();
 		$payloadArray['title'] = $messageTitle;
-		$payloadArray['body'] = $message;
+		$payloadArray['body'] = $teaser;
 		$payloadArray['icon'] = $icon;
 		$payloadArray['data'] = $url;
 		$payloadArray['requireInteraction'] = true;
