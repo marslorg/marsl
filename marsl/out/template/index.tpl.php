@@ -8,8 +8,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-itunes-app" content="app-id=1570808940" />
+		<meta name="google-play-app" content="app-id=de.music2web.www" />
 		<link rel="icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
 		<link rel="apple-touch-icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
+		<link rel="android-touch-icon" href="includes/graphics/icon_192x192.png" />
 		<?php if ($image!=null): ?>
 		<meta property="og:image" content="<?php echo $domain; ?>/<?php echo $image; ?>" />
 		<meta property="og:title" content="<?php echo $title; ?>" />
@@ -31,7 +34,8 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/photoswipe.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/default-skin/default-skin.css" type="text/css" />
-		<link rel="manifest" href="./manifest.json" />
+		<link rel="stylesheet" href="node_modules/smart-app-banner/dist/smart-app-banner.css?v=2" type="text/css" media="screen">
+		<link rel="manifest" href="./manifest.json?v=2" />
 	</head>
 	<body>
 		<input type="hidden" id="serverName" name="serverName" value="<?php echo $serverName; ?>" />
@@ -148,6 +152,10 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		</div>
 		<!--  immediately before </body> -->
 		<script src="includes/shariff/shariff.complete.js"></script>
+		<?php if ($showContentForWeb): ?>
+		<script src="node_modules/smart-app-banner/dist/smart-app-banner.js"></script>
+		<script src="smartBanner.js?v=2"></script>
+		<?php endif; ?>
 		<script src="app.js"></script>
 	</body>
 </html>

@@ -6,6 +6,13 @@
     "background_color": "#580000",
     "description": "Das Musikportal für alternative Popkultur.",
     "theme_color": "#E00000",
+    "prefer_related_applications": true,
+    "related_applications": [
+      {
+        "platform": "play",
+        "id": "de.music2web.www"
+      }
+    ],
     "icons": [
       {
         "src": "./includes/graphics/icon_48x48.png",
