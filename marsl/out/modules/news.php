@@ -604,8 +604,8 @@ class News implements Module {
 					}
 					$subtitle2 = htmlentities($row['subtitle'], null, "UTF-8");
 					$photograph2 = "";
-					if (!empty($row['photograph'])) {
-						$photograph2 = " Foto: ".htmlentities($row['photograph'], null, "UTF-8");
+					if (!empty($row['photograph2'])) {
+						$photograph2 = " Foto: ".htmlentities($row['photograph2'], null, "UTF-8");
 					}
 					$teaser = $this->nofollowOutboundLinks($row['teaser']);
 					$text = $this->nofollowOutboundLinks($row['text']);
