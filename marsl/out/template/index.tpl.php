@@ -138,6 +138,10 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<?php if ($showContentForWeb): ?>
 			<div class="footer">
 				<a href="https://www.music2web.de/index.php?id=469">Jobs</a> | <a href="https://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="https://www.music2web.de/index.php?id=738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/index.php?id=186">Impressum</a>
+				<div class="center">
+					<a href="https://apps.apple.com/de/app/music2web-de/id1570808940" target="_blank"><img src="includes/graphics/app/apple.svg" height="40px" alt="Laden im App Store" /></a>
+					<a href="https://play.google.com/store/apps/details?id=de.music2web.www&gl=DE" target="_blank"><img src="includes/graphics/app/google.png" height="40px" alt="Jetzt bei Google" /></a>
+				</div>
 			</div>
 			<div id="footer-permission">
 				<span id="description">
