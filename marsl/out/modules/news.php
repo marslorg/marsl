@@ -775,7 +775,7 @@ class News implements Module {
 	private function buildExpoPushArray($pushToken, $uri, $messageTitle) {
 		$expoArray = array();
 		$expoArray['to'] = $pushToken;
-		$expoArray['title'] = "Neuer Artikel auf " + $this->config->getTitle();
+		$expoArray['title'] = "Neuer Artikel auf " . $this->config->getTitle();
 		$expoArray['body'] = $messageTitle;
 		$expoArray['sound'] = "default";
 
