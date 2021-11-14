@@ -20,11 +20,13 @@ class News implements Module {
 	private $auth;
 	private $role;
 	private $PAGINATION_DISTANCE = 3;
+	private $config;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+		$this->config = new Configuration();
 	}
 	
 	/*
@@ -37,10 +39,9 @@ class News implements Module {
 		$modules = $basic->getModules();
 		$moduleTags = array();
 
-		$config = new Configuration();
-		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+		$dateTime = new DateTime("now", new DateTimeZone($this->config->getTimezone()));
 
-		$domain = $config->getDomain();
+		$domain = $this->config->getDomain();
 
 		foreach ($modules as $module) {
 			include_once(dirname(__FILE__)."/".$module['file'].".php");
@@ -521,8 +522,7 @@ class News implements Module {
 		$basic = new Basic($this->db, $this->auth, $this->role);
 		$user = new User($this->db, $this->role);
 
-		$config = new Configuration();
-		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+		$dateTime = new DateTime("now", new DateTimeZone($this->config->getTimezone()));
 		
 		if ($this->auth->moduleReadAllowed("news", $this->role->getRole())) {
 			if (!isset($_GET['action'])) {
@@ -612,8 +612,7 @@ class News implements Module {
 					$city = htmlentities($row['city'], null, "UTF-8");
 					$headline = htmlentities($row['headline'], null, "UTF-8");
 					$title = htmlentities($row['title'], null, "UTF-8");
-					$config = new Configuration();
-					$url = $config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
+					$url = $this->config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
 					
 					$modules = $basic->getModules();
 					$moduleTags = array();
@@ -776,7 +775,7 @@ class News implements Module {
 	private function buildExpoPushArray($pushToken, $uri, $messageTitle) {
 		$expoArray = array();
 		$expoArray['to'] = $pushToken;
-		$expoArray['title'] = "Neuer Artikel";
+		$expoArray['title'] = "Neuer Artikel auf " + $this->config->getTitle();
 		$expoArray['body'] = $messageTitle;
 		$expoArray['sound'] = "default";
 
@@ -807,10 +806,8 @@ class News implements Module {
 	}
 
 	private function buildPayloadJSON($uri, $messageTitle, $teaser) {
-		$config = new Configuration();
-
-		$url = $config->getDomain().$config->getBasePath()."/".$uri;
-		$icon = $config->getDomain().$config->getBasePath()."/includes/graphics/icon_512x512.png";
+		$url = $this->config->getDomain().$this->config->getBasePath()."/".$uri;
+		$icon = $this->config->getDomain().$this->config->getBasePath()."/includes/graphics/icon_512x512.png";
 
 		$payloadArray = array();
 		$payloadArray['title'] = $messageTitle;
@@ -824,12 +821,11 @@ class News implements Module {
 	}
 
 	private function buildWebPushObject($payloadJSON) {
-		$config = new Configuration();
 		$auth = [
 			'VAPID' => [
-				'subject' => $config->getDomain().$config->getBasePath(),
-				'publicKey' => $config->getWebPushPublicKey(),
-				'privateKey' => $config->getWebPushPrivateKey()
+				'subject' => $this->config->getDomain().$this->config->getBasePath(),
+				'publicKey' => $this->config->getWebPushPublicKey(),
+				'privateKey' => $this->config->getWebPushPrivateKey()
 			]
 		];
 		$webPush = new WebPush($auth);
@@ -1062,8 +1058,7 @@ class News implements Module {
 		$tagName = "";
 		$result = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$tagID'");
 
-		$config = new Configuration();
-		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+		$dateTime = new DateTime("now", new DateTimeZone($this->config->getTimezone()));
 
 		while ($row = $this->db->fetchArray($result)) {
 			$tagName = htmlentities($row['tag'], null, "UTF-8");
@@ -1174,14 +1169,13 @@ class News implements Module {
 	private function nofollowOutboundLinks($content) {
 		return preg_replace_callback('~<(a\s[^>]+)>~isU',
 				function ($match) {
-					$config = new Configuration();
-					
+			
 					list ($original, $tag) = $match;
 					
 					if (strpos($tag, "nofollow")) {
 						return $original;
 					}
-					elseif (strpos($tag, $config->getDomain())) {
+					elseif (strpos($tag, $this->config->getDomain())) {
 						return $original;
 					}
 					else {
