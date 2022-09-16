@@ -12,11 +12,13 @@ class CBE implements Module {
 	private $db;
 	private $auth;
 	private $role;
+	private $basic;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+		$this->basic = new Basic($db, $auth, $role);
 	}
 	
 	public function display() {
@@ -173,18 +175,18 @@ class CBE implements Module {
 			$tagName = "";
 			$result = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$tagID'");
 			while ($row = $this->db->fetchArray($result)) {
-				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+				$tagName = $this->basic->convertToHTMLEntities($row['tag']);
 			}
 			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_location' ORDER BY `date` DESC");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($this->auth->locationReadAllowed($row['location'], $this->role->getRole())) {
 					$news = $row['news'];
-					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$headline = $this->basic->convertToHTMLEntities($row['headline']);
+					$title = $this->basic->convertToHTMLEntities($row['title']);
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
-					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+					$locationName = $this->basic->convertToHTMLEntities($row['name']);
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
 				}
 			}
@@ -196,18 +198,18 @@ class CBE implements Module {
 			$tagName = "";
 			$result = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$tagID'");
 			while ($row = $this->db->fetchArray($result)) {
-				$tagName = htmlentities($row['tag'], null, "ISO-8859-1");
+				$tagName = $this->basic->convertToHTMLEntities($row['tag']);
 			}
 			$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='cbe_band' ORDER BY `date` DESC");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($this->auth->locationReadAllowed($row['location'], $this->role->getRole())) {
 					$news = $row['news'];
-					$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-					$title = htmlentities($row['title'], null, "ISO-8859-1");
+					$headline = $this->basic->convertToHTMLEntities($row['headline']);
+					$title = $this->basic->convertToHTMLEntities($row['title']);
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
-					$locationName = htmlentities($row['name'], null, "ISO-8859-1");
+					$locationName = $this->basic->convertToHTMLEntities($row['name']);
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
 				}
 			}

@@ -43,8 +43,8 @@ class EditPicture {
 			while ($row = $this->db->fetchArray($result)) {
 				if ($auth->locationAdminAllowed($row['location'], $role->getRole())) {
 					$subtitle = $row['subtitle'];
-					$path = "../albums/".htmlentities($row['folder'], null, "ISO-8859-1").htmlentities($row['filename'], null, "ISO-8859-1");
-					$picture = htmlentities($row['picture'], null, "ISO-8859-1");
+					$path = "../albums/".$basic->convertToHTMLEntities($row['folder']).$basic->convertToHTMLEntities($row['filename']);
+					$picture = $basic->convertToHTMLEntities($row['picture']);
 					$authTime = time();
 					$authToken = $auth->getToken($authTime);
 					require_once("template/gallery.editpicture.tpl.php");

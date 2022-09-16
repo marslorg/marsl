@@ -12,11 +12,13 @@ class Portal implements Module {
 	private $db;
 	private $auth;
 	private $role;
+	private $basic;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+		$this->basic = new Basic($db, $auth, $role);
 	}
 	
 	/*
@@ -24,12 +26,11 @@ class Portal implements Module {
 	 */
 	public function display() {
 		$id;
-		$basic = new Basic($this->db, $this->auth, $this->role);
 		if (isset($_GET['id'])) {
 			$id = $this->db->escapeString($_GET['id']);
 		}
 		else {
-			$id = $this->db->escapeString($basic->getHomeLocation());
+			$id = $this->db->escapeString($this->basic->getHomeLocation());
 		}
 		$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$id' AND `type`='4'");
 		while ($row = $this->db->fetchArray($result)) {
@@ -52,15 +53,15 @@ class Portal implements Module {
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		$result = $this->db->query("SELECT `location`, `date`, `photograph`, `url`, `news`, `headline`, `teaser`, `title`  FROM `news` JOIN `news_picture` ON `picture2`=`picture` WHERE `deleted`='0' AND `visible`='1' AND `featured`='1' ORDER BY `postdate` DESC LIMIT 4");
 		while ($row = $this->db->fetchArray($result)) {
-			$location = htmlentities($row['location'], null, "ISO-8859-1");
+			$location = $this->basic->convertToHTMLEntities($row['location']);
 			$photograph = "";
 			if ($this->auth->locationReadAllowed($location, $this->role->getRole())) {
 				$dateTime->setTimestamp($row['date']);
 				$date = $dateTime->format("d\.m\.Y");
 				if (!empty($row['photograph'])) {
-					$photograph = " Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1");
+					$photograph = " Foto: ".$this->basic->convertToHTMLEntities($row['photograph']);
 				}
-				array_push($news, array('location'=>$location, 'picture'=>htmlentities($row['url'], null, "ISO-8859-1"), 'photograph'=>$photograph, 'date'=>$date, 'news'=>$row['news'], 'headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'title'=>htmlentities($row['title'], null, "ISO-8859-1"), 'teaser'=>$row['teaser']));
+				array_push($news, array('location'=>$location, 'picture'=>$this->basic->convertToHTMLEntities($row['url']), 'photograph'=>$photograph, 'date'=>$date, 'news'=>$row['news'], 'headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'title'=>$this->basic->convertToHTMLEntities($row['title']), 'teaser'=>$row['teaser']));
 			}
 		}
 		require_once("template/portal.featured.tpl.php");
@@ -74,7 +75,7 @@ class Portal implements Module {
 		$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND `type` IN ('1', '2') ORDER BY `pos`");
 		while ($row = $this->db->fetchArray($result)) {
 			if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
-				array_push($pages, array('location'=>$row['id'], 'name'=>htmlentities($row['name'], null, "ISO-8859-1")));
+				array_push($pages, array('location'=>$row['id'], 'name'=>$this->basic->convertToHTMLEntities($row['name'])));
 			}
 		}
 		require_once("template/portal.head.tpl.php");
@@ -85,8 +86,8 @@ class Portal implements Module {
 			$result = $this->db->query("SELECT `picture1`, `url`, `photograph`, `teaser`, `news`, `headline`, `title` FROM `news` LEFT JOIN `news_picture` ON `picture` = `picture1` WHERE `location`='$location' AND `visible`='1' AND `deleted`='0' AND `featured`='0' ORDER BY `postdate` DESC LIMIT 3");
 			while ($row = $this->db->fetchArray($result)) {
 				$picID = $this->db->escapeString($row['picture1']);
-				$picture = htmlentities($row['url'], null, "ISO-8859-1");
-				$photograph = "<br /><b>Foto: ".htmlentities($row['photograph'], null, "ISO-8859-1")."</b><br />";
+				$picture = $this->basic->convertToHTMLEntities($row['url']);
+				$photograph = "<br /><b>Foto: ".$this->basic->convertToHTMLEntities($row['photograph'])."</b><br />";
 				$width = 0;
 				$height = 0;
 				if (!empty($picture) && file_exists("news/".$picture)) {
@@ -94,7 +95,7 @@ class Portal implements Module {
 					$width = $picinfo[0]/1.5;
 					$height = $picinfo[1]/1.5;
 				}
-				array_push($news, array('width'=>$width,'height'=>$height,'picture'=>$picture, 'photograph'=>$photograph, 'teaser'=>$row['teaser'],'location'=>$location, 'news'=>$row['news'], 'headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'title'=>htmlentities($row['title'], null, "ISO-8859-1")));
+				array_push($news, array('width'=>$width,'height'=>$height,'picture'=>$picture, 'photograph'=>$photograph, 'teaser'=>$row['teaser'],'location'=>$location, 'news'=>$row['news'], 'headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'title'=>$this->basic->convertToHTMLEntities($row['title'])));
 			}
 			require("template/portal.main.tpl.php");
 			$nb_id++;
@@ -120,7 +121,7 @@ class Portal implements Module {
 							$picID = $this->db->escapeString($row['picture2']);
 							$result2 = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID'");
 							while ($row2 = $this->db->fetchArray($result2)) {
-								$picture = htmlentities($row2['url'], null, "ISO-8859-1");
+								$picture = $this->basic->convertToHTMLEntities($row2['url']);
 							}
 							if ($this->auth->moduleReadAllowed("news", $this->role->getGuestRole())&&($picture!="empty")&&$this->auth->locationReadAllowed($location, $this->role->getGuestRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole())) {
 								$article = $this->db->escapeString($row['news']);
@@ -147,7 +148,7 @@ class Portal implements Module {
 						$picture = $row2['url'];
 					}
 					if ($this->auth->moduleReadAllowed("news", $this->role->getGuestRole())&&($picture!="empty")&&$this->auth->locationReadAllowed($location, $this->role->getGuestRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole())) {
-						array_push($news, array('headline'=>htmlentities($row['headline'], null, "ISO-8859-1"), 'id'=>$row['news'], 'title'=>htmlentities($row['title'], null, "ISO-8859-1"), 'date'=>$date, 'featured'=>$row['featured']));
+						array_push($news, array('headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'id'=>$row['news'], 'title'=>$this->basic->convertToHTMLEntities($row['title']), 'date'=>$date, 'featured'=>$row['featured']));
 					}
 				}
 				$authTime = time();

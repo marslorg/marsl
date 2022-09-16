@@ -23,6 +23,7 @@ class Location {
 	}
 	
 	public function admin() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
 			$newEntry = false;
 			$entrySuccessful = false;
@@ -56,7 +57,7 @@ class Location {
 			$result = $this->db->query("SELECT `id`, `tag` FROM `location` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
 			while ($row = $this->db->fetchArray($result)) {
 				$id = $row['id'];
-				$tag = htmlentities($row['tag'], null, "ISO-8859-1");
+				$tag = $basic->convertToHTMLEntities($row['tag']);
 				array_push($clubs, array('id'=>$id, 'tag'=>$tag));
 			}
 			require_once("template/cbe.clubs.tpl.php");
@@ -64,6 +65,7 @@ class Location {
 	}
 	
 	public function edit($id) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
 		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
@@ -96,7 +98,7 @@ class Location {
 									$duplicateID = $row['id'];
 									$result2 = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
 									while ($row2 = $this->db->fetchArray($result2)) {
-										$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
+										$oldTag = $basic->convertToHTMLEntities($row2['tag']);
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
 										while ($this->db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
@@ -149,7 +151,7 @@ class Location {
 								$duplicateID = $row['id'];
 								$result2 = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$id'");
 								while ($row2 = $this->db->fetchArray($result2)) {
-									$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
+									$oldTag = $basic->convertToHTMLEntities($row2['tag']);
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
 									while ($this->db->isExisting("SELECT `tag` FROM `location` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
@@ -171,7 +173,6 @@ class Location {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="send") {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$basic = new Basic($this->db, $this->auth, $this->role);
 							$street = $this->db->escapeString($_POST['street']);
 							$number = $this->db->escapeString($_POST['number']);
 							$zip = $this->db->escapeString($_POST['zip']);
@@ -189,6 +190,7 @@ class Location {
 	}
 	
 	private function buildEditingForm($id) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
 		$id = $this->db->escapeString($id);
@@ -196,19 +198,19 @@ class Location {
 		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_location' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
 		while ($row = $this->db->fetchArray($result)) {
 			$newsID = $row['news'];
-			$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-			$title = htmlentities($row['title'], null, "ISO-8859-1");
+			$headline = $basic->convertToHTMLEntities($row['headline']);
+			$title = $basic->convertToHTMLEntities($row['title']);
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
 		$result = $this->db->query("SELECT `tag`, `street`, `number`, `zip`, `city`, `country`, `capacity`, `info` FROM `location` WHERE `id`='$id'");
 		while ($row = $this->db->fetchArray($result)) {
-			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
-			$street = htmlentities($row['street'], null, "ISO-8859-1");
-			$number = htmlentities($row['number'], null, "ISO-8859-1");
-			$zip = htmlentities($row['zip'], null, "ISO-8859-1");
-			$city = htmlentities($row['city'], null, "ISO-8859-1");
-			$country = htmlentities($row['country'], null, "ISO-8859-1");
-			$capacity = htmlentities($row['capacity'], null, "ISO-8859-1");
+			$tag = $basic->convertToHTMLEntities($row['tag']);
+			$street = $basic->convertToHTMLEntities($row['street']);
+			$number = $basic->convertToHTMLEntities($row['number']);
+			$zip = $basic->convertToHTMLEntities($row['zip']);
+			$city = $basic->convertToHTMLEntities($row['city']);
+			$country = $basic->convertToHTMLEntities($row['country']);
+			$capacity = $basic->convertToHTMLEntities($row['capacity']);
 			$info = $row['info'];
 			require_once("template/cbe.clubs.edit.tpl.php");
 		}

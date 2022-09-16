@@ -24,6 +24,7 @@ class Post {
 	 * Displays the content of a thread.
 	 */
 	public function display() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = $_GET['id'];
 		$user = new User($this->db, $this->role);
 		$config = new Configuration();
@@ -65,18 +66,18 @@ class Post {
 						$dateTime->setTimestamp($row['date']);
 						$date = $dateTime->format("\a\m d\.m\.Y\ \u\m H\:i\:s");
 						$operator = $row['operator'];
-						$operatorNickname = htmlentities($user->getNickbyID($operator), null, "ISO-8859-1");
+						$operatorNickname = $basic->convertToHTMLEntities($user->getNickbyID($operator, $this->auth));
 						$dateTime->setTimestamp($row['lastedit']);
 						$lastedit = $dateTime->format("\a\m d\.m\.Y\ \u\m H\:i\:s");
 						$content = $row['content'];
-						$ip = htmlentities($row['ip'], null, "ISO-8859-1");
+						$ip = $basic->convertToHTMLEntities($row['ip']);
 						$author = $row['author'];
-						$authorNickname = htmlentities($user->getNickbyID($author), null, "ISO-8859-1");
+						$authorNickname = $basic->convertToHTMLEntities($user->getNickbyID($author, $this->auth));
 						$editable = ($board->isAdmin($boardID, $user->getID())||$board->isOperator($boardID, $user->getID())||((($user->getID()==$author)&&($board->writeAllowed($boardID, $this->role->getRole())))));
 						$files = array();
 						$result2 = $this->db->query("SELECT `file`, `realname` FROM `post_attachment` NATURAL JOIN `attachment` WHERE `post`='$post'");
 						while ($row2 = $this->db->fetchArray($result2)) {
-							$filename = htmlentities($row2['realname'], null, "ISO-8859-1");
+							$filename = $basic->convertToHTMLEntities($row2['realname']);
 							$file = $row2['file'];
 							array_push($files, array('filename'=>$filename, 'file'=>$file));
 						}
@@ -212,7 +213,7 @@ class Post {
 						if ($threadID==$this->getThread($postID)) {
 							$result = $this->db->query("SELECT `content`, `author` FROM `post` WHERE `post`='$postID' AND `deleted`='0'");
 							while ($row = $this->db->fetchArray($result)) {
-								$authorNickname = $user->getNickbyID($row['author']);
+								$authorNickname = $user->getNickbyID($row['author'], $this->auth);
 								$content = $row['content'];
 								$quote = "<blockquote>".$authorNickname." <a href=\"index.php?id=".$location."&amp;action=posts&amp;thread=".$threadID."&amp;page=".$page."#".$postID."\">schrieb</a>:<br /><br />".$content."</blockquote><br />";
 							}

@@ -44,7 +44,7 @@ class Newsletter implements Module {
 				$roles = array();
 				
 				foreach($allRoles as $curRole) {
-					array_push($roles, array('role'=>htmlentities($curRole['role'], null, "ISO-8859-1"),'name'=>htmlentities($curRole['name'], null, "ISO-8859-1")));
+					array_push($roles, array('role'=>$basic->convertToHTMLEntities($curRole['role']),'name'=>$basic->convertToHTMLEntities($curRole['name'])));
 				}
 				
 				require_once("template/newsletter.tpl.php");

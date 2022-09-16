@@ -41,17 +41,17 @@ class UserData implements Module {
 					$possibleRoles = $this->role->getPossibleRoles($ownRole);
 					$result = $this->db->query("SELECT `user`, `user`.`role` AS `roleid`, `nickname`, `prename`, `acronym`, `regdate`, `email`, `postcount`, `user`.`name` AS `username`, `role`.`name` AS `rolename` FROM `user` JOIN `role` USING(`role`) LEFT OUTER JOIN `email` USING(`user`) WHERE `nickname` LIKE '$search%' ORDER BY `nickname`");
 					while ($row = $this->db->fetchArray($result)) {
-						$userid = htmlentities($row['user'], null, "ISO-8859-1");
-						$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
-						$prename = htmlentities($row['prename'], null, "ISO-8859-1");
-						$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
+						$userid = $basic->convertToHTMLEntities($row['user']);
+						$nickname = $basic->convertToHTMLEntities($row['nickname']);
+						$prename = $basic->convertToHTMLEntities($row['prename']);
+						$acronym = $basic->convertToHTMLEntities($row['acronym']);
 						$dateTime->setTimestamp($row['regdate']);
 						$regdate = $dateTime->format("d\. M Y\; H\:i\:s");
-						$email = htmlentities($row['email'], null, "ISO-8859-1");
-						$postcount = htmlentities($row['postcount'], null, "ISO-8859-1");
-						$name = htmlentities($row['username'], null, "ISO-8859-1");
-						$rolename = htmlentities($row['rolename'], null, "ISO-8859-1");
-						$roleid = htmlentities($row['roleid'], null, "ISO-8859-1");
+						$email = $basic->convertToHTMLEntities($row['email']);
+						$postcount = $basic->convertToHTMLEntities($row['postcount']);
+						$name = $basic->convertToHTMLEntities($row['username']);
+						$rolename = $basic->convertToHTMLEntities($row['rolename']);
+						$roleid = $basic->convertToHTMLEntities($row['roleid']);
 						$isMaster = $this->role->isMaster($ownRole, $roleid, $possibleRoles);
 						if ($user->getID()==$userid) {
 							$isMaster = true;
@@ -102,22 +102,22 @@ class UserData implements Module {
 							
 						$result = $this->db->query("SELECT `user`, `regdate`, `role`, `nickname`, `prename`, `acronym`, `name` FROM `user` WHERE `user`='$userID'");
 						while ($row = $this->db->fetchArray($result)) {
-							$userRole = htmlentities($row['role'], null, "ISO-8859-1");
+							$userRole = $basic->convertToHTMLEntities($row['role']);
 							$isMaster = $this->role->isMaster($ownRole, $userRole, $possibleRoles);
 							if ($isMaster||($user->getID()==$userID)) {
-								$userID = htmlentities($row['user'], null, "ISO-8859-1");
-								$nickname = htmlentities($row['nickname'], null, "ISO-8859-1");
-								$prename = htmlentities($row['prename'], null, "ISO-8859-1");
-								$acronym = htmlentities($row['acronym'], null, "ISO-8859-1");
+								$userID = $basic->convertToHTMLEntities($row['user']);
+								$nickname = $basic->convertToHTMLEntities($row['nickname']);
+								$prename = $basic->convertToHTMLEntities($row['prename']);
+								$acronym = $basic->convertToHTMLEntities($row['acronym']);
 								$emails = array();
 								$result2 = $this->db->query("SELECT `email`, `confirmed`, `primary` FROM `email` WHERE `user`='$userID' ORDER BY `confirmed` DESC, `primary` DESC");
 								while ($row2 = $this->db->fetchArray($result2)) {
-									$email = htmlentities($row2['email'], null, "ISO-8859-1");
+									$email = $basic->convertToHTMLEntities($row2['email']);
 									$confirmed = $row2['confirmed'];
 									$primary = $row2['primary'];
 									array_push($emails, array('email'=>$email, 'confirmed'=>$confirmed, 'primary'=>$primary));
 								}
-								$name = htmlentities($row['name'], null, "ISO-8859-1");
+								$name = $basic->convertToHTMLEntities($row['name']);
 								$regdate = $row['regdate'];
 								$updateNickname = true;
 								$updateAcronym = true;
@@ -129,20 +129,20 @@ class UserData implements Module {
 										if (isset($_POST['change'])) {
 											$updateNickname = $user->updateNickname($userID, $_POST['nickname']);
 											if ($updateNickname) {
-												$nickname = htmlentities($_POST['nickname'], null, "ISO-8859-1");
+												$nickname = $basic->convertToHTMLEntities($_POST['nickname']);
 											}
 											$user->updatePrename($userID, $_POST['prename']);
-											$prename = htmlentities($_POST['prename'], null, "ISO-8859-1");
+											$prename = $basic->convertToHTMLEntities($_POST['prename']);
 											$user->updateName($userID, $_POST['name']);
-											$name = htmlentities($_POST['name'], null, "ISO-8859-1");
+											$name = $basic->convertToHTMLEntities($_POST['name']);
 
 											if ($isMaster) {
 												$updateAcronym = $user->updateAcronym($userID, $_POST['acronym']);
 												if ($updateAcronym) {
-													$acronym = htmlentities($_POST['acronym'], null, "ISO-8859-1");
+													$acronym = $basic->convertToHTMLEntities($_POST['acronym']);
 												}
 												$user->updateRole($userID, $_POST['role']);
-												$userRole = htmlentities($_POST['role'], null, "ISO-8859-1");
+												$userRole = $basic->convertToHTMLEntities($_POST['role']);
 											}
 										}
 										if (isset($_POST['passwordChange'])) {
@@ -308,8 +308,8 @@ class UserData implements Module {
 			while ($row = $this->db->fetchArray($result)) {
 				
 				$userID = $row['user'];
-				$prename = htmlentities($row['prename'], null, "ISO-8859-1");
-				$name = htmlentities($row['name'], null, "ISO-8859-1");
+				$prename = $basic->convertToHTMLEntities($row['prename']);
+				$name = $basic->convertToHTMLEntities($row['name']);
 				$info = $row['info'];
 				$signature = $row['signature'];
 				$dateTime->setTimestamp($row['birthdate']);
@@ -317,12 +317,12 @@ class UserData implements Module {
 				$month = $dateTime->format("m");
 				$year = $dateTime->format("Y");
 				$gender = $row['gender'];
-				$interests = htmlentities($row['interests'], null, "ISO-8859-1");
-				$job = htmlentities($row['job'], null, "ISO-8859-1");
-				$zip = htmlentities($row['zip'], null, "ISO-8859-1");
-				$street = htmlentities($row['street'], null, "ISO-8859-1");
-				$house = htmlentities($row['house'], null, "ISO-8859-1");
-				$city = htmlentities($row['city'], null, "ISO-8859-1");
+				$interests = $basic->convertToHTMLEntities($row['interests']);
+				$job = $basic->convertToHTMLEntities($row['job']);
+				$zip = $basic->convertToHTMLEntities($row['zip']);
+				$street = $basic->convertToHTMLEntities($row['street']);
+				$house = $basic->convertToHTMLEntities($row['house']);
+				$city = $basic->convertToHTMLEntities($row['city']);
 			
 			}
 			
@@ -331,7 +331,7 @@ class UserData implements Module {
 			$result = $this->db->query("SELECT `email`, `confirmed`, `primary` FROM `email` WHERE `user` = '$userID' ORDER BY `confirmed` DESC, `primary` DESC");
 			while ($row = $this->db->fetchArray($result)) {
 				
-				$email = htmlentities($row['email'], null, "ISO-8859-1");
+				$email = $basic->convertToHTMLEntities($row['email']);
 				$confirmed = $row['confirmed'];
 				$primary = $row['primary'];
 				array_push($emails, array('email'=>$email, 'confirmed'=>$confirmed, 'primary'=>$primary));

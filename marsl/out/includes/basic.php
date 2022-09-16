@@ -17,6 +17,15 @@ class Basic {
 		$this->auth = $auth;
 		$this->role = $role;
 	}
+
+	public function convertToHTMLEntities($dirt) {
+if ($dirt != null) {
+    return htmlentities($dirt, 0, 'ISO-8859-1');
+}
+		else {
+			return $dirt;
+		}
+	}
 	
 	/*
 	 * Cleans the HTML output of tinymce to prevent XSS attacks.
@@ -101,15 +110,23 @@ class Basic {
 	 * Get module information for a given unique file name.
 	 */
 	public function getModule($file) {
-		$module = false;
+		$success = false;
+		$module = array();
 		$file = $this->db->escapeString($file);
 		$result = $this->db->query("SELECT `name`, `class`, `file` FROM `module` WHERE `file`='$file'");
 		while ($row = $this->db->fetchArray($result)) {
 			$module['name'] = $row['name'];
 			$module['class']  = $row['class'];
 			$module['file'] = $row['file'];
+			$success = true;
 		}
-		return $module;
+
+		$methodResult = $module;
+
+		if (!$success) {
+			$methodResult = false;
+		}
+		return $methodResult;
 	}
 	
 	/*

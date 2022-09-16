@@ -23,6 +23,7 @@ class Band {
 	}
 	
 	public function admin() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
 			$newEntry = false;
 			$entrySuccessful = false;
@@ -56,7 +57,7 @@ class Band {
 			$result = $this->db->query("SELECT `id`, `tag` FROM `band` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
 			while ($row = $this->db->fetchArray($result)) {
 				$id = $row['id'];
-				$tag = htmlentities($row['tag'], null, "ISO-8859-1");
+				$tag = $basic->convertToHTMLEntities($row['tag']);
 				array_push($bands, array('id'=>$id, 'tag'=>$tag));
 			}
 			require_once("template/cbe.bands.tpl.php");
@@ -64,6 +65,7 @@ class Band {
 	}
 	
 	public function edit($id) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
 		if ($this->auth->moduleAdminAllowed("cbe", $this->role->getRole())) {
@@ -96,7 +98,7 @@ class Band {
 									$duplicateID = $row['id'];
 									$result2 = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
 									while ($row2 = $this->db->fetchArray($result2)) {
-										$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
+										$oldTag = $basic->convertToHTMLEntities($row2['tag']);
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
 										while ($this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
@@ -149,7 +151,7 @@ class Band {
 								$duplicateID = $row['id'];
 								$result2 = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$id'");
 								while ($row2 = $this->db->fetchArray($result2)) {
-									$oldTag = htmlentities($row2['tag'], null, "ISO-8859-1");
+									$oldTag = $basic->convertToHTMLEntities($row2['tag']);
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
 									while ($this->db->isExisting("SELECT `tag` FROM `band` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
@@ -171,7 +173,6 @@ class Band {
 				if (isset($_POST['action'])) {
 					if ($_POST['action']=="send") {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							$basic = new Basic($this->db, $this->auth, $this->role);
 							$founded = $this->db->escapeString($_POST['founded']);
 							$ended = $this->db->escapeString($_POST['ended']);
 							$info = $this->db->escapeString($basic->cleanHTML($_POST['info']));
@@ -185,6 +186,7 @@ class Band {
 	}
 	
 	private function buildEditingForm($id) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$authTime = time();
 		$authToken = $this->auth->getToken($authTime);
 		$id = $this->db->escapeString($id);
@@ -192,15 +194,15 @@ class Band {
 		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='cbe_band' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
 		while ($row = $this->db->fetchArray($result)) {
 			$newsID = $row['news'];
-			$headline = htmlentities($row['headline'], null, "ISO-8859-1");
-			$title = htmlentities($row['title'], null, "ISO-8859-1");
+			$headline = $basic->convertToHTMLEntities($row['headline']);
+			$title = $basic->convertToHTMLEntities($row['title']);
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
 		$result = $this->db->query("SELECT `tag`, `founded`, `ended`, `info` FROM `band` WHERE `id`='$id'");
 		while ($row = $this->db->fetchArray($result)) {
-			$tag = htmlentities($row['tag'], null, "ISO-8859-1");
-			$founded = htmlentities($row['founded'], null, "ISO-8859-1");
-			$ended = htmlentities($row['ended'], null, "ISO-8859-1");
+			$tag = $basic->convertToHTMLEntities($row['tag']);
+			$founded = $basic->convertToHTMLEntities($row['founded']);
+			$ended = $basic->convertToHTMLEntities($row['ended']);
 			$info = $row['info'];
 			require_once("template/cbe.bands.edit.tpl.php");
 		}

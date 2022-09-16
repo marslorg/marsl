@@ -29,7 +29,7 @@ class Recover {
 			$success = true;
 			$recover = true;
 			$basic = new Basic($this->db, $this->auth, $this->role);
-			$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
+			$title = $basic->convertToHTMLEntities($basic->getTitle());
 			require_once("template/recover.tpl.php");
 		}
 		else {
@@ -77,7 +77,7 @@ class Recover {
 	 */
 	private function recoverBox() {
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$title = htmlentities($basic->getTitle(), null, "ISO-8859-1");
+		$title = $basic->convertToHTMLEntities($basic->getTitle());
 		$time = $_GET['time'];
 		$recover = false;
 		$uid = "";

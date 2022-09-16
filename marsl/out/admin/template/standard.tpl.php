@@ -34,7 +34,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<td colspan="2" class="center">
 					<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 					<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-					<button type="submit" name="action" value="change"> Ändern </button>
+					<button type="submit" name="action" value="change"> &Auml;ndern </button>
 				</td>
 			</tr>
 		</table>

@@ -6,7 +6,6 @@ include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/../includes/recaptcha.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 
 class Register implements Module {
@@ -23,7 +22,6 @@ class Register implements Module {
 	
 	public function display() {
 		$user = new User($this->db, $this->role);
-		$recaptcha = new Recaptcha();
 		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = "";
 		if (isset($_GET['id'])) {
@@ -45,36 +43,31 @@ class Register implements Module {
 				if ($this->auth->moduleWriteAllowed("register", $this->role->getRole())&&$this->auth->locationWriteAllowed($location, $this->role->getRole())) {
 					if (isset($_POST['action'])) {
 						if ($_POST['action']=="send") {
-							if ($recaptcha->checkRecaptcha()) {
-								$mail = $this->db->escapeString($_POST['mail']);
-								$mail2 = $this->db->escapeString($_POST['mail2']);
-								if (($mail==$mail2)&&($basic->checkMail($mail))) {
-									$password = $this->db->escapeString($_POST['password']);
-									$password2 = $this->db->escapeString($_POST['password2']);
-									if ($password==$password2) {
-										$nickname = $this->db->escapeString($_POST['nickname']);
-										if ($user->register($nickname, $password, $mail, $this->auth)) {
-											$success = true;
-										}
-										else {
-											$nicknameFailure = true;
-										}
+							$mail = $this->db->escapeString($_POST['mail']);
+							$mail2 = $this->db->escapeString($_POST['mail2']);
+							if (($mail==$mail2)&&($basic->checkMail($mail))) {
+								$password = $this->db->escapeString($_POST['password']);
+								$password2 = $this->db->escapeString($_POST['password2']);
+								if ($password==$password2) {
+									$nickname = $this->db->escapeString($_POST['nickname']);
+									if ($user->register($nickname, $password, $mail, $this->auth, true)) {
+										$success = true;
 									}
 									else {
-										$passwordFailure = true;
+										$nicknameFailure = true;
 									}
 								}
 								else {
-									$mailFailure = true;
+									$passwordFailure = true;
 								}
 							}
 							else {
-								$captcha = true;	
+								$mailFailure = true;
 							}
 							if (!$success) {
-								$nickname = htmlentities($_POST['nickname'], null, "ISO-8859-1");
-								$mail = htmlentities($_POST['mail'], null, "ISO-8859-1");
-								$mail2 = htmlentities($_POST['mail2'], null, "ISO-8859-1");
+								$nickname = $basic->convertToHTMLEntities($_POST['nickname']);
+								$mail = $basic->convertToHTMLEntities($_POST['mail']);
+								$mail2 = $basic->convertToHTMLEntities($_POST['mail2']);
 							}
 							else {
 								$nickname = "";
@@ -84,13 +77,13 @@ class Register implements Module {
 						}
 					}
 				}
-				$recaptcha = $recaptcha->getRecaptcha();
 				require_once("template/register.tpl.php");
 			}
 		}
 	}
 	
 	public function admin() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if ($this->auth->moduleAdminAllowed("register", $this->role->getRole())) {
 			if (isset($_POST['action'])) {
 				if ($_POST['action']=="send"&&$this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -116,7 +109,7 @@ class Register implements Module {
 				$guestRole = $this->role->getGuestRole();
 				$location = $row['id'];
 				if ($this->auth->locationReadAllowed($location, $guestRole)) {
-					$name = htmlentities($row['name'], null, "ISO-8859-1");
+					$name = $basic->convertToHTMLEntities($row['name']);
 					array_push($links, array('id'=>$location, 'name'=>$name));
 				}
 			}

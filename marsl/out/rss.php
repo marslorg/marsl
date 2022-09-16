@@ -19,6 +19,7 @@ class RSS {
 		$db->connect();
 		$role = new Role($db);
 		$auth = new Authentication($db, $role);
+		$basic = new Basic($db, $auth, $role);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
@@ -32,10 +33,10 @@ class RSS {
 					WHERE `rights`.`read` = '1' AND `news`.`deleted` = '0' AND `news`.`visible` = '1' ORDER BY `postdate` DESC LIMIT 0,10");
 			while ($row = $db->fetchArray($result)) {
 				$domain = $config->getDomain();
-				$location = htmlentities($row['location'], null, "ISO-8859-1");
-				$news = htmlentities($row['news'], null, "ISO-8859-1");
+				$location = $basic->convertToHTMLEntities($row['location']);
+				$news = $basic->convertToHTMLEntities($row['news']);
 				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
-				$teaser = htmlentities($row['teaser'], null, "ISO-8859-1");
+				$teaser = $basic->convertToHTMLEntities($row['teaser']);
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$dateTime->setTimestamp($row['postdate']);
 				$date = $dateTime->format("D, d M Y H:i:s O");
@@ -46,14 +47,13 @@ class RSS {
 				$newsPicture = "empty";
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID1'");
 				while ($row2 = $db->fetchArray($result2)) {
-					$teaserPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
+					$teaserPicture = $domain."/news/".$basic->convertToHTMLEntities($row2['url']);
 				}
 				$result2 = $db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picID2'");
 				while ($row2 = $db->fetchArray($result2)) {
-					$newsPicture = $domain."/news/".htmlentities($row2['url'], null, "ISO-8859-1");
+					$newsPicture = $domain."/news/".$basic->convertToHTMLEntities($row2['url']);
 				}
-				
-				$basic = new Basic($db, $auth, $role);
+
 				$modules = $basic->getModules();
 				$moduleTags = array();
 				foreach ($modules as $module) {
