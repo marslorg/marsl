@@ -31,9 +31,9 @@ class Main {
 		$fbcomments = $config->getFBComments();
 		
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$title = htmlentities($basic->getTitle(), null, "UTF-8");
-		$image = htmlentities($basic->getImage(), null, "UTF-8");
-		$serverName = htmlentities($config->getClusterServer(), null, "UTF-8");
+		$title = $basic->convertToHTMLEntities($basic->getTitle());
+		$image = $basic->convertToHTMLEntities($basic->getImage());
+		$serverName = $basic->convertToHTMLEntities($config->getClusterServer());
 		$domain = $config->getDomain();
 		$navigation = new Navigation($this->db, $this->auth, $this->role);
 		$urlloader = new URLLoader($this->db, $this->auth, $this->role);

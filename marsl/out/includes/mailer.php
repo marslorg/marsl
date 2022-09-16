@@ -43,11 +43,11 @@ class Mailer {
 	/*
 	 * Send a mail when a new news article was posted to the news correcture system.
 	 */
-	public function sendNewArticleMail($userID) {
+	public function sendNewArticleMail($userID, $auth) {
 		$user = new User($this->db, $this->role);
 		$config = new Configuration();
-		$mail = $user->getMailbyID($userID);
-		$nickname = $user->getNickbyID($userID);
+		$mail = $user->getMailbyID($userID, $auth);
+		$nickname = $user->getNickbyID($userID, $auth);
 		$link = $config->getDomain()."/admin/index.php?var=module&module=news&action=queue";
 		$msg = "Hallo ".$nickname.",\n";
 		$msg .= "\n";
@@ -63,10 +63,10 @@ class Mailer {
 	/*
 	 * Send out a password reset mail.
 	 */
-	public function sendPasswordMail($page, $nickname) {
+	public function sendPasswordMail($page, $nickname, $auth) {
 		$user = new User($this->db, $this->role);
 		$id = $user->getIDbyName($nickname);
-		$mail = $user->getMailbyID($id);
+		$mail = $user->getMailbyID($id, $auth);
 		if (!empty($id)&&!empty($mail)) {
 			$password = $user->getPassbyID($id);
 			$time = time();
@@ -107,9 +107,9 @@ class Mailer {
 	/*
 	 * Send out a mail with the user name.
 	 */
-	public function sendNicknameMail($mail) {
+	public function sendNicknameMail($mail, $auth) {
 		$user = new User($this->db, $this->role);
-		$nickname = $user->getNickbyMail($mail);
+		$nickname = $user->getNickbyMail($mail, $auth);
 		if (!empty($nickname)) {
 			$config = new Configuration();
 			$msg = "Hallo ".$nickname.",\n";

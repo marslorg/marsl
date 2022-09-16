@@ -84,19 +84,19 @@ class News implements Module {
 						$failed = false;
 
 						if ($failed) {
-							$headline = htmlentities($_POST['headline'], null, "UTF-8");
-							$title = htmlentities($_POST['title'], null, "UTF-8");
+							$headline = $basic->convertToHTMLEntities($_POST['headline']);
+							$title = $basic->convertToHTMLEntities($_POST['title']);
 							$category = $_POST['category'];
-							$day = htmlentities($_POST['day'], null, "UTF-8");
-							$month = htmlentities($_POST['month'], null, "UTF-8");
-							$year = htmlentities($_POST['year'], null, "UTF-8");
+							$day = $basic->convertToHTMLEntities($_POST['day']);
+							$month = ($_POST['month']);
+							$year = $basic->convertToHTMLEntities($_POST['year']);
 							$teaser = $basic->cleanHTML($_POST['teaser']);
 							$text = $basic->cleanHTML($_POST['text']);
 							$city = $basic->cleanHTML($_POST['city']);
 							$corrected = isset($_POST['corrected']);
 							$tmpModuleTags = array();
 							foreach ($moduleTags as $moduleTag) {
-								$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "UTF-8");
+								$moduleTag['tags'] = $basic->convertToHTMLEntities($_POST[$moduleTag['type']]);
 								array_push($tmpModuleTags, $moduleTag);
 							}
 							$moduleTags = $tmpModuleTags;
@@ -178,7 +178,7 @@ class News implements Module {
 									if ($this->auth->moduleAdminAllowed("news", $administratorRole)) {
 										if ($this->auth->locationAdminAllowed($location, $administratorRole)) {
 											$mailer = new Mailer($this->db, $this->role);
-											$mailer->sendNewArticleMail($administrator);
+											$mailer->sendNewArticleMail($administrator, $this->auth);
 										}
 									}
 								}
@@ -206,7 +206,7 @@ class News implements Module {
 				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND `type` IN ('1','2') ORDER BY `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['id'], $this->role->getRole())||$this->auth->locationExtendedAllowed($row['id'], $this->role->getRole())) {
-						array_push($locations,array('location'=>htmlentities($row['id'], null, "UTF-8"),'name'=>htmlentities($row['name'], null, "UTF-8")));
+						array_push($locations,array('location'=>$basic->convertToHTMLEntities($row['id']),'name'=>$basic->convertToHTMLEntities($row['name'])));
 					}
 				}
 				$authTime = time();
@@ -223,27 +223,27 @@ class News implements Module {
 				WHERE `visible`='0' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
-						$id = htmlentities($row['news'], null, "UTF-8");
+						$id = $basic->convertToHTMLEntities($row['news']);
 						$author = $row['author'];
 						$corrected = $row['corrected'];
-						$authorName = htmlentities($user->getAcronymbyID($author), null, "UTF-8");
-						$authorIP = htmlentities($row['author_ip'], null, "UTF-8");
-						$location = htmlentities($navigation->getNamebyID($row['location']), null, "UTF-8");
-						$headline = htmlentities($row['headline'], null, "UTF-8");
-						$title = htmlentities($row['title'], null, "UTF-8");
+						$authorName = $basic->convertToHTMLEntities($user->getAcronymbyID($author, $this->auth));
+						$authorIP = $basic->convertToHTMLEntities($row['author_ip']);
+						$location = $basic->convertToHTMLEntities($navigation->getNamebyID($row['location']));
+						$headline = $basic->convertToHTMLEntities($row['headline']);
+						$title = $basic->convertToHTMLEntities($row['title']);
 						$teaser = $row['teaser'];
 						$text = $row['text'];
 						$picID1 = $this->db->escapeString($row['picture1']);
 						$picID2 = $this->db->escapeString($row['picture2']);
-						$picture1 = htmlentities($row['url'], null, "UTF-8");
+						$picture1 = $basic->convertToHTMLEntities($row['url']);
 						if (empty($picture1)) {
 							$picture1 = "empty";
 						}
 						$photograph1 = "";
 						if (!empty($row['photograph'])) {
-							$photograph1 = "<br />Foto: ".htmlentities($row['photograph'], null, "UTF-8");
+							$photograph1 = "<br />Foto: ".$basic->convertToHTMLEntities($row['photograph']);
 						}
-						$city = htmlentities($row['city'], null, "UTF-8");
+						$city = $basic->convertToHTMLEntities($row['city']);
 						$dateTime->setTimestamp($row['date']);
 						$date = $dateTime->format("d\.m\.Y");
 						$dateTime->setTimestamp($row['postdate']);
@@ -256,14 +256,14 @@ class News implements Module {
 				require_once("template/news.queue.tpl.php");
 			}
 			else if ($_GET['action']=="edit") {
-				$id = $this->db->escapeString(htmlentities($_GET['id'], null, "UTF-8"));
+				$id = $this->db->escapeString($basic->convertToHTMLEntities($_GET['id']));
 				$result = $this->db->query("SELECT `corrected`, `headline`, `title`, `location`, `date`, `teaser`, `text`, `picture1`, `picture2`, `city` FROM `news` WHERE `news`='$id' AND `deleted`='0'");
 				while ($row = $this->db->fetchArray($result)) {
 					if ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole())) {
 						$corrected = $row['corrected'];
-						$headline = htmlentities($row['headline'], null, "UTF-8");
-						$title = htmlentities($row['title'], null, "UTF-8");
-						$category = htmlentities($row['location'], null, "UTF-8");
+						$headline = $basic->convertToHTMLEntities($row['headline']);
+						$title = $basic->convertToHTMLEntities($row['title']);
+						$category = $basic->convertToHTMLEntities($row['location']);
 						$dateTime->setTimestamp($row['date']);
 						$day = $dateTime->format("d");
 						$month = $dateTime->format("m");
@@ -272,7 +272,7 @@ class News implements Module {
 						$text = $row['text'];
 						$picture1 = $row['picture1'];
 						$picture2 = $row['picture2'];
-						$city = htmlentities($row['city'], null, "UTF-8");
+						$city = $basic->convertToHTMLEntities($row['city']);
 						$tmpModuleTags = array();
 						foreach ($moduleTags as $moduleTag) {
 
@@ -282,7 +282,7 @@ class News implements Module {
 							$module = $basic->getModule($file);
 							include_once(dirname(__FILE__)."/".$file.".php");
 							$class = new $module['class']($this->db, $this->auth, $this->role);
-							$moduleTag['tags'] = htmlentities($class->getTagString($scope, $id), null, "UTF-8");
+							$moduleTag['tags'] = $basic->convertToHTMLEntities($class->getTagString($scope, $id));
 
 							array_push($tmpModuleTags, $moduleTag);
 						}
@@ -295,19 +295,19 @@ class News implements Module {
 								$failed = false;
 
 								if ($failed) {
-									$headline = htmlentities($_POST['headline'], null, "UTF-8");
-									$title = htmlentities($_POST['title'], null, "UTF-8");
+									$headline = $basic->convertToHTMLEntities($_POST['headline']);
+									$title = $basic->convertToHTMLEntities($_POST['title']);
 									$category = $_POST['category'];
-									$day = htmlentities($_POST['day'], null, "UTF-8");
-									$month = htmlentities($_POST['month'], null, "UTF-8");
-									$year = htmlentities($_POST['year'], null, "UTF-8");
+									$day = $basic->convertToHTMLEntities($_POST['day']);
+									$month = $basic->convertToHTMLEntities($_POST['month']);
+									$year = $basic->convertToHTMLEntities($_POST['year']);
 									$teaser = $basic->cleanHTML($_POST['teaser']);
 									$text = $basic->cleanHTML($_POST['text']);
 									$city = $basic->cleanHTML($_POST['city']);
 									$corrected = isset($_POST['corrected']);
 									$tmpModuleTags = array();
 									foreach ($moduleTags as $moduleTag) {
-										$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "UTF-8");
+										$moduleTag['tags'] = $basic->convertToHTMLEntities($_POST[$moduleTag['type']]);
 										array_push($tmpModuleTags, $moduleTag);
 									}
 									$moduleTags = $tmpModuleTags;
@@ -382,18 +382,18 @@ class News implements Module {
 										$class->addTags($moduleTag['tags'], $scope, $id);
 
 									}
-									$headline = htmlentities($_POST['headline'], null, "UTF-8");
-									$title = htmlentities($_POST['title'], null, "UTF-8");
+									$headline = $basic->convertToHTMLEntities($_POST['headline']);
+									$title = $basic->convertToHTMLEntities($_POST['title']);
 									$category = $_POST['category'];
-									$day = htmlentities($_POST['day'], null, "UTF-8");
-									$month = htmlentities($_POST['month'], null, "UTF-8");
-									$year = htmlentities($_POST['year'], null, "UTF-8");
+									$day = $basic->convertToHTMLEntities($_POST['day']);
+									$month = $basic->convertToHTMLEntities($_POST['month']);
+									$year = $basic->convertToHTMLEntities($_POST['year']);
 									$teaser = $basic->cleanHTML($_POST['teaser']);
 									$text = $basic->cleanHTML($_POST['text']);
 									$city = $basic->cleanHTML($_POST['city']);
 									$tmpModuleTags = array();
 									foreach ($moduleTags as $moduleTag) {
-										$moduleTag['tags'] = htmlentities($_POST[$moduleTag['type']], null, "UTF-8");
+										$moduleTag['tags'] = $basic->convertToHTMLEntities($_POST[$moduleTag['type']]);
 										array_push($tmpModuleTags, $moduleTag);
 									}
 									$moduleTags = $tmpModuleTags;
@@ -404,7 +404,7 @@ class News implements Module {
 						$result2 = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `module`='news' AND `type` IN('1','2') ORDER BY `pos`");
 						while ($row2 = $this->db->fetchArray($result2)) {
 							if ($this->auth->locationAdminAllowed($row2['id'], $this->role->getRole())||$this->auth->locationExtendedAllowed($row2['id'], $this->role->getRole())) {
-								array_push($locations,array('location'=>htmlentities($row2['id'], null, "UTF-8"),'name'=>htmlentities($row2['name'], null, "UTF-8")));
+								array_push($locations,array('location'=>$basic->convertToHTMLEntities($row2['id']),'name'=>$basic->convertToHTMLEntities($row2['name'])));
 							}
 						}
 						$authTime = time();
@@ -431,10 +431,10 @@ class News implements Module {
 				LEFT JOIN `news_picture` ON `picture`=`picture1`
 				WHERE `visible`='1' AND `deleted`='0' ORDER BY `postdate` DESC LIMIT $start,$end");
 				while ($row = $this->db->fetchArray($result)) {
-					$id = htmlentities($row['news'], null, "UTF-8");
+					$id = $basic->convertToHTMLEntities($row['news']);
 					$corrected = $row['corrected'];
-					$author = htmlentities($user->getAcronymbyID($row['author']), null, "UTF-8");
-					$authorIP = htmlentities($row['author_ip'], null, "UTF-8");
+					$author = $basic->convertToHTMLEntities($user->getAcronymbyID($row['author'], $this->auth));
+					$authorIP = $basic->convertToHTMLEntities($row['author_ip']);
 					$category = $row['location'];
 					$editLink = ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole()));
 					$location = $navigation->getNamebyID($category);
@@ -442,17 +442,17 @@ class News implements Module {
 					$date = $dateTime->format("d\.m\.Y");
 					$dateTime->setTimestamp($row['postdate']);
 					$postdate = $dateTime->format("d\. M Y \u\m H\:i\:s");
-					$headline = htmlentities($row['headline'], null, "UTF-8");
-					$title = htmlentities($row['title'], null, "UTF-8");
-					$picture1 = htmlentities($row['url'], null, "UTF-8");
+					$headline = $basic->convertToHTMLEntities($row['headline']);
+					$title = $basic->convertToHTMLEntities($row['title']);
+					$picture1 = $basic->convertToHTMLEntities($row['url']);
 					if (empty($picture1)) {
 						$picture1 = "empty";
 					}
 					$photograph1 = "";
 					if (!empty($row['photograph'])) {
-						$photograph1 = "<br />Foto: ".htmlentities($row['photograph'], null, "UTF-8");
+						$photograph1 = "<br />Foto: ".$basic->convertToHTMLEntities($row['photograph']);
 					}
-					$city = htmlentities($row['city'], null, "UTF-8");
+					$city = $basic->convertToHTMLEntities($row['city']);
 					$teaser = $row['teaser'];
 					$text = $row['text'];
 					array_push($news,array('text'=>$text,'teaser'=>$teaser,'city'=>$city,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'title'=>$title,'headline'=>$headline,'id'=>$id,'editLink'=>$editLink,'date'=>$date,'postdate'=>$postdate,'location'=>$location,'author'=>$author,'authorIP'=>$authorIP, 'corrected'=>$corrected));
@@ -477,32 +477,32 @@ class News implements Module {
 					$editLink = ($this->auth->locationAdminAllowed($row['location'], $this->role->getRole()));
 					$author = $row['author'];
 					$corrected = $row['corrected'];
-					$authorName = htmlentities($user->getAcronymbyID($author), null, "UTF-8");
-					$id = htmlentities($id, null, "UTF-8");
-					$authorIP = htmlentities($row['author_ip'], null, "UTF-8");
-					$location = htmlentities($navigation->getNamebyID($row['location']), null, "UTF-8");
-					$headline = htmlentities($row['headline'], null, "UTF-8");
-					$title = htmlentities($row['title'], null, "UTF-8");
+					$authorName = $basic->convertToHTMLEntities($user->getAcronymbyID($author, $this->auth));
+					$id = $basic->convertToHTMLEntities($id);
+					$authorIP = $basic->convertToHTMLEntities($row['author_ip']);
+					$location = $basic->convertToHTMLEntities($navigation->getNamebyID($row['location']));
+					$headline = $basic->convertToHTMLEntities($row['headline']);
+					$title = $basic->convertToHTMLEntities($row['title']);
 					$teaser = $row['teaser'];
 					$text = $row['text'];
-					$picture1 = htmlentities($row['url1'], null, "UTF-8");
+					$picture1 = $basic->convertToHTMLEntities($row['url1']);
 					if (empty($picture1)) {
 						$picture1 = "empty";
 					}
 					$photograph1 = "";
 					if (!empty($row['photograph1'])) {
-						$photograph1 = "<br />Foto: ".htmlentities($row['photograph1'], null, "UTF-8");
+						$photograph1 = "<br />Foto: ".$basic->convertToHTMLEntities($row['photograph1']);
 					}
-					$picture2 = htmlentities($row['url2'], null, "UTF-8");
+					$picture2 = $basic->convertToHTMLEntities($row['url2']);
 					if (empty($picture2)) {
 						$picture2 = "empty";
 					}
-					$subtitle2 = htmlentities($row['subtitle'], null, "UTF-8");
+					$subtitle2 = $basic->convertToHTMLEntities($row['subtitle']);
 					$photograph2 = "";
 					if (!empty($row['photograph2'])) {
-						$photograph2 = " Foto: ".htmlentities($row['photograph2'], null, "UTF-8");
+						$photograph2 = " Foto: ".$basic->convertToHTMLEntities($row['photograph2']);
 					}
-					$city = htmlentities($row['city'], null, "UTF-8");
+					$city = $basic->convertToHTMLEntities($row['city']);
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
 					$dateTime->setTimestamp($row['postdate']);
@@ -551,21 +551,21 @@ class News implements Module {
 					$dateTime->setTimestamp($row['postdate']);
 					$postdate = $dateTime->format("d\.m\.Y");
 					$author = $row['author'];
-					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "UTF-8"));
-					$picture1 = htmlentities($row['url'], null, "UTF-8");
+					$authorName = strtolower($basic->convertToHTMLEntities($user->getAcronymbyID($author, $this->auth)));
+					$picture1 = $basic->convertToHTMLEntities($row['url']);
                     if (empty($picture1)) {
                         $picture1 = "empty";
                     }
 					$photograph1 = "";
 					if (!empty($row['photograph'])) {
-						$photograph1 = "<br />Foto: ".htmlentities($row['photograph'], null, "UTF-8");
+						$photograph1 = "<br />Foto: ".$basic->convertToHTMLEntities($row['photograph']);
 					}
 					$teaser = $this->nofollowOutboundLinks($row['teaser']);
 					$text = $this->nofollowOutboundLinks($row['text']);
-					$city = htmlentities($row['city'], null, "UTF-8");
-					$headline = htmlentities($row['headline'], null, "UTF-8");
-					$title = htmlentities($row['title'], null, "UTF-8");
-					$id = htmlentities($row['news'], null, "UTF-8");
+					$city = $basic->convertToHTMLEntities($row['city']);
+					$headline = $basic->convertToHTMLEntities($row['headline']);
+					$title = $basic->convertToHTMLEntities($row['title']);
+					$id = $basic->convertToHTMLEntities($row['news']);
 					array_push($news,array('city'=>$city,'headline'=>$headline,'title'=>$title,'id'=>$id,'date'=>$date,'postdate'=>$postdate,'author'=>$authorName,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'teaser'=>$teaser,'text'=>$text));
 				}
 				require_once("template/news.main.tpl.php");
@@ -589,29 +589,29 @@ class News implements Module {
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
 					$author = $row['author'];
-					$authorName = strtolower(htmlentities($user->getAcronymbyID($author), null, "UTF-8"));
-					$picture1 = htmlentities($row['url1'], null, "UTF-8");
+					$authorName = strtolower($basic->convertToHTMLEntities($user->getAcronymbyID($author, $this->auth)));
+					$picture1 = $basic->convertToHTMLEntities($row['url1']);
 					if (empty($picture1)) {
 						$picture1 = "empty";
 					}
 					$photograph1 = "";
 					if (!empty($row['photograph1'])) {
-						$photograph1 = "<br />Foto: ".htmlentities($row['photograph1'], null, "UTF-8");
+						$photograph1 = "<br />Foto: ".$basic->convertToHTMLEntities($row['photograph1']);
 					}
-					$picture2 = htmlentities($row['url2'], null, "UTF-8");
+					$picture2 = $basic->convertToHTMLEntities($row['url2']);
 					if (empty($picture2)) {
 						$picture2 = "empty";
 					}
-					$subtitle2 = htmlentities($row['subtitle'], null, "UTF-8");
+					$subtitle2 = $basic->convertToHTMLEntities($row['subtitle']);
 					$photograph2 = "";
 					if (!empty($row['photograph2'])) {
-						$photograph2 = " Foto: ".htmlentities($row['photograph2'], null, "UTF-8");
+						$photograph2 = " Foto: ".$basic->convertToHTMLEntities($row['photograph2']);
 					}
 					$teaser = $this->nofollowOutboundLinks($row['teaser']);
 					$text = $this->nofollowOutboundLinks($row['text']);
-					$city = htmlentities($row['city'], null, "UTF-8");
-					$headline = htmlentities($row['headline'], null, "UTF-8");
-					$title = htmlentities($row['title'], null, "UTF-8");
+					$city = $basic->convertToHTMLEntities($row['city']);
+					$headline = $basic->convertToHTMLEntities($row['headline']);
+					$title = $basic->convertToHTMLEntities($row['title']);
 					$url = $this->config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
 					
 					$modules = $basic->getModules();
@@ -955,8 +955,8 @@ class News implements Module {
 					WHERE ".$queryString."  AND `visible`='1' AND `deleted`='0' AND `read`='1' AND `role`='$roleID' ORDER BY `date` DESC LIMIT $start,$end");
 					while ($row = $this->db->fetchArray($result)) {
 						$teaser = $row['teaser'];
-						$headline = htmlentities($row['headline'], null, "UTF-8");
-						$title = htmlentities($row['title'], null, "UTF-8");
+						$headline = $basic->convertToHTMLEntities($row['headline']);
+						$title = $basic->convertToHTMLEntities($row['title']);
 						$newsid = $row['news'];
 						$location = $row['newslocation'];
 						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));
@@ -1061,18 +1061,18 @@ class News implements Module {
 		$dateTime = new DateTime("now", new DateTimeZone($this->config->getTimezone()));
 
 		while ($row = $this->db->fetchArray($result)) {
-			$tagName = htmlentities($row['tag'], null, "UTF-8");
+			$tagName = $basic->convertToHTMLEntities($row['tag']);
 		}
 		$result = $this->db->query("SELECT `news`, `headline`, `title`, `date`, `location`, `name` FROM `news_tag` JOIN `news` USING (`news`) JOIN `navigation` ON (`news`.`location` = `navigation`.`id`) WHERE `tag`='$tagID' AND `news_tag`.`type`='general' ORDER BY `date` DESC");
 		while ($row = $this->db->fetchArray($result)) {
 			if ($this->auth->locationReadAllowed($row['location'], $this->role->getRole())) {
 				$news = $row['news'];
-				$headline = htmlentities($row['headline'], null, "UTF-8");
-				$title = htmlentities($row['title'], null, "UTF-8");
+				$headline = $basic->convertToHTMLEntities($row['headline']);
+				$title = $basic->convertToHTMLEntities($row['title']);
 				$dateTime->setTimestamp($row['date']);
 				$date = $dateTime->format("d\.m\.Y");
 				$location = $row['location'];
-				$locationName = htmlentities($row['name'], null, "UTF-8");
+				$locationName = $basic->convertToHTMLEntities($row['name']);
 				array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
 			}
 		}
@@ -1080,6 +1080,7 @@ class News implements Module {
 	}
 	
 	public function getImage() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if (isset($_GET['action'])) {
 			if ($_GET['action']=="read") {
 				if ($this->auth->moduleReadAllowed("news", $this->role->getRole())) {
@@ -1093,7 +1094,7 @@ class News implements Module {
 						$picture = "empty";
 						$result = $this->db->query("SELECT `url` FROM `news` JOIN `news_picture` ON `picture`=`picture2` WHERE `location`='$location' AND `news`='$newsID' AND `visible`='1' AND `deleted`='0'");
 						while ($row = $this->db->fetchArray($result)) {
-							$picture = "news/".htmlentities($row['url'], null, "UTF-8");
+							$picture = "news/".$basic->convertToHTMLEntities($row['url']);
 							if (empty($picture)) {
 								$picture = "empty";
 							}

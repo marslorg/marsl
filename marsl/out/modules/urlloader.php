@@ -23,6 +23,7 @@ class URLLoader implements Module {
 	 * Shows the navigation in the admin backend.
 	 */
 	public function adminNavi() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$curRole = $this->role->getRole();
 		if ($this->auth->moduleWriteAllowed("urlloader", $curRole)) {
 			$categories = array();
@@ -33,17 +34,17 @@ class URLLoader implements Module {
 				if ($row['type'] == '2' || (($row['type'] == '0' || $row['type'] == '1') && $this->auth->locationAdminAllowed($row['id'], $curRole))) {
 					if ($row['type'] == '2' && $this->auth->locationReadAllowed($row['id'], $curRole)) {
 						$catID = $row['category'];
-						$linkID = htmlentities($row['id'], null, "UTF-8");
-						$linkName = htmlentities($row['name'], null, "UTF-8");
+						$linkID = $basic->convertToHTMLEntities($row['id']);
+						$linkName = $basic->convertToHTMLEntities($row['name']);
 						if (!array_key_exists($catID, $categoryLinks)) {
 							$categoryLinks[$catID] = array();
 						}
 						array_push($categoryLinks[$catID], array('id' => $linkID, 'name' => $linkName));
 					}
 					else {
-						$catID = htmlentities($row['id'], null, "UTF-8");
-						$catName = htmlentities($row['name'], null, "UTF-8");
-						$catType = htmlentities($row['type'], null, "UTF-8");
+						$catID = $basic->convertToHTMLEntities($row['id']);
+						$catName = $basic->convertToHTMLEntities($row['name']);
+						$catType = $basic->convertToHTMLEntities($row['type']);
 						array_push($categories, array('id' => $catID, 'name' => $catName, 'type' => $catType));
 					}
 				}
@@ -57,6 +58,7 @@ class URLLoader implements Module {
 	 * The interface to change the standard page.
 	 */
 	public function admin() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		if ($_GET['var']=="urlloader") {
 			$this->contentAdmin();
 		}
@@ -83,7 +85,7 @@ class URLLoader implements Module {
 				$locations = array();
 				$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type` IN ('1','2')");
 				while ($row = $this->db->fetchArray($result)) {
-					$name = htmlentities($row['name'], null, "UTF-8");
+					$name = $basic->convertToHTMLEntities($row['name']);
 					array_push($locations,array('name'=>$name,'id'=>$row['id']));
 				}
 				$authTime = time();
@@ -131,8 +133,8 @@ class URLLoader implements Module {
 					$foot = $row['foot'];
 				}
 				$navi = new Navigation($this->db, $this->auth, $this->role);
-				$name = htmlentities($navi->getNamebyID($_GET['id']), null, "UTF-8");
-				$id = htmlentities($_GET['id'], null, "UTF-8");
+				$name = $basic->convertToHTMLEntities($navi->getNamebyID($_GET['id']));
+				$id = $basic->convertToHTMLEntities($_GET['id']);
 				$authTime = time();
 				$authToken = $this->auth->getToken($authTime);
 				require_once("template/urlloader.content.tpl.php");

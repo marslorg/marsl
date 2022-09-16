@@ -40,7 +40,7 @@ class ModuleRights {
 			else if ($_GET['action']=="role") {
 				$module = $basic->getModule($_GET['module']);
 				$moduleID = $this->db->escapeString($module['file']);
-				$name = htmlentities($module['name'], null, "UTF-8");
+				$name = $basic->convertToHTMLEntities($module['name']);
 				if ($this->auth->moduleAdminAllowed($moduleID, $this->role->getRole())&&$this->auth->moduleExtendedAllowed($moduleID, $this->role->getRole())
 				&&$this->auth->moduleWriteAllowed($moduleID, $this->role->getRole())&&$this->auth->moduleReadAllowed($moduleID, $this->role->getRole())) {
 					$roles = $this->role->getPossibleRoles($this->role->getRole());
@@ -64,13 +64,13 @@ class ModuleRights {
 							if ($this->db->isExisting("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID' LIMIT 1")) {
 								$result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights_module` WHERE `role`='$roleID' AND `module`='$moduleID'");
 								while ($row = $this->db->fetchArray($result)) {
-									$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "UTF-8");
-									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
+									$roleName = $basic->convertToHTMLEntities($this->role->getNamebyID($row['role']));
+									array_push($rights,array('name'=>$roleName,'role'=>$basic->convertToHTMLEntities($row['role']),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}
 							}
 							else {
-								$roleName = htmlentities($this->role->getNamebyID($roleID), null, "UTF-8");
-								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "UTF-8"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
+								$roleName = $basic->convertToHTMLEntities($this->role->getNamebyID($roleID));
+								array_push($rights,array('name'=>$roleName,'role'=>$basic->convertToHTMLEntities($roleID),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 							}
 						}
 					}

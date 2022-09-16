@@ -25,6 +25,7 @@ class User {
 	private $acronymsByID;
 	private $nicksByMail;
 	private $registerDatesByUser;
+	private $auth;
 	
 	/*
 	 * Constructs the session of the user.
@@ -219,13 +220,14 @@ class User {
 	/*
 	 * Get the primary e-mail of a user.
 	 */
-	public function getMailbyID($id) {
+	public function getMailbyID($id, $auth) {
+		$basic = new Basic($this->db, $auth, $this->role);
         if (!array_key_exists($id, $this->mailsByID)) {
             $mail = "";
             $user = $this->db->escapeString($id);
             $result = $this->db->query("SELECT `email` FROM `email` NATURAL JOIN `user` WHERE `user`='$user' AND `confirmed`='1' AND `primary`='1'");
             while ($row = $this->db->fetchArray($result)) {
-                $mail = htmlentities($row['email'], null, "UTF-8");
+                $mail = $basic->convertToHTMLEntities($row['email']);
             }
 			$this->mailsByID[$id] = $mail;
         }
@@ -235,13 +237,14 @@ class User {
 	/*
 	 * Get the nickname of a user.
 	 */
-	public function getNickbyID($id) {
+	public function getNickbyID($id, $auth) {
+		$basic = new Basic($this->db, $auth, $this->role);
         if (!array_key_exists($id, $this->nicksByID)) {
             $name = "";
             $user = $this->db->escapeString($id);
             $result = $this->db->query("SELECT `nickname` FROM `user` WHERE `user`='$user'");
             while ($row = $this->db->fetchArray($result)) {
-                $name = htmlentities($row['nickname'], null, "UTF-8");
+                $name = $basic->convertToHTMLEntities($row['nickname']);
             }
 			$this->nicksByID[$id] = $name;
         }
@@ -251,15 +254,16 @@ class User {
 	/*
 	 * Get the acronym of a user.
 	 */
-	public function getAcronymbyID($id) {
+	public function getAcronymbyID($id, $auth) {
+		$basic = new Basic($this->db, $auth, $this->role);
         if (!array_key_exists($id, $this->acronymsByID)) {
             $acronym = "";
             $user = $this->db->escapeString($id);
             $result = $this->db->query("SELECT `acronym` FROM `user` WHERE `user`='$user'");
             while ($row = $this->db->fetchArray($result)) {
-                $acronym = htmlentities($row['acronym'], null, "UTF-8");
+                $acronym = $basic->convertToHTMLEntities($row['acronym']);
                 if (empty($acronym)) {
-                    $acronym = $this->getNickbyID($user);
+                    $acronym = $this->getNickbyID($user, $auth);
                 }
             }
 			$this->acronymsByID[$id] = $acronym;
@@ -270,13 +274,14 @@ class User {
 	/*
 	 * Get nickname by giving an e-mail adress.
 	 */
-	public function getNickbyMail($mail) {
+	public function getNickbyMail($mail, $auth) {
+		$basic = new Basic($this->db, $auth, $this->role);
         if (!array_key_exists($mail, $this->nicksByMail)) {
             $name = "";
             $mail = $this->db->escapeString($mail);
             $result = $this->db->query("SELECT `nickname` FROM `email` NATURAL JOIN `user` WHERE `email`='$mail' AND `confirmed`='1'");
             while ($row = $this->db->fetchArray($result)) {
-                $name = htmlentities($row['nickname'], null, "UTF-8");
+                $name = $basic->convertToHTMLEntities($row['nickname']);
             }
 			$this->nicksByMail[$mail]  = $name;
         }
@@ -420,7 +425,7 @@ class User {
 	/*
 	 * Register a user.
 	 */
-	public function register($nickname, $password, $mail, $auth) {
+	public function register($nickname, $password, $mail, $auth, $shouldSendConfirmationMail) {
 		$nickname = $this->db->escapeString($nickname);
 		if (strlen($nickname)>=4) {
 			if ((!$this->db->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('$nickname') LIMIT 1"))&&(!$this->db->isExisting("SELECT `acronym` FROM `user` WHERE LOWER(`acronym`)=LOWER('$nickname') LIMIT 1"))) {
@@ -434,8 +439,10 @@ class User {
 				$confirmID = $this->db->escapeString($basic->confirmID());
 				$mail = $this->db->escapeString($mail);
 				$this->db->query("INSERT INTO `email`(`email`,`user`,`confirmed`,`time`,`confirm_id`,`primary`) VALUES('$mail','$user','0','$regdate','$confirmID','1')");
-				$mailer = new Mailer($this->db, $this->role);
-				$mailer->sendConfirmationMail($user, $mail);
+                if ($shouldSendConfirmationMail) {
+                    $mailer = new Mailer($this->db, $this->role);
+                    $mailer->sendConfirmationMail($user, $mail);
+                }
 				return true;
 			}
 			else {
