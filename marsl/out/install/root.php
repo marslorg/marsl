@@ -36,7 +36,7 @@ class Root {
 						$basic = new Basic($this->db, $auth, $role);
 						if ($basic->checkMail($_POST['email'])) {
 							$user = new User($this->db, $role);
-							$user->register("root", $_POST['password'], $_POST['email'], $auth);
+							$user->register("root", $_POST['password'], $_POST['email'], $auth, false);
 							$userID = $user->getIDbyName("root");
 							$roleID = $role->getIDbyName("root");
 							$user->changeRole($userID, $roleID);

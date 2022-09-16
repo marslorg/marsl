@@ -141,7 +141,7 @@ class Login implements Module {
 			$success = true;
 			$recover = true;
 			$basic = new Basic($this->db, $this->auth, $this->role);
-			$title = htmlentities($basic->getTitle(), null, "UTF-8");
+			$title = $basic->convertToHTMLEntities($basic->getTitle());
 			require_once("template/recover.tpl.php");
 		}
 		else {
@@ -195,7 +195,7 @@ class Login implements Module {
 		}
 		
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$title = htmlentities($basic->getTitle(), null, "UTF-8");
+		$title = $basic->convertToHTMLEntities($basic->getTitle());
 		$time = $_GET['time'];
 		$recover = false;
 		$uid = "";

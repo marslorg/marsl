@@ -38,7 +38,7 @@ class RegisterUser {
 				if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
 					if ($_POST['password']==$_POST['password2']) {
 						if ($basic->checkMail($_POST['email'])) {
-							if($user->register($_POST['nickname'], $_POST['password'], $_POST['email'], $this->auth)) {
+							if($user->register($_POST['nickname'], $_POST['password'], $_POST['email'], $this->auth, false)) {
 								$email = $this->db->escapeString($_POST['email']);
 								$this->db->query("UPDATE `email` SET `confirmed`='1' WHERE `email`='$email'");
 								$registered = true;
@@ -68,7 +68,7 @@ class RegisterUser {
 					$possibleRole = $this->db->escapeString($possibleRole);
 					$result = $this->db->query("SELECT `role`, `name` FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {
-						array_push($roles,array('role'=>$row['role'],'name'=>htmlentities($row['name'], null, "UTF-8")));
+						array_push($roles,array('role'=>$row['role'],'name'=>$basic->convertToHTMLEntities($row['name'])));
 					}
 				}
 			}

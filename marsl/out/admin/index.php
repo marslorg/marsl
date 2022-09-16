@@ -106,7 +106,7 @@ class Main {
 			}
 		}
 		
-		$title = htmlentities($basic->getTitle(), null, "UTF-8");
+		$title = $basic->convertToHTMLEntities($basic->getTitle());
 		$modules = $basic->getModules();
 
 		if ($isAdmin) {

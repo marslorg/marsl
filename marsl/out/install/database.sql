@@ -115,12 +115,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     FOREIGN KEY (`picture`)
     REFERENCES `user_picture` (`picture`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `user_role`
-    FOREIGN KEY (`role`)
-    REFERENCES `role` (`role`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -296,17 +291,7 @@ CREATE TABLE IF NOT EXISTS `navigation` (
   INDEX `pos_idx` (`pos` ASC),
   INDEX `pos_module_type_idx` (`pos` ASC, `module` ASC, `type` ASC),
   INDEX `id_type_idx` (`id` ASC, `type` ASC),
-  INDEX `pos_type_idx` (`pos` ASC, `type` ASC),
-  CONSTRAINT `link_category`
-    FOREIGN KEY (`category`)
-    REFERENCES `navigation` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `link_map`
-    FOREIGN KEY (`maps_to`)
-    REFERENCES `navigation` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+  INDEX `pos_type_idx` (`pos` ASC, `type` ASC))
 ENGINE = InnoDB;
 
 
@@ -472,14 +457,14 @@ CREATE TABLE IF NOT EXISTS `rights_module` (
   INDEX `admin_idx` (`admin` ASC),
   INDEX `read_write_extended_admin_idx` (`read` ASC, `write` ASC, `extended` ASC, `admin` ASC),
   INDEX `role_admin_idx` (`role` ASC, `admin` ASC),
-  CONSTRAINT `rights_role`
+  CONSTRAINT `rights_module_role`
     FOREIGN KEY (`role`)
     REFERENCES `role` (`role`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `rights_module`
     FOREIGN KEY (`module`)
-    REFERENCES `module` (`name`)
+    REFERENCES `module` (`file`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -649,7 +634,6 @@ CREATE TABLE IF NOT EXISTS `post` (
   INDEX `deleted_idx` (`deleted` ASC),
   INDEX `post_idx` (`post` ASC),
   INDEX `thread_post_idx` (`post` ASC, `thread` ASC),
-  INDEX `deleted_idx` (`deleted` ASC),
   INDEX `date_idx` (`date` DESC),
   INDEX `deleted_date_idx` (`date` DESC, `deleted` ASC),
   INDEX `thread_deleted_date_idx` (`date` DESC, `thread` ASC, `deleted` ASC),
@@ -973,10 +957,9 @@ CREATE TABLE IF NOT EXISTS `pushtoken` (
   `auth` VARCHAR(100) NULL,
   PRIMARY KEY (`id`),
   INDEX `type_idx` (`type` ASC),
-  INDEX `endpoint_idx` (`endpoint` ASC),
   INDEX `auth_idx` (`auth` ASC),
   INDEX `key_idx` (`key` ASC),
-  INDEX `type_endpoint_auth_key_idx` (`type` ASC, `endpoint` ASC, `auth` ASC, `key` ASC),
+  INDEX `type_auth_key_idx` (`type` ASC, `auth` ASC, `key` ASC),
   INDEX `pushtoken_idx` (`pushtoken` ASC),
   INDEX `pushtoken_type_idx` (`type` ASC, `pushtoken` ASC))
 ENGINE = InnoDB;

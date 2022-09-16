@@ -12,11 +12,13 @@ class Tags {
 	private $db;
 	private $auth;
 	private $role;
+	private $basic;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+		$this->basic = new Basic($db, $auth, $role);
 	}
 
 	public function admin() {
@@ -61,7 +63,7 @@ class Tags {
 				$result = $this->db->query("SELECT `id`, `tag` FROM `general` WHERE `tag` LIKE '$search%' ORDER BY `tag` ASC");
 				while ($row = $this->db->fetchArray($result)) {
 					$id = $row['id'];
-					$tag = htmlentities($row['tag'], null, "UTF-8");
+					$tag = $this->basic->convertToHTMLEntities($row['tag']);
 					array_push($tags, array('id'=>$id, 'tag'=>$tag));
 				}
 				require_once("template/tags.tpl.php");
@@ -103,7 +105,7 @@ class Tags {
 									$duplicateID = $row['id'];
 									$result2 = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
 									while ($row2 = $this->db->fetchArray($result2)) {
-										$oldTag = htmlentities($row2['tag'], null, "UTF-8");
+										$oldTag = $this->basic->convertToHTMLEntities($row2['tag']);
 										$i = 2;
 										$autoTag = $tag." (".$i.")";
 										while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
@@ -156,7 +158,7 @@ class Tags {
 								$duplicateID = $row['id'];
 								$result2 = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
 								while ($row2 = $this->db->fetchArray($result2)) {
-									$oldTag = htmlentities($row2['tag'], null, "UTF-8");
+									$oldTag = $this->basic->convertToHTMLEntities($row2['tag']);
 									$i = 2;
 									$autoTag = $tag." (".$i.")";
 									while ($this->db->isExisting("SELECT `tag` FROM `general` WHERE `tag`='$autoTag' AND NOT(`id`='$id') LIMIT 1")) {
@@ -188,13 +190,13 @@ class Tags {
 		$result = $this->db->query("SELECT `news`, `headline`,`title` FROM `news_tag` NATURAL JOIN `news` WHERE `type`='general' AND `tag`='$id' AND `deleted`='0' AND `visible`='1' ORDER BY `postdate` DESC");
 		while ($row = $this->db->fetchArray($result)) {
 			$newsID = $row['news'];
-			$headline = htmlentities($row['headline'], null, "UTF-8");
-			$title = htmlentities($row['title'], null, "UTF-8");
+			$headline = $this->basic->convertToHTMLEntities($row['headline']);
+			$title = $this->basic->convertToHTMLEntities($row['title']);
 			array_push($news, array('news'=>$newsID, 'headline'=>$headline, 'title'=>$title));
 		}
 		$result = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$id'");
 		while ($row = $this->db->fetchArray($result)) {
-			$tag = htmlentities($row['tag'], null, "UTF-8");
+			$tag = $this->basic->convertToHTMLEntities($row['tag']);
 			require_once("template/tags.edit.tpl.php");
 		}
 	}	

@@ -26,7 +26,7 @@ class RowTimer extends Benchmark_Timer
     var $name;
 
     function RowTimer($name, $auto = false) {
-        $this->name = htmlentities($name);
+        $this->name = htmlentities($name, 0, 'UTF-8');
         $this->Benchmark_Timer($auto);
     }
 

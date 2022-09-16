@@ -28,7 +28,7 @@ class Install {
 		
 		$content = file_get_contents("modules.sql");
 		$statement = strtok($content, ";");
-		while ($statement) {
+		while (!empty(trim($statement))) {
 			$db->query($statement);
 			echo $statement."<br>";
 			$statement = strtok(";");

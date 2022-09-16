@@ -25,9 +25,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<td>E-Mail wdh.*: </td><td><div class="center"><input type="text" name="mail2" value="<?php echo $mail2; ?>" /></div></td>
 		</tr>
 		<tr>
-			<td colspan="2"><?php echo $recaptcha; ?></td>
-		</tr>
-		<tr>
 			<td colspan="2">
 				<div class="center">
 					<button type="submit" name="action" value="send"> Registrieren </button>

@@ -1,6 +1,7 @@
 <?php
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
+include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/module.php");
@@ -10,11 +11,13 @@ class Navigation implements Module {
 	private $db;
 	private $auth;
 	private $role;
+	private $basic;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+		$this->basic = new Basic($db, $auth, $role);
 	}
 	
 	/*
@@ -38,7 +41,7 @@ class Navigation implements Module {
 					if ($this->auth->locationAdminAllowed($row['id'], $curRole)) {
 						if (empty($row['maps_to'])) {
 							$roleEditor = $this->auth->locationAdminAllowed($row['id'], $curRole)&&$this->auth->locationExtendedAllowed($row['id'], $curRole)&&$this->auth->locationWriteAllowed($row['id'], $curRole)&&$this->auth->locationReadAllowed($row['id'], $curRole);
-							$name = htmlentities($row['name'], null, "UTF-8");
+							$name = $this->basic->convertToHTMLEntities($row['name']);
 							if ($row['type'] == 0) {
 								array_push($categories, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
 							}
@@ -68,8 +71,8 @@ class Navigation implements Module {
 			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
 			while ($row = $this->db->fetchArray($result)) {
 				if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
-					$id = htmlentities($row['id'], null, "UTF-8");
-					$name = htmlentities($row['name'], null, "UTF-8");
+					$id = $this->basic->convertToHTMLEntities($row['id']);
+					$name = $this->basic->convertToHTMLEntities($row['name']);
 					if ($row['type'] == 0 || $row['type'] == 1) {
 						array_push($categories, array('id' => $id, 'name' => $name, 'type' => $row['type']));
 					}
@@ -143,7 +146,7 @@ class Navigation implements Module {
 			else if ($action=="role") {
 				$id = $this->db->escapeString($_GET['id']);
 				if ($this->auth->locationAdminAllowed($id, $this->role->getRole())&&$this->auth->locationExtendedAllowed($id, $this->role->getRole())&&$this->auth->locationWriteAllowed($id, $this->role->getRole())&&$this->auth->locationReadAllowed($id, $this->role->getRole())) {
-					$name = htmlentities($this->getNamebyID($id), null, "UTF-8");
+					$name = $this->basic->convertToHTMLEntities($this->getNamebyID($id));
 					$roles = $this->role->getPossibleRoles($this->role->getRole());
 					if (isset($_POST['change'])) {
 						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -165,13 +168,13 @@ class Navigation implements Module {
 							if ($this->db->isExisting("SELECT `role` FROM `rights` WHERE `role`='$roleID' AND `location`='$id' LIMIT 1")) {
 								$result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
 								while ($row = $this->db->fetchArray($result)) {
-									$roleName = htmlentities($this->role->getNamebyID($row['role']), null, "UTF-8");
-									array_push($rights,array('name'=>$roleName,'role'=>htmlentities($row['role'], null, "UTF-8"),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
+									$roleName = $this->basic->convertToHTMLEntities($this->role->getNamebyID($row['role']));
+									array_push($rights,array('name'=>$roleName,'role'=>$this->basic->convertToHTMLEntities($row['role']),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
 								}
 							}
 							else {
-								$roleName = htmlentities($this->role->getNamebyID($roleID), null, "UTF-8");
-								array_push($rights,array('name'=>$roleName,'role'=>htmlentities($roleID, null, "UTF-8"),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
+								$roleName = $this->basic->convertToHTMLEntities($this->role->getNamebyID($roleID));
+								array_push($rights,array('name'=>$roleName,'role'=>$this->basic->convertToHTMLEntities($roleID),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
 							}
 						}
 					}

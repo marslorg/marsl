@@ -4,17 +4,20 @@ include_once (dirname(__FILE__)."/../includes/dbsocket.php");
 include_once (dirname(__FILE__)."/../user/user.php");
 include_once (dirname(__FILE__)."/../user/role.php");
 include_once (dirname(__FILE__)."/../user/auth.php");
+include_once(dirname(__FILE__)."/../includes/basic.php");
 
 class Standard {
 	
 	private $db;
 	private $auth;
 	private $role;
+	private $basic;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
+		$this->basic = new Basic($db, $auth, $role);
 	}
 
 	/*
@@ -57,7 +60,7 @@ class Standard {
 					$result = $this->db->query("SELECT `role`, `name` FROM `role` WHERE `role`='$possibleRole'");
 					while ($row = $this->db->fetchArray($result)) {
 						if ($this->role->getRole()!=$row['role']) {
-							array_push($roles,array('role' => htmlentities($row['role'], null, "UTF-8"), 'name' => htmlentities($row['name'], null, "UTF-8")));
+							array_push($roles,array('role' => $this->basic->convertToHTMLEntities($row['role']), 'name' => $this->basic->convertToHTMLEntities($row['name'])));
 						}
 					}
 				}

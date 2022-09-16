@@ -23,6 +23,7 @@ class Thread {
 	 * Displays the thread overview in a board.
 	 */
 	public function display() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = $_GET['id'];
 		$boardID = $this->db->escapeString($_GET['board']);
 		$user = new User($this->db, $this->role);
@@ -55,11 +56,11 @@ class Thread {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
-				$title = htmlentities($row['title'], null, "UTF-8");
+				$title = $basic->convertToHTMLEntities($row['title']);
 				$postAuthor = $row['postauthor'];
 				$threadAuthor = $row['threadauthor'];
-				$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "UTF-8");
-				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "UTF-8");
+				$postNickname = $basic->convertToHTMLEntities($user->getNickbyID($postAuthor, $this->auth));
+				$threadNickname = $basic->convertToHTMLEntities($user->getNickbyID($threadAuthor, $this->auth));
 				$viewcount = $row['viewcount'];
 				$dateTime->setTimestamp($row['date']);
 				$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
@@ -106,11 +107,12 @@ class Thread {
 	 * Get the title of a thread.
 	 */
 	public function getTitle($thread) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$thread = $this->db->escapeString($thread);
 		$title = "";
 		$result = $this->db->query("SELECT `title` FROM `thread` WHERE `thread`='$thread' AND NOT (`type`='4')");
 		while ($row = $this->db->fetchArray($result)) {
-			$title = htmlentities($row['title'], null, "UTF-8");
+			$title = $basic->convertToHTMLEntities($row['title']);
 		}
 		return $title;
 	}
@@ -119,6 +121,7 @@ class Thread {
 	 * Get globally fixed threads.
 	 */
 	private function getGlobals() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$user = new User($this->db, $this->role);
 		$board = new Board($this->db, $this->auth, $this->role);
 		$globals = array();
@@ -130,11 +133,11 @@ class Thread {
 				$thread = $row['thread'];
 				$post = $row['post'];
 				$postcount = $row['postcount']-1;
-				$title = htmlentities($row['title'], null, "UTF-8");
+				$title = $basic->convertToHTMLEntities($row['title']);
 				$postAuthor = $row['postauthor'];
 				$threadAuthor = $row['threadauthor'];
-				$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "UTF-8");
-				$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "UTF-8");
+				$postNickname = $basic->convertToHTMLEntities($user->getNickbyID($postAuthor, $this->auth));
+				$threadNickname = $basic->convertToHTMLEntities($user->getNickbyID($threadAuthor, $this->auth));
 				$viewcount = $row['viewcount'];
 				$dateTime->setTimestamp($row['date']);
 				$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
@@ -149,6 +152,7 @@ class Thread {
 	 * Get fixed threads.
 	 */
 	private function getFixeds() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$board = $this->db->escapeString($_GET['board']);
 		$user = new User($this->db, $this->role);
 		$fixeds = array();
@@ -159,11 +163,11 @@ class Thread {
 			$thread = $row['thread'];
 			$post = $row['post'];
 			$postcount = $row['postcount']-1;
-			$title = htmlentities($row['title'], null, "UTF-8");
+			$title = $basic->convertToHTMLEntities($row['title']);
 			$postAuthor = $row['postauthor'];
 			$threadAuthor = $row['threadauthor'];
-			$postNickname = htmlentities($user->getNickbyID($postAuthor), null, "UTF-8");
-			$threadNickname = htmlentities($user->getNickbyID($threadAuthor), null, "UTF-8");
+			$postNickname = $basic->convertToHTMLEntities($user->getNickbyID($postAuthor, $this->auth));
+			$threadNickname = $basic->convertToHTMLEntities($user->getNickbyID($threadAuthor, $this->auth));
 			$viewcount = $row['viewcount'];
 			$dateTime->setTimestamp($row['date']);
 			$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
@@ -190,6 +194,7 @@ class Thread {
 	 * Move thread to another board.
 	 */
 	public function moveThread() {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = $_GET['id'];
 		$threadID = $this->db->escapeString($_GET['thread']);
 		$board = new Board($this->db, $this->auth, $this->role);
@@ -234,7 +239,7 @@ class Thread {
 				$result = $this->db->query("SELECT `board`, `title` FROM `board` WHERE `type`='1'");
 				while ($row = $this->db->fetchArray($result)) {
 					$destinationID = $row['board'];
-					$destinationTitle = htmlentities($row['title'], null, "UTF-8");
+					$destinationTitle = $basic->convertToHTMLEntities($row['title']);
 					if ($board->readAllowed($destinationID, $this->role->getRole())&&$board->writeAllowed($destinationID, $this->role->getRole())&&$this->auth->locationReadAllowed($board->getLocation($destinationID), $this->role->getRole())&&$this->auth->locationWriteAllowed($board->getLocation($destinationID), $this->role->getRole())&&$this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->moduleWriteAllowed("board", $this->role->getRole())) {
 						array_push($boards, array('board'=>$destinationID, 'title'=>$destinationTitle));
 					}
