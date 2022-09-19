@@ -9,7 +9,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		<link rel="stylesheet" href="styles/style.css" type="text/css" />
 	</head>
 	<body>
-		<form method="post" <?php if (isset($uid)&&isset($time)&&isset($auth)): ?>action="index.php?var=forgot&amp;action=recover&amp;subaction=set&amp;uid=<?php echo $uid; ?>&amp;time=<?php echo $time; ?>&amp;auth=<?php echo $auth; ?>"<?php endif; ?>>
+		<form method="post" <?php if (isset($uid)&&isset($time)&&isset($authParameter)): ?>action="index.php?var=forgot&amp;action=recover&amp;subaction=set&amp;uid=<?php echo $uid; ?>&amp;time=<?php echo $time; ?>&amp;auth=<?php echo $authParameter; ?>"<?php endif; ?>>
 			<fieldset class="recoverform">
 				<legend class="standardfont">Passwort wiederherstellen</legend>
 				<?php if (!$recover): ?>
