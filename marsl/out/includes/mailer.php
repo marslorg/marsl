@@ -24,7 +24,7 @@ class Mailer {
 		$result = $this->db->query("SELECT `confirm_id` FROM `email` WHERE `confirmed`='0' AND `user`='$userID' AND `email`='$mail'");
 		while ($row = $this->db->fetchArray($result)) {
 			$confirm_id = $row['confirm_id'];
-			$link = $config->getDomain()."/confirm.php?mail=".$mail."&code=".$confirm_id;
+			$link = $config->getDomain().$config->getBasePath()."/confirm.php?mail=".$mail."&code=".$confirm_id;
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";
 			$msg .= "du hast auf ".$config->getTitle()." eine neue E-Mail-Adresse eingetragen.\n";
@@ -48,7 +48,7 @@ class Mailer {
 		$config = new Configuration();
 		$mail = $user->getMailbyID($userID, $auth);
 		$nickname = $user->getNickbyID($userID, $auth);
-		$link = $config->getDomain()."/admin/index.php?var=module&module=news&action=queue";
+		$link = $config->getDomain().$config->getBasePath()."/admin/index.php?var=module&module=news&action=queue";
 		$msg = "Hallo ".$nickname.",\n";
 		$msg .= "\n";
 		$msg .= "es wurde eine neue Nachricht ins System eingestellt. Da Du einer unserer Lektoren bist wurdest du ausgewählt diese Nachricht freizuschalten.\n";
@@ -74,10 +74,10 @@ class Mailer {
 			$config = new Configuration();
 			$link = "";
 			if ($page == "admin") {
-				$link = $config->getDomain()."/admin/index.php?var=forgot&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
+				$link = $config->getDomain().$config->getBasePath()."/admin/index.php?var=forgot&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			else {
-				$link = $config->getDomain()."/index.php?id=".$page."&action2=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
+				$link = $config->getDomain().$config->getBasePath()."/index.php?id=".$page."&action2=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";
@@ -94,7 +94,7 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= "\n";
 			$msg .= "--\n";
-			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
+			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain().$config->getBasePath()." und klickst dort unten auf der Seite auf Impressum.\n";
 			$msg .= "Sollte dir die E-Mail fälschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kümmern uns dann um den Fehler.";
 			mail($mail, "Erinnerungsmail: Dein Passwort bei ".$config->getTitle(), $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 			return true;
@@ -123,7 +123,7 @@ class Mailer {
 			$msg .= "\n";
 			$msg .= "\n";
 			$msg .= "--\n";
-			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain()." und klickst dort unten auf der Seite auf Impressum.\n";
+			$msg .= "Um zum gültigen Impressum zu gelangen besuchst du bitte ".$config->getDomain().$config->getBasePath()." und klickst dort unten auf der Seite auf Impressum.\n";
 			$msg .= "Sollte dir die E-Mail fälschlicherweise zugesandt worden sein, so schick uns eine Kopie dieser E-Mail an ".$config->errMail().". Wir kümmern uns dann um den Fehler.";
 			mail($mail, "Erinnerungsmail: Dein Benutzername bei ".$config->getTitle(), $msg, "From: ".$config->getTitle()."<".$config->sysMail().">");
 			return true;
