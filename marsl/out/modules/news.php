@@ -903,6 +903,7 @@ class News implements Module {
 	 * Performs a fulltext search over the attributes of the news table.
 	*/
 	public function search($query, $type) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$roleID = $this->role->getRole();
 		if ($this->auth->moduleReadAllowed("news", $roleID)) {
 			$query = $this->db->escapeString($query);
@@ -1053,6 +1054,7 @@ class News implements Module {
 	}
 	
 	public function displayTag($tagID, $type) {
+		$basic = new Basic($this->db, $this->auth, $this->role);
 		$tagID = $this->db->escapeString($tagID);
 		$articles = array();
 		$tagName = "";
