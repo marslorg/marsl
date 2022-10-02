@@ -22,7 +22,6 @@ jobs:
       - name: Build and push the Docker image
         uses: docker/build-push-action@v3
         with:
-          file: ./marsl/Dockerfile
           push: true
           tags: |
             music2web:latest
