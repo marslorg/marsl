@@ -1,0 +1,13 @@
+/.buildpath
+/.project
+/.settings
+
+out/install/*
+out/albums/*
+out/files/*
+out/news/*
+out/shared/*
+
+!out/*/BLIND
+!out/*/blindfile
+!out/shared/.htaccess

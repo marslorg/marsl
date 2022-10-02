@@ -69,7 +69,30 @@ class DB {
 	 * Close the connection to the database.
 	 */
 	public function close() {
-		mysqli_close($this->mysqllink);
+		if ($this->mysqllink != null) {
+			mysqli_close($this->mysqllink);
+		}
+	}
+
+	public function isHealthy() {
+		$result = true;
+		try {
+			$this->connect();
+		}
+		catch (Exception $e) {
+			$result = false;
+		}
+
+		$result = $result && $this->isExisting("SELECT `nickname` FROM `user` WHERE LOWER(`nickname`)=LOWER('root') LIMIT 1");
+
+		try {
+			$this->close();
+		}
+		catch (Exception $e) {
+			$result = false;
+		}
+		
+		return $result;
 	}
 }
 ?>
