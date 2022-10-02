@@ -17,15 +17,15 @@ RUN a2enmod rewrite
 
 WORKDIR /var/www/html
 
-COPY out/ .
+COPY marsl/out/ .
 RUN chmod 777 -R albums
 RUN chmod 777 -R files
 RUN chmod 777 -R news
 RUN chmod 777 -R shared
 
-COPY dev/docker/000-default.conf /etc/apache2/sites-enabled/000-default.conf
-COPY dev/docker/php.ini /usr/local/etc/php/conf.d/php.ini
-COPY dev/docker/security.conf /etc/apache2/conf-available/security.conf
+COPY marsl/dev/docker/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+COPY marsl/dev/docker/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY marsl/dev/docker/security.conf /etc/apache2/conf-available/security.conf
 
 RUN groupadd -r php && useradd -r -g php php
 
