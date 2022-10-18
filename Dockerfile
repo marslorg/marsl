@@ -27,8 +27,4 @@ COPY marsl/dev/docker/000-default.conf /etc/apache2/sites-enabled/000-default.co
 COPY marsl/dev/docker/php.ini /usr/local/etc/php/conf.d/php.ini
 COPY marsl/dev/docker/security.conf /etc/apache2/conf-available/security.conf
 
-RUN groupadd -r php && useradd -r -g php php
-
-USER php
-
 EXPOSE 80
