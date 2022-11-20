@@ -1,280 +1,268 @@
 body {
-	min-width: 100%;
-	background: #fafafa;
-	margin: 0px;
-	padding: 0px;
-	padding-bottom: 0px;
+  min-width: 100%;
+  padding-bottom: 0px;
+  background-color: #fff;
 }
 
-.body {
-	min-width: 100%;
+#wrapper {
+  min-width: 100%;
 }
 
-.mainhead {
-	padding-left: 5px;
-	border-bottom: 0px;
+#header {
+  width: 100%;
+  margin-top: 0px;
 }
 
-.searchbox {
-	margin-top: 0px;
+#content-menu_wrap {
+  width: 100%;
+}
+
+#container-leftmenu-content {
+  padding-left: 3%;
+  padding-right: 3%;
+  width: 94%;
 }
 
 label.menu_responsive_label {
-	display: block;
-	background: #000;
-	cursor: pointer;
-	color: #fff;
-	font-size: 20px;
-	font-family: Verdana, Arial, Helvetica, Sans-Serif;
-	font-weight: bold;
-	padding-left: 5px;
+  display: block;
+  background: #000;
+  cursor: pointer;
+  color: #fff;
+  font-size: 2.2em;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  padding-left: 20px;
+  padding-bottom: 10px;
+  padding-top: 5px;
 }
 
 label.menu_responsive_label span {
-	margin-right: 10px;
+  margin-right: 10px;
+}
+
+input#menu_responsive[type="checkbox"]:checked ~ .menu {
+  position: relative;
+  top: 0;
 }
 
 .menu {
-	position: absolute;
-	top: -9999px;
-	justify-content: left;
+  position: absolute;
+  top: -9999px;
+  justify-content: left;
+  margin-left: 0;
+  overflow: unset;
+  z-index: 100;
+  display: flex;
+  width: 100%;
 }
 
-input#menu_responsive[type=checkbox]:checked ~ .menu {
-	position: relative;
-	top: 0;
+.menu li {
+  border-left: none !important;
 }
 
 .menu ul li {
-	float: none !important;
-	width: 100% !important;
-	border-bottom: none !important;
-	font-size: 15px;
+  float: none !important;
+  width: 100% !important;
+  border-bottom: none !important;
+  font-size: 1.2em;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
-.menu ul li a {
-	padding: 10px 20px !important;
-	font-size: 15px;
-	text-align: left;
+.menul ul li a {
+  padding: 10px 20px !important;
+  font-size: 1.2em;
+  text-align: left;
+}
+
+.menu ul li a,
+.menu ul li a:visited {
+  background: #000;
 }
 
 .menu ul {
-	top: 0px;
-	box-shadow: 0px 1px 3px #303030;
-	position: absolute;
-}
-
-.menu ul li a, .menu ul li a:visited {
-	background: #000;
-}
-
-.menu ul li:hover a, .menu ul li:hover ul li a:hover {
-	background: #580000;
+  top: 0px;
+  box-shadow: 0px 1px 3px #303030;
+  position: absolute;
 }
 
 .menu ul li.submenu:hover ul {
-	top: 0px;
+  top: 0px;
 }
 
 .menu ul li ul {
-	top: 0px;
-	margin-left: 144px;
+  top: 0px;
+  margin-left: 190px;
 }
 
-.content {
-	width: initial;
-	max-width: 100%;
+.menu li ul a {
+  width: 0px;
 }
 
-.menu ul li.submenu > a:after {
-	position: relative;
-  	float: right;
-  	content: '';
-  	margin-left: 10px;
-  	margin-right: 5px;
-  	margin-top: 7px;
-  	border-left: 5px solid #fff;
-  	border-right: 5px solid transparent;
-  	border-top: 5px solid transparent;
-  	border-bottom: 5px solid transparent;
+.menu li li a:hover {
+  background-color: #000;
 }
 
-#footer-permission {
-	padding-top: 30px;
-	padding-bottom: 30px;
-	line-height: inherit;
-	height: auto;
-}
-
-#footer-permission #description {
-	width: 100%;
-}
-
-#footer-permission #buttons {
-	display: block;
-	text-align: center;
-	margin-top: 50px;
-}
-
-@media all and (max-width: 1005px) {
-	.right_box br {
-		display: none;
-	}
-
-	.right_box {
-		width: 100%;
-		text-align: center;
-	}
+@media all and (max-width: 960px) {
+  .headtitle {
+    font-size: 25px;
+  }
 }
 
 @media all and (max-width: 925px) {
-	.ui-tabs-nav {
-		display: none;
-	}
+  .newsblock {
+    margin-right: 10px;
+  }
 
-	#featured {
-		padding-right: 0px;
-		width: 640px;
-	}
+  .textpicture {
+    width: 98%;
+    max-width: 650px;
+  }
 
-	.newsblock {
-		margin-right: 10px;
-	}
+  .textpicture img {
+    width: 98%;
+    height: auto;
+    max-width: 640px;
+  }
 
-	.content {
-		width: initial;
-		max-width: 100%;
-	}
+  .subtitle {
+    width: 98%;
+    max-width: 640px;
+  }
+}
 
-	.textpicture {
-		width: 98%;
-		max-width: 650px;
-	}
-
-	.textpicture img {
-		width: 98%;
-		height: auto;
-		max-width: 640px;
-	}
-
-	.subtitle {
-		width: 98%;
-		max-width: 640px;
-	}
+@media all and (max-width: 865px) {
+  .headtitle {
+    font-size: 20px;
+  }
 }
 
 @media all and (max-width: 840px) {
-	.newsblock {
-		margin-right: 0px;
-	}
+  .newsblock {
+    margin-right: 0px;
+  }
 
-	.newsblock, .newsblock2 {
-		display: block;
-	}
+  .newsblock,
+  .newsblock2 {
+    display: block;
+  }
 
-	.news, .gallery {
-		position: relative;
-	}
+  .news,
+  .gallery {
+    position: relative;
+    margin-right: 3%;
+  }
 
-	.albumtable, .newstable, .newsrow, .albumdescription, .newscontent, .albuminformation {
-		display: inline;
-	}
+  .albumtable,
+  .newstable,
+  .newsrow,
+  .albumdescription,
+  .newscontent,
+  .albuminformation {
+    display: inline;
+  }
 
-	.albuminformation, .newsinformation {
-		display: none;
-	}
+  .albuminformation,
+  .newsinformation {
+    display: none;
+  }
 
-	.albuminformationmobile, .newsinformationmobile {
-		clear: both;
-		display: block;
-	}
+  .albuminformationmobile,
+  .newsinformationmobile {
+    clear: both;
+    display: block;
+  }
 
-	.albuminformationmobile {
-		text-align: right;
-	}
+  .albuminformationmobile {
+    text-align: right;
+  }
 
-	.newsbottom {
-		position: relative;
-		width: 100%;
-		text-align: right;
-		bottom: 0px;
-	}
+  .newsbottom {
+    position: relative;
+    width: 100%;
+    text-align: right;
+    bottom: 0px;
+  }
+}
+
+@media all and (max-width: 765px) {
+  .headtitle {
+    display: none;
+  }
 }
 
 @media all and (max-width: 665px) {
-	#featured {
-		width: 350px;
-		height: 175px;
-	}
+  .newsblock,
+  .newsblock2 {
+    width: 350px;
+  }
 
-	#featured .ui-tabs-panel .info {
-		top: 130px;
-		height: 45px;
-		width: 350px;
-	}
-	
-	#featured .info p, #featured .info a, #featured .info a:hover{  
-		display: none;
-	}
+  .teaserpicture img {
+    width: 125px;
+    height: auto;
+  }
 
-	#featured img {
-		width: 350px;
-		height: 175px;
-	}
-
-	.newsblock, .newsblock2 {
-		width: 350px;
-	}
-
-	.teaserpicture img {
-		width: 125px;
-		height: auto;
-	}
-
-	.albumpicture {
-		width: 125px;
-		height: auto;
-	}
+  .albumpicture {
+    width: 125px;
+    height: auto;
+  }
 }
 
 @media all and (max-width: 435px) {
-	.gallerydetails img {
-		width: 150px;
-	}
-	.gallerydetails figure {
-		width: 150px;
-	}
+  .gallerydetails img {
+    width: 150px;
+  }
+  .gallerydetails figure {
+    width: 150px;
+  }
+}
+
+@media all and (max-width: 420px) {
+  #topnav {
+    padding-right: 20px;
+  }
+
+  #topnav ul.links li {
+    padding-left: 2px;
+    padding-right: 1px;
+  }
+
+  #search {
+    text-align: right;
+    padding-right: 10px;
+  }
+}
+
+@media all and (max-width: 380px) {
+  #search {
+    width: 155px;
+    padding-right: 20px;
+  }
+
+  #mod-search-searchword {
+    padding-left: 0px;
+    width: 155px;
+  }
+}
+
+@media all and (max-width: 335px) {
+  #logo {
+    padding-left: 10px;
+  }
 }
 
 @media all and (max-width: 330px) {
-	.gallerydetails img {
-		width: 125px;
-	}
-	.gallerydetails figure {
-		width: 125px;
-	}
+  .gallerydetails img {
+    width: 125px;
+  }
+  .gallerydetails figure {
+    width: 125px;
+  }
 }
 
 @media all and (max-width: 320px) {
-	#featured {
-		width: 300px;
-		height: 150px;
-	}
-	#featured .ui-tabs-panel .info {
-		top: 110px;
-		height: 40px;
-		width: 300px;
-	}
-
-	#featured .info h3 {
-		font-size: 11px;
-	}
-
-	#featured .info h2 {
-		font-size: 14px;
-	}
-
-	.newsblock, .newsblock2 {
-		width: 300px;
-	}
+  .newsblock,
+  .newsblock2 {
+    width: 300px;
+  }
 }

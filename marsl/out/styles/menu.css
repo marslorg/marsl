@@ -1,0 +1,132 @@
+/** Topmenu **/
+
+input#menu_responsive,
+label.menu_responsive_label {
+  display: none;
+}
+
+.menu {
+  margin: auto;
+  width: 1000px;
+  padding-left: 0px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 1.2em;
+  color: #fff;
+  background-color: #000000;
+  overflow: auto;
+}
+
+.menu ul {
+  float: left;
+  padding: 0;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin: 0;
+  list-style: none;
+  background-color: #000000;
+}
+
+.menu a {
+  display: block;
+  color: #fff;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 14px;
+  padding-right: 14px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 1px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.menu a:hover {
+  color: #fab101;
+  text-decoration: none;
+}
+
+.menu li {
+  float: left;
+  border-left: 1px solid #13729a;
+}
+
+.menu li:first-child {
+  border-left: 0px solid #000000;
+}
+
+/** Second-level lists **/
+
+.menu li ul {
+  position: absolute;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  width: 162px;
+  left: -999em; /* "display: none" not seen by screen readers */
+  border: 0;
+  margin-left: 0px;
+  z-index: 100;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.menu li li,
+.menu li li:first-child {
+  border: 0;
+  border-top: 1px solid #888888;
+  margin-bottom: -1px; /* iPhone/iPad fix */
+}
+
+.menu li li a,
+.menu li.active li a {
+  width: 162px;
+  background-color: #666666;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 24px;
+  margin: 0;
+  text-transform: none;
+}
+
+.menu li li:first-child {
+  margin-top: 14px;
+  border: 0;
+}
+
+.menu li ul a {
+  width: 162px;
+}
+
+.menu li li a:hover {
+  color: #fab101;
+  text-decoration: none;
+  background-color: #555555;
+}
+
+/** Level third and above **/
+
+.menu li li li:first-child {
+  margin-top: 0px;
+}
+
+.menu li ul ul {
+  margin: -40px 0 0 200px;
+}
+
+.menu li:hover ul ul,
+.menu li:hover ul ul ul,
+.menu li.sfhover ul ul,
+.menu li.sfhover ul ul ul {
+  left: -999em;
+}
+
+.menu li:hover ul,
+.menu li li:hover ul,
+.menu li li li:hover ul,
+.menu li.sfhover ul,
+.menu li li.sfhover ul,
+.menu li li li.sfhover ul {
+  /* nested under hovered items */
+  left: auto;
+}
