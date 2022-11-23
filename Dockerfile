@@ -6,6 +6,10 @@ RUN apt-get install -y build-essential libssl-dev zlib1g-dev libpng-dev libjpeg-
 RUN apt-get install -y libgmp-dev re2c libmhash-dev libmcrypt-dev file
 RUN apt-get install -y msmtp
 
+COPY marsl/dev/docker/mod_log_ipmask.c /home/mod_log_ipmask.c
+RUN apt-get install -y apache2-dev
+RUN apxs -i -a -c /home/mod_log_ipmask.c
+
 RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/local/include/
 
 RUN docker-php-ext-configure gmp
@@ -14,6 +18,7 @@ RUN docker-php-ext-install mysqli
 RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && docker-php-ext-install gd
 
 RUN a2enmod rewrite
+RUN a2enmod remoteip
 
 WORKDIR /var/www/html
 
