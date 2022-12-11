@@ -24,7 +24,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="stylesheet" href="styles/style.css?v=1" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=1" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css?v=1" type="text/css" />
-		<link rel="stylesheet" href="styles/mobile.css?v=1" type="text/css" media="all and (max-width: 1023px)" />
+		<link rel="stylesheet" href="styles/mobile.css?v=2" type="text/css" media="all and (max-width: 1023px)" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/photoswipe.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/default-skin/default-skin.css" type="text/css" />

@@ -6,6 +6,9 @@ body {
 
 #wrapper {
   min-width: 100%;
+  position: fixed;
+  z-index: 10;
+  margin-top: -170px;
 }
 
 #header {
@@ -15,6 +18,7 @@ body {
 
 #content-menu_wrap {
   width: 100%;
+  margin-top: 170px;
 }
 
 #container-leftmenu-content {
