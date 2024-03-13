@@ -6,10 +6,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <html>
 	<head>
 		<title><?php echo $title; ?></title>
+		<base href="<?php echo $baseURL; ?>/" />
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta property="fb:app_id" content="<?php echo $fbcomments; ?>" />
 		<?php if ($image!=null): ?>
-		<meta property="og:image" content="<?php echo $domain; ?>/<?php echo $image; ?>" />
+		<meta property="og:image" content="<?php echo $baseURL; ?>/<?php echo $image; ?>" />
 		<meta property="og:title" content="<?php echo $title; ?>" />
 		<?php endif; ?>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery.js"></script>

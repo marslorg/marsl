@@ -5,8 +5,11 @@ include_once(dirname(__FILE__)."/includes/config.inc.php");
 include_once(dirname(__FILE__)."/includes/basic.php");
 include_once(dirname(__FILE__)."/user/auth.php");
 include_once(dirname(__FILE__)."/user/role.php");
+include_once(dirname(__FILE__)."/modules/news.php");
 
 class RSS {
+
+	private $news;
 	
 	/*
 	 * Initialize the RSS feed for the news articles.
@@ -20,6 +23,7 @@ class RSS {
 		$role = new Role($db);
 		$auth = new Authentication($db, $role);
 		$basic = new Basic($db, $auth, $role);
+		$this->news = new News($db, $auth, $role);
 		if($auth->moduleReadAllowed("news", $role->getGuestRole())) {
 			$config = new Configuration();
 			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
@@ -32,10 +36,13 @@ class RSS {
 					JOIN `stdroles` ON (`rights`.`role` = `stdroles`.`guest`)
 					WHERE `rights`.`read` = '1' AND `news`.`deleted` = '0' AND `news`.`visible` = '1' ORDER BY `postdate` DESC LIMIT 0,10");
 			while ($row = $db->fetchArray($result)) {
-				$domain = $config->getDomain();
 				$location = $basic->convertToHTMLEntities($row['location']);
 				$news = $basic->convertToHTMLEntities($row['news']);
-				$link = $domain."/index.php?id=".$location."&amp;show=".$news."&amp;action=read";
+				
+				$domain = $config->getDomain();
+				$baseURI= $domain.$config->getBasePath();
+    			$link = $this->generateLink($baseURI, $location, $basic->convertToHTMLEntities($row['headline']), $basic->convertToHTMLEntities($row['title']), $news);
+
 				$teaser = $basic->convertToHTMLEntities($row['teaser']);
 				$title = htmlspecialchars($row['headline']).": ".htmlspecialchars($row['title']);
 				$dateTime->setTimestamp($row['postdate']);
@@ -78,6 +85,15 @@ class RSS {
 		}
 		$db->close();
 	}
+
+    private function generateLink($baseURI, $location, $headline, $title, $news) {
+        $link = "";
+
+		$uri = $this->news->generateLink($location, null, "read", $headline, $title, $news);
+		$link = $baseURI."/".$uri;
+
+        return $link;
+    }
 }
 
 $rss = new RSS();

@@ -111,7 +111,7 @@ class Newsletter implements Module {
 	/*
 	 * Displays the information of a tag.
 	 */
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 		
 	}
 	
@@ -127,6 +127,14 @@ class Newsletter implements Module {
 	 */
 	public function getTitle() {
 		
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		return null;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		return null;
 	}
 }
 ?>

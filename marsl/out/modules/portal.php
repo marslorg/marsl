@@ -6,6 +6,8 @@ include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/navigation.php");
+include_once(dirname(__FILE__)."/news.php");
 
 class Portal implements Module {
 
@@ -13,12 +15,14 @@ class Portal implements Module {
 	private $auth;
 	private $role;
 	private $basic;
+	private $news;
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
 		$this->auth = $auth;
 		$this->role = $role;
 		$this->basic = new Basic($db, $auth, $role);
+		$this->news = new News($db, $auth, $role);
 	}
 	
 	/*
@@ -26,8 +30,10 @@ class Portal implements Module {
 	 */
 	public function display() {
 		$id;
-		if (isset($_GET['id'])) {
-			$id = $this->db->escapeString($_GET['id']);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		if ($pageID > -1) {
+			$id = $this->db->escapeString($pageID);
 		}
 		else {
 			$id = $this->db->escapeString($this->basic->getHomeLocation());
@@ -61,7 +67,8 @@ class Portal implements Module {
 				if (!empty($row['photograph'])) {
 					$photograph = " Foto: ".$this->basic->convertToHTMLEntities($row['photograph']);
 				}
-				array_push($news, array('location'=>$location, 'picture'=>$this->basic->convertToHTMLEntities($row['url']), 'photograph'=>$photograph, 'date'=>$date, 'news'=>$row['news'], 'headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'title'=>$this->basic->convertToHTMLEntities($row['title']), 'teaser'=>$row['teaser']));
+				$newsURI = $this->news->generateLink($location, null, "read", $row['headline'], $row['title'], $row['news']);
+				array_push($news, array('location'=>$location, 'picture'=>$this->basic->convertToHTMLEntities($row['url']), 'photograph'=>$photograph, 'date'=>$date, 'news'=>$row['news'], 'newsURI'=>$newsURI, 'headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'title'=>$this->basic->convertToHTMLEntities($row['title']), 'teaser'=>$row['teaser']));
 			}
 		}
 		require_once("template/portal.featured.tpl.php");
@@ -95,7 +102,8 @@ class Portal implements Module {
 					$width = $picinfo[0]/1.5;
 					$height = $picinfo[1]/1.5;
 				}
-				array_push($news, array('width'=>$width,'height'=>$height,'picture'=>$picture, 'photograph'=>$photograph, 'teaser'=>$row['teaser'],'location'=>$location, 'news'=>$row['news'], 'headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'title'=>$this->basic->convertToHTMLEntities($row['title'])));
+				$newsURI = $this->news->generateLink($location, $page['name'], "read", $row['headline'], $row['title'], $row['news']);
+				array_push($news, array('width'=>$width,'height'=>$height,'picture'=>$picture, 'photograph'=>$photograph, 'teaser'=>$row['teaser'],'location'=>$location, 'news'=>$row['news'], 'newsURI'=>$newsURI, 'headline'=>$this->basic->convertToHTMLEntities($row['headline']), 'title'=>$this->basic->convertToHTMLEntities($row['title'])));
 			}
 			require("template/portal.main.tpl.php");
 			$nb_id++;
@@ -209,7 +217,7 @@ class Portal implements Module {
 		return null;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -217,6 +225,14 @@ class Portal implements Module {
 	}
 	
 	public function getTitle() {
+		return null;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		return null;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
 		return null;
 	}
 }

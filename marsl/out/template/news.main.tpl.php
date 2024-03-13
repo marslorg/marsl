@@ -2,15 +2,15 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <h4 class="center">
-	<?php if ($showFirstPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=1">«</a><?php endif; ?>
-	<?php if ($showPreviousPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page - 1; ?>">‹</a><?php endif; ?>
+	<?php if ($showFirstPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted(1); ?>">«</a><?php endif; ?>
+	<?php if ($showPreviousPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted($page - 1); ?>">‹</a><?php endif; ?>
 	<?php for ($i = $startPage - 1; $i<$endPage; $i++): $j = $i+1; ?>
 	<?php if ($j!=$page): ?>
-	<a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $j; ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
+	<a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted($j); ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
 	<?php endif; ?>
 	<?php endfor; ?>
-	<?php if ($showNextPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page + 1; ?>">›</a><?php endif; ?>
-	<?php if ($showLastPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo ceil($pages); ?>">»</a><?php endif; ?>
+	<?php if ($showNextPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted($page + 1); ?>">›</a><?php endif; ?>
+	<?php if ($showLastPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted(ceil($pages)); ?>">»</a><?php endif; ?>
 </h4>
 <?php foreach($news as $article): ?>
 <div class="post">
@@ -28,7 +28,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<?php endif; ?>
 		<b><?php echo $article['city']; ?> (<?php echo $article['author']; ?>)</b>&nbsp;-&nbsp;<?php echo $article['teaser']; ?> 
 		<?php if (!empty($article['text'])): ?>
-		<br /><br /><strong><a href="index.php?id=<?php echo $location; ?>&amp;show=<?php echo $article['id']; ?>&amp;action=read">Hier geht es weiter</a></strong>
+		<br /><br /><strong><a href="<?php echo $article['newsURI'];?>">Hier geht es weiter</a></strong>
 		<?php endif; ?>	
 		<div class="clearer">&nbsp;</div>
 
@@ -40,13 +40,13 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 </div>
 <?php endforeach; ?>
 <h4 class="center">
-	<?php if ($showFirstPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=1">«</a><?php endif; ?>
-	<?php if ($showPreviousPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page - 1; ?>">‹</a><?php endif; ?>
+	<?php if ($showFirstPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted(1); ?>">«</a><?php endif; ?>
+	<?php if ($showPreviousPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted($page - 1); ?>">‹</a><?php endif; ?>
 	<?php for ($i = $startPage - 1; $i<$endPage; $i++): $j = $i+1; ?>
 	<?php if ($j!=$page): ?>
-	<a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $j; ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
+	<a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted($j); ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
 	<?php endif; ?>
 	<?php endfor; ?>
-	<?php if ($showNextPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo $page + 1; ?>">›</a><?php endif; ?>
-	<?php if ($showLastPage): ?><a href="index.php?id=<?php echo $location; ?>&amp;page=<?php echo ceil($pages); ?>">»</a><?php endif; ?>
+	<?php if ($showNextPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted($page + 1); ?>">›</a><?php endif; ?>
+	<?php if ($showLastPage): ?><a href="<?php echo $uri; ?><?php echo $this->getPageURIFormatted(ceil($pages)); ?>">»</a><?php endif; ?>
 </h4>

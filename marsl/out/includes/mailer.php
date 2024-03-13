@@ -4,6 +4,7 @@ include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/config.inc.php");
 include_once(dirname(__FILE__)."/dbsocket.php");
+include_once(dirname(__FILE__)."/../modules/navigation.php");
 
 class Mailer {
 
@@ -77,7 +78,9 @@ class Mailer {
 				$link = $config->getDomain().$config->getBasePath()."/admin/index.php?var=forgot&action=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			else {
-				$link = $config->getDomain().$config->getBasePath()."/index.php?id=".$page."&action2=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
+				$navi = new Navigation($this->db, $auth, $this->role);
+				$uri = $navi->getRelativeURI($page, null, true);
+				$link = $config->getDomain().$config->getBasePath()."/".$uri."action2=recover&uid=".$id."&time=".$time."&auth=".$auth_code;
 			}
 			$msg = "Hallo ".$nickname.",\n";
 			$msg .= "\n";

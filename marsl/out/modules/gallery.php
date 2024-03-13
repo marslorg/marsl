@@ -394,10 +394,12 @@ class Gallery implements Module {
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($this->auth->moduleReadAllowed("gallery", $this->role->getRole())) {
-			if (!isset($_GET['action'])) {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			if ($this->getAction() != "thumb") {
 				$location = "";
-				if (isset($_GET['id'])) {
-					$location = $this->db->escapeString($_GET['id']);
+				if ($pageID > -1) {
+					$location = $this->db->escapeString($pageID);
 				}
 				else {
 					$location = $this->db->escapeString($this->basic->getHomeLocation());
@@ -407,6 +409,7 @@ class Gallery implements Module {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
 				$location = $this->db->escapeString($location);
+				$uri = $navi->getRelativeURI($location, null, false);
 				list($start, $end, $page, $pages, $startPage, $endPage, $showFirstPage, $showPreviousPage, $showNextPage, $showLastPage) = $this->getPagination($location);
 				$galleries = array();
 				$result = $this->db->query("SELECT `album`, `folder`, `photograph`, `date`, `description`, (SELECT `filename` FROM `picture` AS p WHERE `a`.`album` = `p`.`album` AND `deleted` = '0' AND `visible` = '1' ORDER BY RAND() LIMIT 1) AS `filename` FROM `album` AS a WHERE `visible`='1' AND `deleted`='0' AND `location`='$location' ORDER BY `postdate` DESC LIMIT $start,$end");
@@ -426,18 +429,21 @@ class Gallery implements Module {
 					else {
 						$picture = "";
 					}
-					array_push($galleries, array('album'=>$album,'photograph'=>$photograph,'date'=>$date,'description'=>$description,'picture'=>$picture,'picSize'=>$picSize));
+
+					$galleryURI = $uri.$this->generateGalleryURI($album, $dateTime);
+
+					array_push($galleries, array('album'=>$album,'photograph'=>$photograph,'date'=>$date,'description'=>$description,'picture'=>$picture,'picSize'=>$picSize, 'galleryURI'=>$galleryURI));
 				}
 				require_once("template/gallery.main.tpl.php");
 			}
 			else {
-				if ($_GET['action']=="thumb") {
-					$location = $this->db->escapeString($_GET['id']);
+				if ($this->getAction() == "thumb") {
+					$location = $this->db->escapeString($pageID);
 					$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 					while ($row = $this->db->fetchArray($result)) {
 						$location = $this->db->escapeString($row['maps_to']);
 					}
-					$album = $this->db->escapeString($_GET['show']);
+					$album = $this->db->escapeString($this->getGalleryID());
 					$pictures = array();
 					$result = $this->db->query("SELECT `folder`, `photograph` FROM `album` WHERE `album`='$album' AND `location`='$location' AND `visible`='1' AND `deleted`='0'");
 					while ($row = $this->db->fetchArray($result)) {
@@ -465,10 +471,7 @@ class Gallery implements Module {
 	private function getPagination($location) {
         $result = $this->db->query("SELECT COUNT(`album`) AS rowcount FROM `album` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
         $pages = $this->db->getRowCount($result)/10;
-        $page = 1;
-        if (isset($_GET['page'])) {
-        	$page = $_GET['page'];
-        }
+        $page = $this->getPage();
         $startPage = 1;
         if ($page - $this->PAGINATION_DISTANCE > 1) {
         	$startPage = $page - $this->PAGINATION_DISTANCE;
@@ -539,7 +542,7 @@ class Gallery implements Module {
 		return null;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -548,6 +551,132 @@ class Gallery implements Module {
 	
 	public function getTitle() {
 		return null;
+	}
+
+	private function generateGalleryURI($gallery, $dateTime) {
+		$uri = "";
+		$config = new Configuration();
+		if ($config->getEnableOldURIs()) {
+			$uri = "&show=".$gallery."&action=thumb";
+		}
+		else {
+			$date = $dateTime->format("Y\-m\-d");
+
+			$uri = "/".$date."-".$gallery;
+		}
+		return $uri;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		$uri = "";
+		$action = $this->getAction();
+		if ($action == "thumb") {
+			$config = new Configuration();
+			$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+			$gallery = $this->db->escapeString($this->getGalleryID());
+			$result = $this->db->query("SELECT `date` FROM `album` WHERE `album` = $gallery");
+			$date = "";
+			while ($row = $this->db->fetchArray($result)) {
+				$dateTime->setTimestamp($row['date']);
+				$date = $dateTime->format("Y\-m\-d");
+			}
+			$uri = "/".$date."-".$gallery;
+		}
+
+		$page = $this->getPage();
+		if ($page > 1) {
+			$uri = "/".$page;
+		}
+		return $uri;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		$uri = "";
+		$action = $this->getAction();
+		if ($action == "thumb") {
+			$uri = "&show=".$this->getGalleryID()."&action=".$action;
+		}
+
+		$page = $this->getPage();
+		if ($page > 1) {
+			$uri = "&page=".$page;
+		}
+		return $uri;
+	}
+
+	private function getGalleryID() {
+		$gallery = -1;
+
+		if (isset($_GET['show'])) {
+			$gallery = $_GET['show'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$galleryPart = $explodedRequestURI[1];
+				$explodedGalleryPart = explode('-', $galleryPart);
+				$explodedGalleryPartSlugSize = sizeof($explodedGalleryPart);
+				if ($explodedGalleryPartSlugSize > 1) {
+					$gallery = $explodedGalleryPart[$explodedGalleryPartSlugSize - 1];
+				}
+			}
+		}
+
+		return $gallery;
+	}
+
+	public function getPage() {
+		$page = 1;
+		if (isset($_GET['page'])) {
+			$page = $_GET['page'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$pageSlug = $explodedRequestURI[1];
+				$explodedPageSlug = explode('-', $pageSlug);
+				$explodedPageSlugSize = sizeof($explodedPageSlug);
+				if ($explodedPageSlugSize == 1) {
+					$page = $pageSlug;
+				}
+			}
+		}
+		return $page;
+	}
+
+	private function getAction() {
+		$action = null;
+
+		if (isset($_GET['action'])) {
+			$action = $_GET['action'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				if ($this->getGalleryID() > -1) {
+					$action = "thumb";
+				}
+			}
+		}
+
+		return $action;
+	}
+
+	public function getPageURIFormatted($page) {
+		$result = "";
+		if ($page > 1) {
+			$config = new Configuration();
+			if ($config->getEnableOldURIs()) {
+				$result = "&page=".$page;
+			}
+			else {
+				$result = "/".$page;
+			}
+		}
+		return $result;
 	}
 }
 ?>

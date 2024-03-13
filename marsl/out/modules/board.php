@@ -54,56 +54,66 @@ class Board implements Module {
 	 * Displays the boards of a global location.
 	 */
 	public function display() {
-		$location = $this->db->escapeString($_GET['id']);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$id = $navi->getPageID();
+		$location = $this->db->escapeString($id);
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if ($this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
-			if (isset($_GET['action'])) {
-				$threadClass = new Thread($this->db, $this->auth, $this->role);
-				$postClass = new Post($this->db, $this->auth, $this->role);
-				if ($_GET['action']=="threads") {
-					$threadClass->display();
-				}
-				if ($_GET['action']=="posts") {
-					$postClass->display();
-				}
-				if ($_GET['action']=="edit") {
-					$postClass->edit();
-				}
-				if ($_GET['action']=="answer") {
-					$postClass->answer();
-				}
-				if ($_GET['action']=="newthread") {
-					$threadClass->newThread();
-				}
-				if ($_GET['action']=="globalfix") {
+			$action = $this->getAction();
+			$threadAction = $this->getThreadAction();
+			$threadClass = new Thread($this->db, $this->auth, $this->role);
+			$postClass = new Post($this->db, $this->auth, $this->role);
+			if (isset($threadAction) && !empty($threadAction)) {
+				if ($threadAction=="globalfix") {
 					$threadClass->fixGlobal();
 				}
-				if ($_GET['action']=="localfix") {
-					$threadClass->fixLocal();
-				}
-				if ($_GET['action']=="title") {
-					$threadClass->changeTitle();
-				}
-				if ($_GET['action']=="move") {
-					$threadClass->moveThread();
-				}
-				if ($_GET['action']=="delete") {
-					$threadClass->delete();
-				}
-				if ($_GET['action']=="defix") {
+				if ($threadAction=="defix") {
 					$threadClass->removeFixation();
 				}
-				if ($_GET['action']=="close") {
+				if ($threadAction=="localfix") {
+					$threadClass->fixLocal();
+				}
+				if ($threadAction=="posts") {
+					$postClass->display();
+				}
+				if ($threadAction=="title") {
+					$threadClass->changeTitle();
+				}
+				if ($threadAction=="move") {
+					$threadClass->moveThread();
+				}
+				if ($threadAction=="delete") {
+					$threadClass->delete();
+				}
+				if ($threadAction=="close") {
 					$threadClass->close();
 				}
-				if ($_GET['action']=="open") {
+				if ($threadAction=="open") {
 					$threadClass->open();
+				}
+			}
+			else if (isset($action) && !empty($action)) {
+				if ($action=="threads") {
+					$threadClass->display();
+				}
+				if ($action=="posts") {
+					$postClass->display();
+				}
+				if ($action=="edit") {
+					$postClass->edit();
+				}
+				if ($action=="answer") {
+					$postClass->answer();
+				}
+				if ($action=="newthread") {
+					$threadClass->newThread();
 				}
 			}
 			else {
 				$user = new User($this->db, $this->role);
 				$categories = array();
+				$uri = $navi->getRelativeURI($location, null, false);
 				$result = $this->db->query("SELECT `board`, `title`, `threadcount`, `postcount`, `description`, `type`, `location` FROM `board` WHERE `type` IN ('0', '1') AND `location`='$location' OR `location`IN (SELECT `board` FROM `board` WHERE `location`='$location') ORDER BY `type`, `pos`");
 				while ($row = $this->db->fetchArray($result)) {
 					$type = $row['type'];
@@ -150,7 +160,10 @@ class Board implements Module {
 									array_push($operators, array('user'=>$operator, 'nickname'=>$operatorNick));
 								}
 							}
-							array_push($categories[$category]['boards'], array('board'=>$board, 'title'=>$title, 'description'=>$description, 'threadcount'=>$threadcount, 'postcount'=>$postcount, 'thread'=>$thread, 'threadTitle'=>$threadTitle, 'page'=>$page, 'post'=>$post, 'date'=>$postTime, 'user'=>$postAuthor, 'nickname'=>$authorName, 'operators'=>$operators));
+							$boardURIPart = $this->getBoardURIPart($board, $title);
+							$threadsURI = $uri.$boardURIPart;
+							$pagePostsURI = $uri.$threadClass->getThreadURIPart($thread, $threadTitle, $page);
+							array_push($categories[$category]['boards'], array('board'=>$board, 'title'=>$title, 'description'=>$description, 'threadcount'=>$threadcount, 'postcount'=>$postcount, 'thread'=>$thread, 'threadTitle'=>$threadTitle, 'threadsURI'=>$threadsURI, 'page'=>$page, 'post'=>$post, 'pagePostsURI'=>$pagePostsURI, 'date'=>$postTime, 'user'=>$postAuthor, 'nickname'=>$authorName, 'operators'=>$operators));
                         }
                     }
 				}
@@ -565,7 +578,7 @@ class Board implements Module {
 		return null;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -575,7 +588,127 @@ class Board implements Module {
 	public function getTitle() {
 		return null;
 	}
-	
+
+	public function getRestfulURIPartFromOldURL() {
+		$uri = "";
+		$action = $this->getAction();
+		$threadAction = $this->getThreadAction();
+		if (isset($action) && !empty($action)) {
+			if ($action=="posts" || $action=="edit" || $action=="answer") {
+				$post = new Post($this->db, $this->auth, $this->role);
+				$uri = $post->getRestfulURIPartFromOldURL($action);
+			}
+			if ($action=="threads" || $action=="newthread") {
+				$thread = new Thread($this->db, $this->auth, $this->role);
+				$uri = $uri.$thread->getRestfulURIPartFromOldURL($action);
+			}
+		}
+
+		if (isset($threadAction) && !empty($threadAction)) {
+			if ($threadAction=="posts") {
+				$uri = "/".$threadAction;
+				$post = new Post($this->db, $this->auth, $this->role);
+				$uri = $uri.$post->getRestfulURIPartFromOldURL($threadAction);
+			}
+		}
+		return $uri;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		$uri = "";
+		$action = $this->getAction();
+		$threadAction = $this->getThreadAction();
+		if (isset($action) && !empty($action)) {
+			$uri = "&action=".$action;
+			if ($action=="posts" || $threadAction == "posts" || $action=="edit" || $action=="answer") {
+				$post = new Post($this->db, $this->auth, $this->role);
+				$uri = $uri.$post->getOldURIPartFromRestfulURL($action);
+			}
+			if ($action=="threads" || $action=="newthread") {
+				$thread = new Thread($this->db, $this->auth, $this->role);
+				$uri = $uri.$thread->getOldURIPartFromRestfulURL();
+			}
+		}
+		return $uri;
+	}
+
+	public function getBoardID() {
+		$boardID = -1;
+
+		if (isset($_GET['board'])) {
+			$boardID = $_GET['board'];
+		}
+		else if (isset ($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$boardSlug = $explodedRequestURI[1];
+				$explodedBoardSlug = explode('-', $boardSlug);
+				$explodedBoardSlugSize = sizeof($explodedBoardSlug);
+				if ($explodedBoardSlugSize > 0) {
+					$boardID = $explodedBoardSlug[$explodedBoardSlugSize-1];
+				}
+			}
+		}
+
+		return $boardID;
+	}
+
+	public function getBoardURIPart($boardID, $boardTitle) {
+		$config = new Configuration();
+		$result = "";
+		if ($config->getEnableOldURIs()) {
+			$result = "&action=threads&board=".$boardID;
+		}
+		else {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$result = "/".$navi->generateRestfulURI($boardID, $boardTitle);
+		}
+		return $result;
+	}
+
+	private function getAction() {
+		$action = null;
+		if (isset($_GET['action'])) {
+			$action = $_GET['action'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$action = $explodedRequestURI[1];
+				if ($action != "threads" && $action != "newthread" && sizeof($explodedRequestURI) == 2) {
+					$action = "threads";
+				}
+				else if ($action != "threads" && $action != "newthread" && sizeof($explodedRequestURI) > 2) {
+					$action = $explodedRequestURI[2];
+				}
+			}
+		}
+		return $action;
+	}
+
+	private function getThreadAction() {
+		$threadAction = null;
+		if (isset($_GET['threadaction'])) {
+			$threadAction = $_GET['threadaction'];
+		}
+		return $threadAction;
+	}
+
+	public function getPageURIFormatted($page) {
+		$result = "";
+		if ($page > 1) {
+			$config = new Configuration();
+			if ($config->getEnableOldURIs()) {
+				$result = "&page=".$page;
+			}
+			else {
+				$result = "/".$page;
+			}
+		}
+		return $result;
+	}
 }
 
 ?>

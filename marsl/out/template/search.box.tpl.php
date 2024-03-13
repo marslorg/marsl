@@ -4,7 +4,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <div class="box">
 	<div class="box-title">Suche</div>
 	<div class="box-content">
-		<form method="get" action="index.php">
+		<form method="get" action="">
 			<input type="text" name="search" /><br />
 			in <select name="scope">
 				<?php foreach ($searchList as $scope): ?>

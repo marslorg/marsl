@@ -61,7 +61,7 @@ class Forgot {
 				header("Location: admin/index.php");
 			}
 			else {
-				header("Location: index.php");
+				header("Location: ./");
 			}
 		}
 		$db->close();

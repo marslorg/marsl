@@ -66,7 +66,7 @@ $(function() {
 </script>
 <!-- /TinyMCE -->
 <h2>Beitrag &auml;ndern</h2>
-<form method="post" action="index.php?id=<?php echo $location; ?>&amp;action=edit&amp;post=<?php echo $postID; ?>&amp;page=<?php echo $page; ?>">
+<form method="post" action="<?php echo $pagePostEditURI; ?>">
 	<div style="display:table">
 		<table>
 			<tr><td><textarea name="content" rows="30"><?php echo $content; ?></textarea></td></tr>

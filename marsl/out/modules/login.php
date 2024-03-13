@@ -1,10 +1,12 @@
 <?php
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
+include_once(dirname(__FILE__)."/../includes/config.inc.php");
 
 class Login implements Module {
 
@@ -20,13 +22,19 @@ class Login implements Module {
 	
 	public function display() {
 		$user = new User($this->db, $this->role);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
 		$location = "";
-		if (isset($_GET['id'])) {
-			$location = $_GET['id'];
+		if ($pageID > -1) {
+			$location = $pageID;
 		}
 		else {
 			$location = $basic->getHomeLocation();
 		}
+
+		$uri = $navi->getRelativeURI($location, null, true);
+		$forgotURI = $uri."action=forgot";
+
 		if ($user->isGuest()||$user->isAdmin()) {
 			
 			if ($this->auth->moduleReadAllowed("login", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
@@ -127,14 +135,19 @@ class Login implements Module {
 	}
 
 	private function recover() {
-		
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
 		$location = "";
-		if (isset($_GET['id'])) {
-			$location = $_GET['id'];
+		if ($pageID > -1) {
+			$location = $pageID;
 		}
 		else {
 			$location = $basic->getHomeLocation();
 		}
+
+		$baseURI = $navi->getRelativeURI($location, null, true);
+		$baseForgotURI = $baseURI."action=forgot";
+		$baseRecoverURI = $baseForgotURI."&action2=recover";
 		
 		if (isset($_GET['status'])&&$_GET['status']=="success") {
 			$init = false;
@@ -148,6 +161,9 @@ class Login implements Module {
 			if (isset($_GET['subaction'])) {
 				if ($_GET['subaction']=="set") {
 					$time = $_GET['time'];
+
+					$config = new Configuration();
+
 					if ($time+172800 >= time()) {
 						$uid = $_GET['uid'];
 						$user = new User($this->db, $this->role);
@@ -159,18 +175,18 @@ class Login implements Module {
 							$password2 = $_POST['password2'];
 							if ($password==$password2) {
 								$user->setPassword($uid, $password);
-								header("Location: index.php?id=".$location."&action=forgot&action2=recover&status=success");
+								header("Location: ".$baseRecoverURI."&status=success");
 							}
 							else {
-								header("Location: index.php?id=".$location."&action=forgot&action2=recover&status=failed&uid=".$uid."&time=".$time."&auth=".$authParameter);
+								header("Location: ".$baseRecoverURI."&status=failed&uid=".$uid."&time=".$time."&auth=".$authParameter);
 							}
 						}
 						else {
-							header("Location: index.php?id=".$location."&action=forgot&action2=recover&uid=".$uid."&time=".$time."&auth=".$authParameter);
+							header("Location: ".$baseRecoverURI."&uid=".$uid."&time=".$time."&auth=".$authParameter);
 						}
 					}
 					else {
-						header("Location: index.php?id=".$location."&action=forgot&action2=recover&uid=".$uid."&time=".$time."&auth=".$authParameter);
+						header("Location: ".$baseRecoverURI."&uid=".$uid."&time=".$time."&auth=".$authParameter);
 					}
 						
 				}
@@ -185,10 +201,11 @@ class Login implements Module {
 	}
 	
 	private function recoverBox() {
-		
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
 		$location = "";
-		if (isset($_GET['id'])) {
-			$location = $_GET['id'];
+		if ($pageID > -1) {
+			$location = $pageID;
 		}
 		else {
 			$location = $basic->getHomeLocation();
@@ -218,10 +235,16 @@ class Login implements Module {
 				$recover = true;
 			}
 		}
+
+		$baseURI = $navi->getRelativeURI($location, null, true);
+		$baseForgotURI = $baseURI."action=forgot";
+		$baseRecoverURI = $baseForgotURI."&action2=recover";
+		$baseRecoverSetURI = $baseRecoverURI."&subaction=set&uid=".$uid."&time=".$time."&auth=".$authParameter;
+
 		require_once("template/recover.tpl.php");
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -229,6 +252,14 @@ class Login implements Module {
 	}
 	
 	public function getTitle() {
+		return null;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		return null;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
 		return null;
 	}
 }

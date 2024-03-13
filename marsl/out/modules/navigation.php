@@ -2,9 +2,13 @@
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
+include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../user/role.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/../includes/slugify/vendor/autoload.php");
+
+use Cocur\Slugify\Slugify;
 
 class Navigation implements Module {
 	
@@ -66,6 +70,7 @@ class Navigation implements Module {
 	 */
 	public function display() {
 		if ($this->auth->moduleReadAllowed("navigation", $this->role->getRole())) {
+			$config = new Configuration();
 			$categories = array();
 			$links = array();
 			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
@@ -73,14 +78,24 @@ class Navigation implements Module {
 				if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
 					$id = $this->basic->convertToHTMLEntities($row['id']);
 					$name = $this->basic->convertToHTMLEntities($row['name']);
+
+					$link = "";
+
+					if ($config->getEnableOldURIs()) {
+						$link = "index.php?id=".$row['id'];
+					}
+					else {
+						$link = $this->generateRestfulURI($row['id'], $row['name']);
+					}
+					
 					if ($row['type'] == 0 || $row['type'] == 1) {
-						array_push($categories, array('id' => $id, 'name' => $name, 'type' => $row['type']));
+						array_push($categories, array('id' => $id, 'name' => $name, 'link' => $link, 'type' => $row['type']));
 					}
 					else if ($row['type'] == 2) {
 						if (!array_key_exists($row['category'], $links)) {
 							$links[$row['category']] = array();
 						}
-						array_push($links[$row['category']], array('id' => $id, 'name' => $name));
+						array_push($links[$row['category']], array('id' => $id, 'name' => $name, 'link' => $link));
 					}
 				}
 			}
@@ -250,7 +265,7 @@ class Navigation implements Module {
 		return null;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -259,6 +274,109 @@ class Navigation implements Module {
 	
 	public function getTitle() {
 		return null;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		return null;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		return null;
+	}
+
+	public function generateRestfulURIByID($id) {
+		list($title, $module) = $this->getModuleAndTitleByID($id);
+		$uri = $this->generateRestfulURI($id, $title);
+		return $uri;
+	}
+
+	public function generateRestfulURI($id, $title) {
+		$slugify = new Slugify();
+		return  $slugify->slugify($title)."-".$id;
+	}
+
+	public function getModuleAndTitleByID($id) {
+		$id = $this->db->escapeString($id);
+        $result = $this->db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND `type` IN ('1','2')");
+        while ($row = $this->db->fetchArray($result)) {
+            $title = $row['name']." - ";
+            $module = $this->db->escapeString($row['module']);
+        }
+
+        return array($title, $module);
+    }
+
+	public function getIDFromRestfulURI() {
+		$id = -1;
+
+		if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 0) {
+				$pagePart = $explodedRequestURI[0];
+				$explodedPagePart = explode('-', $pagePart);
+				$explodedPagePartSize = sizeof($explodedPagePart);
+				if ($explodedPagePartSize > 0) {
+					$id = $explodedPagePart[$explodedPagePartSize-1];
+				}
+			}
+		}
+
+		return $id;
+	}
+
+	public function getPageID() {
+		$config = new Configuration();
+
+		$id = -1;
+		if (!$config->getEnableOldURIs()) {
+			$id = $this->getIDFromRestfulURI();
+		}
+
+		if ($id == -1) {
+			if ($config->getEnableOldURIs() && isset($_GET['id'])) {
+				$id = $_GET['id'];
+			}
+			else if ($config->getEnableOldURIs() && !isset($_GET['id']) && isset($_GET['tag'])) {
+				$id = -1;
+			}
+			else {
+				$result = $this->db->query("SELECT `homepage` FROM homepage");
+				while ($row = $this->db->fetchArray($result)) {
+					$id = $row['homepage'];
+				}
+			}
+		}
+
+		$id = $this->db->escapeString($id);
+
+		return $id;
+	}
+
+	public function getRelativeURI($id, $title, $withParameters) {
+		$config = new Configuration();
+		$uri = "";
+
+		if ($config->getEnableOldURIs()) {
+			$uri = "index.php?id=".$id;
+			if ($withParameters) {
+				$uri = $uri."&";
+			}
+		}
+		else {
+			if (isset($title) && !empty($title)) {
+				$uri = $this->generateRestfulURI($id, $title);
+			}
+			else {
+				$uri = $this->generateRestfulURIByID($id);
+			}
+
+			if ($withParameters) {
+				$uri = $uri."?";
+			}
+		}
+
+		return $uri;
 	}
 }
 

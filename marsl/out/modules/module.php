@@ -58,7 +58,7 @@ interface Module {
 	/*
 	 * Displays the information of a tag.
 	 */
-	public function displayTag($tagID, $type);
+	public function displayTag();
 	
 	/*
 	 * Returns a page specific image.
@@ -69,5 +69,9 @@ interface Module {
 	 * 
 	 */
 	public function getTitle();
+
+	public function getRestfulURIPartFromOldURL();
+
+	public function getOldURIPartFromRestfulURL();
 }
 ?>

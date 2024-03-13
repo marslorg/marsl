@@ -1,7 +1,9 @@
 <?php
 include_once(dirname(__FILE__)."/../../../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../../../includes/dbsocket.php");
+include_once(dirname(__FILE__)."/../../../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../../../user/auth.php");
+include_once(dirname(__FILE__)."/../../../modules/navigation.php");
 
 class Menu
 {
@@ -16,7 +18,8 @@ class Menu
     }
 
     public function read() {
-        list($categories, $links) = $this->getNavigationStructure();
+        $role = new Role($this->db);
+        list($categories, $links) = $this->getNavigationStructure($role);
 
         $resultArray = array();
         foreach ($categories as $category) {
@@ -24,14 +27,14 @@ class Menu
             $categoryName = $category['name'];
             $categoryTarget = null;
             if ($category['type'] == 1) {
-                $categoryTarget = "index.php?id=".$category['id'];
+                $categoryTarget = $this->getURIByID($category['id'], $categoryName, $role);
             }
             $childs = array();
             if ($category['type'] == 0 && array_key_exists($category['id'], $links)) {
                 foreach ($links[$category['id']] as $link) {
                     $linkID = $link['id'];
                     $linkName = $link['name'];
-                    $linkTarget = "index.php?id=".$link['id'];
+                    $linkTarget = $this->getURIByID($link['id'], $linkName, $role);
                     array_push($childs, array('id' => $linkID, 'name' => $linkName, 'target' => $linkTarget));
                 }
             }
@@ -43,8 +46,14 @@ class Menu
         echo $jsonMessage;
     }
 
-    private function getNavigationStructure(){
-        $role = new Role($this->db);
+    private function getURIByID($id, $name, $role) {
+        $navi = new Navigation($this->db, $this->auth, $role);
+        $uri = $navi->getRelativeURI($id, $name, false);
+
+        return $uri;
+    }
+
+    private function getNavigationStructure($role) {
         $guestRole = $role->getGuestRole();
         $categories = array();
         $links = array();

@@ -1,11 +1,17 @@
 <?php
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../includes/basic.php");
+include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/module.php");
 include_once(dirname(__FILE__)."/cbe/location.php");
 include_once(dirname(__FILE__)."/cbe/band.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../user/user.php");
 include_once(dirname(__FILE__)."/../user/role.php");
+include_once(dirname(__FILE__)."/navigation.php");
+include_once(dirname(__FILE__)."/../includes/slugify/vendor/autoload.php");
+
+use Cocur\Slugify\Slugify;
 
 class CBE implements Module {
 
@@ -13,6 +19,7 @@ class CBE implements Module {
 	private $auth;
 	private $role;
 	private $basic;
+	private $baseLinks = array();
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
@@ -152,25 +159,43 @@ class CBE implements Module {
 		if ($type=="band") {
 			$result = $this->db->query("SELECT `id`, `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
 			while ($row = $this->db->fetchArray($result)) {
-				array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+    			$ret = $this->buildTagArray($row, $type, $ret);
 			}
 		}
 		
 		if ($type=="location") {
 			$result = $this->db->query("SELECT `id`, `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
 			while ($row = $this->db->fetchArray($result)) {
-				array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+				$ret = $this->buildTagArray($row, $type, $ret);
 			}
 		}
 		
 		return $ret;
 	}
+
+    private function buildTagArray($row, $type, $ret)
+    {
+        $uri = "";
+		$config = new Configuration();
+        if ($config->getEnableOldURIs()) {
+        	$uri = "index.php?tag=".$row['id']."&scope=cbe_".$type;
+        }
+        else {
+        	$slugify = new Slugify();
+        	$tagPart = $slugify->slugify($row['tagname'])."-".$row['id'];
+        	$uri = "tag/cbe_".$type."/".$tagPart;
+        }
+        array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname'], 'uri'=>$uri));
+		return $ret;
+    }
 	
-	public function displayTag($tagID, $type) {
-		$tagID = $this->db->escapeString($tagID);
+	public function displayTag() {
+		$tagID = $this->db->escapeString($this->getTagID());
+		$type = $this->getScope();
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
-		if ($type=="location") {
+
+		if ($type=="cbe_location") {
 			$articles = array();
 			$tagName = "";
 			$result = $this->db->query("SELECT `tag` FROM `location` WHERE `id`='$tagID'");
@@ -187,13 +212,14 @@ class CBE implements Module {
 					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
 					$locationName = $this->basic->convertToHTMLEntities($row['name']);
-					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+					$link = $this->generateRelativeURI($location, $locationName, $news);
+					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName, 'link'=>$link));
 				}
 			}
 			require_once("template/cbe.location.tpl.php");
 		}
 		
-		if ($type=="band") {
+		if ($type=="cbe_band") {
 			$articles = array();
 			$tagName = "";
 			$result = $this->db->query("SELECT `tag` FROM `band` WHERE `id`='$tagID'");
@@ -210,7 +236,8 @@ class CBE implements Module {
 					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
 					$locationName = $this->basic->convertToHTMLEntities($row['name']);
-					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+					$link = $this->generateRelativeURI($location, $locationName, $news);
+					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName, 'link'=>$link));
 				}
 			}
 			require_once("template/cbe.band.tpl.php");
@@ -223,6 +250,87 @@ class CBE implements Module {
 	
 	public function getTitle() {
 		return null;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		$uri = "";
+		$scope = $this->getScope();
+		if (isset($scope)) {
+			$uri = $uri."/".$scope;
+			$tagID = $this->db->escapeString($this->getTagID());
+			$explodedScope = explode("_", $scope);
+			$subScope = $this->db->escapeString($explodedScope[1]);
+			$tagName = "";
+			$result = $this->db->query("SELECT `tag` FROM `".$subScope."` WHERE `id`='$tagID'");
+			while ($row = $this->db->fetchArray($result)) {
+				$tagName = $this->basic->convertToHTMLEntities($row['tag']);
+			}
+			$slugify = new Slugify();
+			$tagPart = $slugify->slugify($tagName)."-".$tagID;
+			$uri = $uri."/".$tagPart;
+		}
+		return $uri;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		$uri = "";
+
+		$scope = $this->getScope();
+		$tagID = $this->getTagID();
+		if (isset($scope) && isset($tagID)) {
+			$uri = "index.php?tag=".$tagID."&scope=".$scope;
+		}
+
+		return $uri;
+	}
+
+	private function getTagID() {
+		$tagID = -1;
+
+		if (isset($_GET['tag'])) {
+			$tagID = $_GET['tag'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 2) {
+				$tag = $explodedRequestURI[2];
+				$explodedTag = explode('-', $tag);
+				$explodedTagSlugSize = sizeof($explodedTag);
+				if ($explodedTagSlugSize > 0) {
+					$tagID = $explodedTag[$explodedTagSlugSize-1];
+				}
+			}
+		}
+
+		return $tagID;
+	}
+
+	private function getScope() {
+		$scope = null;
+		if (isset($_GET['scope'])) {
+			$scope = $_GET['scope'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$scope = $explodedRequestURI[1];
+			}
+		}
+		return $scope;
+	}
+
+	private function generateRelativeURI($location, $locationName, $news) {
+		if (array_key_exists($location, $this->baseLinks)) {
+			$link = $this->baseLinks[$location];
+		}
+		else {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$uri = $navi->getRelativeURI($location, $locationName, true);
+			$link = $uri."show=".$news."&action=read";
+		}
+		return $link;
 	}
 }
 ?>

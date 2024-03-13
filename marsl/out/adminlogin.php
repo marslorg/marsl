@@ -31,7 +31,7 @@ class Login {
 			}
 		}
 		else {
-			header("Location: index.php");
+			header("Location: ./");
 		}
 	}
 }

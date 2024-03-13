@@ -26,14 +26,14 @@ class Login {
 			$db->close();
 			$referer = $_SERVER['HTTP_REFERER'];
 			if ($rightpw) {
-				header("Location: index.php");
+				header("Location: ./");
 			}
 			else {
 				header("Location: ".$referer."&wrongpw=1");
 			}
 		}
 		else {
-			header("Location: index.php");
+			header("Location: ./");
 		}
 	}
 }

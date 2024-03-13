@@ -6,6 +6,7 @@ include_once (dirname(__FILE__)."/user/role.php");
 include_once (dirname(__FILE__)."/user/auth.php");
 include_once (dirname(__FILE__)."/includes/mailer.php");
 include_once (dirname(__FILE__)."/includes/config.inc.php");
+include_once(dirname(__FILE__)."/modules/navigation.php");
 
 class Forgot {
 	
@@ -26,39 +27,42 @@ class Forgot {
 		if ($user->isGuest()||$user->isAdmin()) {
 			if (isset($_POST['action'])) {
 				$mailer = new Mailer($db, $role);
+				$navi = new Navigation($db, $auth, $role);
+				$uri = $navi->getRelativeURI($location, null, true);
+				$uri = $config->getDomain().$config->getBasePath().$uri;
 				if ($_POST['action']=="password") {
 					if (!empty($_POST['nickname'])) {
 						if($mailer->sendPasswordMail($location, $_POST['nickname'], $auth)) {
-							header("Location: index.php?id=".$location."&action=forgot&action2=success&topic=password");
+							header("Location: ".$uri."action=forgot&action2=success&topic=password");
 						}
 						else {
-							header("Location: index.php?id=".$location."&action=forgot&action2=failed&topic=password");
+							header("Location: ".$uri."action=forgot&action2=failed&topic=password");
 						}
 					}
 					else {
-						header("Location: index.php?id=".$location."&action=forgot&action2=empty");
+						header("Location: ".$uri."action=forgot&action2=empty");
 					}
 				}
 				elseif ($_POST['action']=="nickname") {
 					if (!empty($_POST['mail'])) {
 						if($mailer->sendNicknameMail($_POST['mail'], $auth)) {
-							header("Location: index.php?id=".$location."&action=forgot&action2=success&topic=nickname");
+							header("Location: ".$uri."action=forgot&action2=success&topic=nickname");
 						}
 						else {
-							header("Location: index.php?id=".$location."&action=forgot&action2=failed&topic=nickname");
+							header("Location: ".$uri."action=forgot&action2=failed&topic=nickname");
 						}
 					}
 					else {
-						header("Location: index.php?id=".$location."&action=forgot&action2=empty");
+						header("Location: ".$uri."action=forgot&action2=empty");
 					}
 				}
 				else {
-					header("Location: index.php?id=".$location."&action=forgot&action2=empty");
+					header("Location: ".$uri."action=forgot&action2=empty");
 				}
 			}
 		}
 		else {
-			header("Location: index.php");
+			header("Location: ".$config->getDomain().$config->getBasePath);
 		}
 		$db->close();
 	}

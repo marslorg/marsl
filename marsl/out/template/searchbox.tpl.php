@@ -1,7 +1,7 @@
 <?php
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
-<form method="get" action="index.php" class="searchbox">
+<form method="get" action="<?php echo $baseURL; ?>" class="searchbox">
 	<input type="text" name="search" />
 	in <select name="scope">
 		<?php foreach ($searchList as $scope): ?>

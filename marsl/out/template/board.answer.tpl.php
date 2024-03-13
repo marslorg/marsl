@@ -65,8 +65,8 @@ $(function() {
 	});
 </script>
 <!-- /TinyMCE -->
-<h2>Antwort auf Thema: <a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;thread=<?php echo $threadID;?>"><?php echo $title; ?></a></h2>
-<form method="post" action="index.php?id=<?php echo $location; ?>&amp;action=answer&amp;thread=<?php echo $threadID; ?>">
+<h2>Antwort auf Thema: <a href="<?php echo $postsURI; ?>"><?php echo $title; ?></a></h2>
+<form method="post" action="<?php echo $answerURI; ?>">
 	<div style="display:table">
 		<table>
 			<tr><td><textarea name="content" rows="30"><?php echo $quote; ?></textarea></td></tr>

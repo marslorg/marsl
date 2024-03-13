@@ -7,6 +7,7 @@ include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../includes/mailer.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/navigation.php");
 
 class UserData implements Module {
 
@@ -189,12 +190,16 @@ class UserData implements Module {
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		
 		$location = "";
-		if (isset($_GET['id'])) {
-			$location = $_GET['id'];
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		if ($pageID > -1) {
+			$location = $pageID;
 		}
 		else {
 			$location = $basic->getHomeLocation();
 		}
+
+		$uri = $navi->getRelativeURI($location, null, true);
 		
 		$samePasswords = true;
 		$rightPassword = true;
@@ -334,7 +339,11 @@ class UserData implements Module {
 				$email = $basic->convertToHTMLEntities($row['email']);
 				$confirmed = $row['confirmed'];
 				$primary = $row['primary'];
-				array_push($emails, array('email'=>$email, 'confirmed'=>$confirmed, 'primary'=>$primary));
+				$encodedMail = urlencode($email);
+				$primaryURI = $uri."primemail=".$encodedMail."&time=".$authTime."&token=".$authToken;
+				$deleteURI = $uri."delmail=".$encodedMail."&time=".$authTime."&token=".$authToken;
+				$confirmURI = $uri."confmail=".$encodedMail."&time=".$authTime."&token=".$authToken;
+				array_push($emails, array('email'=>$email, 'confirmed'=>$confirmed, 'primary'=>$primary, 'primaryURI'=>$primaryURI, 'deleteURI'=>$deleteURI, 'confirmURI'=>$confirmURI));
 			}
 			
 			require_once("template/userdata.tpl.php");
@@ -393,7 +402,7 @@ class UserData implements Module {
 		return null;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -401,6 +410,14 @@ class UserData implements Module {
 	}
 	
 	public function getTitle() {
+		return null;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		return null;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
 		return null;
 	}
 }

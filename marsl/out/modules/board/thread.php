@@ -1,6 +1,7 @@
 <?php
 include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../board.php");
+include_once(dirname(__FILE__)."/../navigation.php");
 include_once(dirname(__FILE__)."/../../user/user.php");
 include_once(dirname(__FILE__)."/../../user/role.php");
 include_once(dirname(__FILE__)."/../../user/auth.php");
@@ -24,10 +25,12 @@ class Thread {
 	 */
 	public function display() {
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$location = $_GET['id'];
-		$boardID = $this->db->escapeString($_GET['board']);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		$location = $pageID;
 		$user = new User($this->db, $this->role);
 		$board = new Board($this->db, $this->auth, $this->role);
+		$boardID = $this->db->escapeString($board->getBoardID());
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
 		if (($location==$board->getLocation($boardID))&&($this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())&&$board->readAllowed($boardID, $this->role->getRole()))) {
@@ -35,15 +38,21 @@ class Thread {
 			$globals = array();
 			$fixeds = array();
 			$page = 1;
-			if (!isset($_GET['page'])) {
-				$globals = $this->getGlobals();
-				$fixeds = $this->getFixeds();
+			$uri = $navi->getRelativeURI($location, null, false);
+			$boardTitle = $board->getNameById($boardID); 
+			$newThreadURI = $uri.$this->getNewThreadURIPart($boardID, $boardTitle);;
+			$boardURIPart = $board->getBoardURIPart($boardID, $boardTitle);
+			$threadsURI = $uri.$boardURIPart;
+			$tmpPage = $this->getThreadPage();
+			if ($tmpPage == 0) {
+				$globals = $this->getGlobals($uri);
+				$fixeds = $this->getFixeds($uri);
 			}
 			else {
-				$page = $_GET['page'];
-				if ($_GET['page']=="1") {
-					$globals = $this->getGlobals();
-					$fixeds = $this->getFixeds();
+				$page = $tmpPage;
+				if ($tmpPage == 1) {
+					$globals = $this->getGlobals($uri);
+					$fixeds = $this->getFixeds($uri);
 				}
 			}
 			$threads = array();
@@ -69,7 +78,8 @@ class Thread {
 					$type = "open";
 				}
 				$curPage = $this->getPageNumber($thread);
-				array_push($threads, array('page'=>$curPage, 'post'=>$post, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date, 'type'=>$type));
+				$postsURI = $uri.$this->getThreadURIPart($thread, $title, 0);
+				array_push($threads, array('page'=>$curPage, 'post'=>$post, 'postsURI'=>$postsURI, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date, 'type'=>$type));
 			}
 			require_once("template/board.threads.tpl.php");
 		}
@@ -120,7 +130,7 @@ class Thread {
 	/*
 	 * Get globally fixed threads.
 	 */
-	private function getGlobals() {
+	private function getGlobals($uri) {
 		$basic = new Basic($this->db, $this->auth, $this->role);
 		$user = new User($this->db, $this->role);
 		$board = new Board($this->db, $this->auth, $this->role);
@@ -142,7 +152,8 @@ class Thread {
 				$dateTime->setTimestamp($row['date']);
 				$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
 				$page = $this->getPageNumber($thread);
-				array_push($globals, array('page'=>$page, 'post'=>$post, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date));
+				$postsURI = $uri.$this->getThreadURIPart($thread, $title, 0);
+				array_push($globals, array('page'=>$page, 'post'=>$post, 'postsURI'=>$postsURI, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date));
 			}
 		}
 		return $globals;
@@ -151,9 +162,10 @@ class Thread {
 	/*
 	 * Get fixed threads.
 	 */
-	private function getFixeds() {
+	private function getFixeds($uri) {
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$board = $this->db->escapeString($_GET['board']);
+		$boardClass = new Board($this->db, $this->auth, $this->role);
+		$board = $this->db->escapeString($boardClass->getBoardID());
 		$user = new User($this->db, $this->role);
 		$fixeds = array();
 		$config = new Configuration();
@@ -172,7 +184,8 @@ class Thread {
 			$dateTime->setTimestamp($row['date']);
 			$date = $dateTime->format("d\.m\.Y\, H\:i\:s");
 			$page = $this->getPageNumber($thread);
-			array_push($fixeds, array('page'=>$page, 'post'=>$post, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date));
+			$postsURI = $uri.$this->getThreadURIPart($thread, $title, 0);
+			array_push($fixeds, array('page'=>$page, 'post'=>$post, 'postsURI'=>$postsURI, 'thread'=>$thread, 'postcount'=>$postcount, 'title'=>$title, 'postAuthor'=>$postAuthor, 'threadAuthor'=>$threadAuthor, 'postNickname'=>$postNickname, 'threadNickname'=>$threadNickname, 'viewcount'=>$viewcount, 'date'=>$date));
 		}
 		return $fixeds;
 	}
@@ -195,8 +208,11 @@ class Thread {
 	 */
 	public function moveThread() {
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$location = $_GET['id'];
-		$threadID = $this->db->escapeString($_GET['thread']);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		$location = $pageID;
+		$threadID = $this->db->escapeString($this->getThreadID());
+		$threadTitle = $this->getNameById($threadID);
 		$board = new Board($this->db, $this->auth, $this->role);
 		$boardID = $this->getBoard($threadID);
 		$user = new User($this->db, $this->role);
@@ -204,6 +220,8 @@ class Thread {
 		$isAdmin = $board->isAdmin($boardID, $user->getID());
 		$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 		if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
+			$uri = $navi->getRelativeURI($location, null, false);
+			$uri = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
 			if (isset($_POST['do'])) {
 				if ($_POST['do']=="move") {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -227,9 +245,7 @@ class Thread {
 									$this->db->query("UPDATE `board` SET `threadcount`='$threadcount', `postcount`='$newPostcount' WHERE `board`='$destinationID'");
 								}
 							}
-														
-							$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
-							echo "<div class=\"success\">Das Thema wurde verschoben! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
+							echo "<div class=\"success\">Das Thema wurde verschoben! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$uri."\">hier</a>.</div><script>top.location.href='".$uri."'</script>";
 						}
 					}
 				}
@@ -247,6 +263,7 @@ class Thread {
 				$authTime = time();
 				$authToken = $this->auth->getToken($authTime);
 				$title = $this->getTitle($threadID);
+				$moveURI = $uri.$this->getMoveURI($threadID);
 				require_once("template/board.move.tpl.php");
 			}
 		}
@@ -256,8 +273,11 @@ class Thread {
 	 * Change the title of a thread.
 	 */
 	public function changeTitle() {
-		$location = $_GET['id'];
-		$threadID = $this->db->escapeString($_GET['thread']);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		$location = $pageID;
+		$threadID = $this->db->escapeString($this->getThreadID());
+		$threadTitle = $this->getNameById($threadID);
 		$board = new Board($this->db, $this->auth, $this->role);
 		$boardID = $this->getBoard($threadID);
 		$user = new User($this->db, $this->role);
@@ -265,14 +285,15 @@ class Thread {
 		$isAdmin = $board->isAdmin($boardID, $user->getID());
 		$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 		if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
+			$uri = $navi->getRelativeURI($location, null, false);
+			$uri = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
+			$titleURI = $uri.$this->getChangeTitleURI($threadID);
 			if (isset($_POST['do'])) {
 				if ($_POST['do']=="change") {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-						$this->db = new DB();
 						$title = $this->db->escapeString($_POST['title']);
 						$this->db->query("UPDATE `thread` SET `title`='$title' WHERE `thread`='$threadID'");
-						$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
-						echo "<div class=\"success\">Der Titel wurde ge&auml;ndert! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
+						echo "<div class=\"success\">Der Titel wurde ge&auml;ndert! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$uri."\">hier</a>.</div><script>top.location.href='".$uri."'</script>";
 					}
 				}
 			}
@@ -290,8 +311,11 @@ class Thread {
 	 */
 	public function open() {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-			$location = $_GET['id'];
-			$threadID = $this->db->escapeString($_GET['thread']);
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			$location = $pageID;
+			$threadID = $this->db->escapeString($this->getThreadID());
+			$threadTitle = $this->getNameById($threadID);
 			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
 			$user = new User($this->db, $this->role);
@@ -300,7 +324,8 @@ class Thread {
 			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='0' WHERE `thread`='$threadID'");
-				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
+				$uri = $navi->getRelativeURI($location, null, false);
+				$link = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
 				echo "<div class=\"success\">Das Thema wurde ge&ouml;ffnet! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 			}
 		}
@@ -311,8 +336,11 @@ class Thread {
 	 */
 	public function close() {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-			$location = $_GET['id'];
-			$threadID = $this->db->escapeString($_GET['thread']);
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			$location = $pageID;
+			$threadID = $this->db->escapeString($this->getThreadID());
+			$threadTitle = $this->getNameById($threadID);
 			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
 			$user = new User($this->db, $this->role);
@@ -321,7 +349,8 @@ class Thread {
 			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='3' WHERE `thread`='$threadID'");
-				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
+				$uri = $navi->getRelativeURI($location, null, false);
+				$link = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
 				echo "<div class=\"success\">Das Thema wurde geschlossen! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 			}
 		}
@@ -332,8 +361,10 @@ class Thread {
 	 */
 	public function delete() {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-			$location = $_GET['id'];
-			$threadID = $this->db->escapeString($_GET['thread']);
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			$location = $pageID;
+			$threadID = $this->db->escapeString($this->getThreadID());
 			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
 			$user = new User($this->db, $this->role);
@@ -352,7 +383,11 @@ class Thread {
 						$this->db->query("UPDATE `board` SET `threadcount`='$threadcount', `postcount`='$postcount' WHERE `board`='$boardID'");
 					}
 				}
-				$link = "index.php?id=".$location."&action=threads&board=".$boardID;
+				$uri = $navi->getRelativeURI($location, null, false);
+
+				$boardTitle = $board->getNameById($boardID); 
+				$boardURIPart = $board->getBoardURIPart($boardID, $boardTitle);
+				$link = $uri.$boardURIPart;
 				echo "<div class=\"success\">Das Thema wurde gel&ouml;scht! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 			}
 		}
@@ -363,14 +398,18 @@ class Thread {
 	 */
 	public function fixGlobal() {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-			$location = $_GET['id'];
-			$threadID = $this->db->escapeString($_GET['thread']);
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			$location = $pageID;
+			$threadID = $this->db->escapeString($this->getThreadID());
+			$threadTitle = $this->getNameById($threadID);
 			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
 			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&$isGlobalAdmin) {
 				$this->db->query("UPDATE `thread` SET `type`='2' WHERE `thread`='$threadID'");
-				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
+				$uri = $navi->getRelativeURI($location, null, false);
+				$link = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
 				echo "<div class=\"success\">Das Thema wurde global fixiert! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 			}
 		}
@@ -381,8 +420,11 @@ class Thread {
 	 */
 	public function fixLocal() {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-			$location = $_GET['id'];
-			$threadID = $this->db->escapeString($_GET['thread']);
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			$location = $pageID;
+			$threadID = $this->db->escapeString($this->getThreadID());
+			$threadTitle = $this->getNameById($threadID);
 			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
 			$user = new User($this->db, $this->role);
@@ -391,7 +433,8 @@ class Thread {
 			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&($isGlobalAdmin||$isOperator||$isAdmin)) {
 				$this->db->query("UPDATE `thread` SET `type`='1' WHERE `thread`='$threadID'");
-				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
+				$uri = $navi->getRelativeURI($location, null, false);
+				$link = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
 				echo "<div class=\"success\">Das Thema wurde fixiert! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 			}
 		}
@@ -402,14 +445,18 @@ class Thread {
 	 */
 	public function removeFixation() {
 		if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-			$location = $_GET['id'];
-			$threadID = $this->db->escapeString($_GET['thread']);
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$pageID = $navi->getPageID();
+			$location = $pageID;
+			$threadID = $this->db->escapeString($this->getThreadID());
+			$threadTitle = $this->getNameById($threadID);
 			$board = new Board($this->db, $this->auth, $this->role);
 			$boardID = $this->getBoard($threadID);
 			$isGlobalAdmin = ($this->auth->moduleAdminAllowed("board", $this->role->getRole())&&$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 			if (($location==$board->getLocation($boardID))&&$isGlobalAdmin) {
 				$this->db->query("UPDATE `thread` SET `type`='0' WHERE `thread`='$threadID'");
-				$link = "index.php?id=".$location."&action=posts&thread=".$threadID;
+				$uri = $navi->getRelativeURI($location, null, false);
+				$link = $uri.$this->getThreadURIPart($threadID, $threadTitle, 0);
 				echo "<div class=\"success\">Die Ank&uuml;ndigung wurde aufgehoben! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 			}
 		}
@@ -421,11 +468,16 @@ class Thread {
 	public function newThread() {
 		$board = new Board($this->db, $this->auth, $this->role);
 		$user = new User($this->db, $this->role);
-		$boardID = $this->db->escapeString($_GET['board']);
+		$boardID = $this->db->escapeString($board->getBoardID());
+		$board = new Board($this->db, $this->auth, $this->role);
+		$boardTitle = $board->getNameById($boardID);
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$location = $this->db->escapeString($_GET['id']);
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		$location = $this->db->escapeString($pageID);
 		$isAdmin = ($board->isAdmin($boardID, $user->getID())||$this->auth->moduleAdminAllowed("board", $this->role->getRole())||$this->auth->locationAdminAllowed($location, $this->role->getRole()));
 		if (($location==$board->getLocation($boardID))&&$board->readAllowed($boardID, $this->role->getRole())&&$board->writeAllowed($boardID, $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())&&$this->auth->locationWriteAllowed($location, $this->role->getRole())&&$this->auth->moduleReadAllowed("board", $this->role->getRole())&&$this->auth->moduleWriteAllowed("board", $this->role->getRole())) {
+			$uri = $navi->getRelativeURI($location, null, false);
 			if (isset($_POST['do'])) {
 				if ($_POST['do']=="newthread") {
 					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
@@ -434,7 +486,7 @@ class Thread {
 						$author = $this->db->escapeString($user->getID());
 						$time = $this->db->escapeString(time());
 						$ip = $this->db->escapeString($_SERVER['REMOTE_ADDR']);
-						$this->db->query("INSERT INTO `thread`(`board`,`postcount`,`type`,`title`,`author`,`viewcount`) VALUES('$boardID','0','0','$title','$author','0')");
+						$this->db->query("INSERT INTO `thread`(`board`,`postcount`,`type`,`title`,`author`,`viewcount`,`lastpost`) VALUES('$boardID','0','0','$title','$author','0','0')");
 						$threadID = $this->db->lastInsertedID();
 						$result = $this->db->query("SELECT `threadcount` FROM `board` WHERE `board`='$boardID'");
 						while ($row = $this->db->fetchArray($result)) {
@@ -465,7 +517,8 @@ class Thread {
 						}
 						
 						$page = $this->getPageNumber($threadID);
-						$link = "index.php?id=".$location."&action=posts&thread=".$threadID."&page=".$page."#".$postID;
+						$pagePostsURI = $uri.$this->getThreadURIPart($threadID, $title, $page);
+						$link = $pagePostsURI."#".$postID;
 						echo "<div class=\"success\">Das Thema wurde erfolgreich erstellt! Du wirst nun weitergeleitet. Wenn es nicht automatisch weiter geht, klicke <a href=\"".$link."\">hier</a>.</div><script>top.location.href='".$link."'</script>";
 					}
 				}
@@ -474,9 +527,154 @@ class Thread {
 				$authTime = time();
 				$authToken = $this->auth->getToken($authTime);
 				$temporaryKey = $basic->tempFileKey();
+				$newThreadURI = $uri.$this->getNewThreadURIPart($boardID, $boardTitle);
 				require_once("template/board.newthread.tpl.php");
 			}
 		}
+	}
+
+	public function generateRestfulURIByID($id) {
+		$result = "";
+		$thread = $this->db->escapeString($id);
+		$sqlResult = $this->db->query("SELECT `title` FROM `thread` WHERE `thread`='$thread'");
+		while ($row = $this->db->fetchArray($sqlResult)) {
+			$title = $row['title'];
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$result = $navi->generateRestfulURI($id, $title);
+		}
+		return $result;
+	}
+
+	public function getThreadPage() {
+		$page = 1;
+		if (isset($_GET['page'])) {
+			$page = $_GET['page'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 3) {
+				$page = $explodedRequestURI[3];
+			}
+		}
+		return $page;
+	}
+
+	public function getThreadID() {
+		$threadID = 0;
+		if (isset($_GET['thread'])) {
+			$threadID = $_GET['thread'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$threadSlug = $explodedRequestURI[1];
+				$explodedThreadSlug = explode('-', $threadSlug);
+				$explodedThreadSlugSize = sizeof($explodedThreadSlug);
+				if ($explodedThreadSlugSize > 0) {
+					$threadID = $explodedThreadSlug[$explodedThreadSlugSize-1];
+				}
+			}
+		}
+		return $threadID;
+	}
+
+	public function getNameById($thread) {
+		$thread = $this->db->escapeString($thread);
+		$result = $this->db->query("SELECT `title` FROM `thread` WHERE `thread`='$thread'");
+		while ($row = $this->db->fetchArray($result)) {
+			$title = $row['title'];
+		}
+		return $title;
+	}
+
+	public function getThreadURIPart($threadID, $threadTitle, $page) {
+		$config = new Configuration();
+		$result = "";
+		if ($config->getEnableOldURIs()) {
+			$result = "&action=posts&thread=".$threadID;
+			if ($page > 0) {
+				$result = $result."&page=".$page;
+			}
+		}
+		else {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$result = "/".$navi->generateRestfulURI($threadID, $threadTitle)."/posts";
+			if ($page > 0) {
+				$result = $result."/".$page;
+			}
+		}
+
+		if (isset($_GET['quote'])) {
+			$result = $result."#".$_GET['quote'];
+		}
+
+		return $result;
+	}
+
+	private function getPageURIFormatted($page) {
+		$board = new Board($this->db, $this->auth, $this->role);
+		return $board->getPageURIFormatted($page);
+	}
+
+	private function getMoveURI($threadID) {
+		$config = new Configuration();
+		$result = "";
+		if ($config->getEnableOldURIs()) {
+			$result = "&";
+		}
+		else {
+			$result = "?";
+		}
+		return $result."threadaction=move&thread=".$threadID;
+	}
+
+	private function getChangeTitleURI($threadID) {
+		$config = new Configuration();
+		$result = "";
+		if ($config->getEnableOldURIs()) {
+			$result = "&";
+		}
+		else {
+			$result = "?";
+		}
+		return $result."threadaction=title&thread=".$threadID;
+	}
+
+	private function getNewThreadURIPart($boardID, $boardTitle) {
+		$config = new Configuration();
+		$result = "";
+		if ($config->getEnableOldURIs()) {
+			$result = "&action=newthread&board=".$boardID;
+		}
+		else {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$result = "/".$navi->generateRestfulURI($boardID, $boardTitle)."/newthread";
+		}
+		return $result;
+	}
+
+	public function getRestfulURIPartFromOldURL($action) {
+		$result = "";
+		$board = new Board($this->db, $this->auth, $this->role);
+		$boardID = $this->db->escapeString($board->getBoardID());
+		$boardTitle = $board->getNameById($boardID); 
+
+		if ($action=="threads") {
+			$result = $board->getBoardURIPart($boardID, $boardTitle);
+		}
+		else if ($action=="newthread") {
+			$result = $this->getNewThreadURIPart($boardID, $boardTitle);
+		}
+
+		return $result;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		$board = new Board($this->db, $this->auth, $this->role);
+		$boardID = $this->db->escapeString($board->getBoardID());
+		return "&board=".$boardID;
 	}
 }
 

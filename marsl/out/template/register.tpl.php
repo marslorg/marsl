@@ -8,7 +8,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <?php if ($mailFailure): ?><div class="caution">Leider ist deine E-Mail-Adresse nicht richtig.</div><?php endif; ?>
 <?php if ($passwordFailure): ?><div class="caution">Leider stimmen die Passw&ouml;rter nicht &uuml;berein.</div><?php endif; ?>
 <?php if ($nicknameFailure): ?><div class="caution">Leider ist der Benutzername schon vergeben.</div><?php endif; ?>
-<form method="post" action="index.php?id=<?php echo $location; ?>">
+<form method="post" action="<?php echo $uri; ?>">
 	<table class="userdatatable">
 		<tr>
 			<td>Benutzername*: </td><td><div class="center"><input type="text" name="nickname" value="<?php echo $nickname; ?>" /></div></td>
