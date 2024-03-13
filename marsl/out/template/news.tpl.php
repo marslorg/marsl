@@ -17,7 +17,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<?php endforeach; ?>
 				<br />
 				<div class="newsbottom">
-					<div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;,&quot;twitter&quot;]" data-theme="standard" data-orientation="vertical"></div>
+					<div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;]" data-theme="standard" data-orientation="vertical"></div>
 					<br /><img src="includes/graphics/square.gif" /> Datum: <?php echo $date; ?>
 				</div>
 			</div>
@@ -43,7 +43,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<br /><?php echo $text; ?>
 			</div>
 			<div class="newsinformationmobile">
-				<br /><div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;,&quot;twitter&quot;]" data-theme="standard" data-orientation="horizontal"></div>
+				<br /><div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;]" data-theme="standard" data-orientation="horizontal"></div>
 				<b>Taglist:</b><br />
 				<?php foreach($moduleTags as $moduleTag):
 				$tags = $moduleTag['tags'];

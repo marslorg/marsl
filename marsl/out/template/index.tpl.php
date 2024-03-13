@@ -67,7 +67,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			</div>
 			<div class="right_box">
 				<a href="https://www.facebook.com/music2web" target="_blank"><img src="includes/graphics/socialicons/facebook.png" alt="Folge uns auf Facebook" /></a>
-				<a href="https://www.twitter.com/music2web" target="_blank"><img src="includes/graphics/socialicons/twitter.png" alt="Folge uns auf Twitter" /></a>
 				<div class="right_ads">
 					<!-- Anzeigen:<br />-->
 					<?php
