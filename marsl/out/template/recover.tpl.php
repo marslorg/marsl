@@ -2,12 +2,12 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <h2>Passwort wiederherstellen</h2>
-<form method="post" <?php if (isset($uid)&&isset($time)&&isset($auth)): ?>action="index.php?id=<?php echo $location; ?>&amp;action=forgot&amp;action2=recover&amp;subaction=set&amp;uid=<?php echo $uid; ?>&amp;time=<?php echo $time; ?>&amp;auth=<?php echo $auth; ?>"<?php endif; ?>>
+<form method="post" <?php if (isset($uid)&&isset($time)&&isset($auth)): ?>action="<?php echo $baseRecoverSetURI; ?>"<?php endif; ?>>
 	<?php if (!$recover): ?>
-	Der Link ist ung&uuml;ltig. Bitte lass dir die E-Mail mit dem Passwortlink nochmal zuschicken. <a href="index.php?id=<?php echo $location; ?>&amp;action=forgot">Hier geht es weiter.</a>
+	Der Link ist ung&uuml;ltig. Bitte lass dir die E-Mail mit dem Passwortlink nochmal zuschicken. <a href="<?php echo $baseForgotURI; ?>">Hier geht es weiter.</a>
 	<?php endif; ?>
 	<?php if(!$init&&$success): ?>
-	Dein Passwort wurde neu gesetzt. <a href="index.php?id=<?php echo $location; ?>">Hier</a> geht es weiter.
+	Dein Passwort wurde neu gesetzt. <a href="<?php echo $baseURI;  ?>">Hier</a> geht es weiter.
 	<?php endif; ?>
 	<?php if(!$init&&!$success): ?>
 	Die beiden eingegebenen Passw&ouml;rter stimmen nicht &uuml;berein.

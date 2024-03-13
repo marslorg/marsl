@@ -14,6 +14,7 @@ class Configuration {
 	 * System environment
 	 */
 	private $timezone = "Europe/Berlin";
+	private $enableOldURIs = false;
 	
 	/***
 	 * Metatags 
@@ -62,6 +63,10 @@ class Configuration {
 	 */
 	private $webpushPrivateKey = "Z2-a6_AcNNwQKN7qLt6FlkRapDxLb9-M0vze6cSX8zM";
 	private $webpushPublicKey = "BL8jnwynx9RcT8FEiFSabFunD2y_4u-zGOgSw3LyZZe-lDd38Gd-j-qVgw8AUMpxWNbFyCoXNQ3WFM-ZJeTp5fo";
+	
+	public function getEnableOldURIs() {
+		return $this->enableOldURIs;
+	}
 	
 	public function getLastFMKey() {
 		return $this->lastfmKey;

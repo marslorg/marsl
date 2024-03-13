@@ -14,12 +14,12 @@ $j = 0;
 		<?php endif; ?>
 		<?php echo $article['teaser']; ?> 
 		<?php echo $article['photograph']; ?>
-		<a href="index.php?id=<?php echo $article['location']; ?>&amp;show=<?php echo $article['news']; ?>&amp;action=read">Mehr..</a>
+		<a href="<?php echo $article['newsURI']; ?>">Mehr..</a>
 	</span>
 	<?php endif; ?>
 	<?php if ($j!=0): ?>
 	<span class="portallinks">
-		<a href="index.php?id=<?php echo $article['location']; ?>&amp;show=<?php echo $article['news']; ?>&amp;action=read">
+		<a href="<?php echo $article['newsURI']; ?>">
 			<?php echo $article['headline']; ?>: <?php echo $article['title']; ?>
 		</a>
 	</span>

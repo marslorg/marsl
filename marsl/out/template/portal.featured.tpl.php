@@ -43,7 +43,7 @@ $(document).ready(function(){
 	</ul>
 	<?php $i= 0;
 	foreach ($news as $article): $i++; ?>
-	<div id="fragment-<?php echo $i; ?>" class="ui-tabs-panel" onmouseover="this.style.cursor = 'pointer'" onclick="window.location = 'index.php?id=<?php echo $article['location']; ?>&amp;show=<?php echo $article['news']; ?>&amp;action=read'">
+	<div id="fragment-<?php echo $i; ?>" class="ui-tabs-panel" onmouseover="this.style.cursor = 'pointer'" onclick="window.location = '<?php echo $article['newsURI']; ?>'">
 		<img src="news/<?php echo $article['picture']; ?>" />
 		<div class="info">
 			<h3>

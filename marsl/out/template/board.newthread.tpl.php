@@ -66,7 +66,7 @@ $(function() {
 </script>
 <!-- /TinyMCE -->
 <h2>Neues Thema</h2>
-<form method="post" action="index.php?id=<?php echo $location; ?>&amp;action=newthread&amp;board=<?php echo $boardID; ?>">
+<form method="post" action="<?php echo $newThreadURI; ?>">
 	Titel: <input type="text" name="title" style="width:94%" /><br /><br />
 	<div style="display:table">
 		<table>

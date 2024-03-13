@@ -5,6 +5,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <html lang="de">
 	<head>
 		<title><?php echo $title; ?></title>
+		<base href="<?php echo $baseURL; ?>/" />
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="mobile-web-app-capable" content="yes" />
@@ -14,7 +15,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="apple-touch-icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
 		<link rel="android-touch-icon" href="includes/graphics/icon_192x192.png" />
 		<?php if ($image!=null): ?>
-		<meta property="og:image" content="<?php echo $domain; ?>/<?php echo $image; ?>" />
+		<meta property="og:image" content="<?php echo $baseURL; ?>/<?php echo $image; ?>" />
 		<meta property="og:title" content="<?php echo $title; ?>" />
 		<?php endif; ?>
 		<script type="text/javascript" src="includes/jscripts/jquery/jquery.js"></script>
@@ -24,7 +25,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<script type="text/javascript" src="includes/jscripts/plupload/js/plupload.full.min.js"></script>
 		<script type="text/javascript" src="includes/jscripts/plupload/js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 		<script type="text/javascript" src="includes/jscripts/plupload/js/i18n/de.js"></script>
-		<link rel="alternate" type="application/rss+xml" title="<?php echo $title; ?> - RSS Feed" href="<?php echo $domain; ?>/rss.php" />
+		<link rel="alternate" type="application/rss+xml" title="<?php echo $title; ?> - RSS Feed" href="<?php echo $baseURL; ?>/rss.php" />
 		<link rel="icon" href="includes/graphics/favicon.ico" type="image/x-icon" />
 		<link rel="stylesheet" href="styles/style.css?v=33" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=6" type="text/css" />
@@ -67,8 +68,6 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="right_box">
 				<a href="https://www.facebook.com/music2web" target="_blank"><img src="includes/graphics/socialicons/facebook.png" alt="Folge uns auf Facebook" /></a>
 				<a href="https://www.twitter.com/music2web" target="_blank"><img src="includes/graphics/socialicons/twitter.png" alt="Folge uns auf Twitter" /></a>
-				<!--<iframe src="includes/socialcounters/facebook.php" scrolling="no" style="border:none;overflow:hidden;padding: 0px 0px 0px 0px;" width="75px" height="75px" name="Facebook Counter" title="Facebook Counter"></iframe><br />-->
-				<!--<iframe src="includes/socialcounters/twitter.php" scrolling="no" style="border:none;overflow:hidden;padding: 0px 0px 0px 0px;" width="75px" height="75px" name="Facebook Counter" title="Facebook Counter"></iframe><br />-->
 				<div class="right_ads">
 					<!-- Anzeigen:<br />-->
 					<?php
@@ -130,14 +129,15 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 					<?php if (!$googlebot): ?>					
 						<!-- <a href="https://extrem16.de" target="_blank">Extrem16</a>--> 
 					<?php endif; ?>
-					<?php if (((!isset($_GET['id']))&&(!isset($_GET['scope'])))||(isset($_GET['id'])&&($_GET['id']=="178"))): ?>
+					<?php if ($pageID == "178"): ?>
+						<!-- Einblenden nur auf Homepage -->
 					<?php endif; ?>
 				</div>
 			</div>
 
 			<?php if ($showContentForWeb): ?>
 			<div class="footer">
-				<a href="https://www.music2web.de/index.php?id=469">Jobs</a> | <a href="https://www.music2web.de/index.php?id=407">Kontakt</a> | <a href="https://www.music2web.de/index.php?id=738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/index.php?id=186">Impressum</a>
+				<a href="https://www.music2web.de/jobs-469">Jobs</a> | <a href="https://www.music2web.de/kontakt-407">Kontakt</a> | <a href="https://www.music2web.de/datenschutz-738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/impressum-186">Impressum</a>
 				<div class="center">
 					<a href="https://apps.apple.com/de/app/music2web-de/id1570808940" target="_blank"><img src="includes/graphics/app/apple.svg" height="40px" alt="Laden im App Store" /></a>
 					<a href="https://play.google.com/store/apps/details?id=de.music2web.www&gl=DE" target="_blank"><img src="includes/graphics/app/google.png" height="40px" alt="Jetzt bei Google" /></a>

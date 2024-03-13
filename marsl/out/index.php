@@ -26,6 +26,13 @@ class Main {
 	public function display() {
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
+		$urlloader = new URLLoader($this->db, $this->auth, $this->role);
+
+		if ($urlloader->shouldRedirect()) {
+			$urlloader->redirect();
+		}
+
 		$config = new Configuration();
 		date_default_timezone_set($config->getTimezone());
 		$fbcomments = $config->getFBComments();
@@ -35,8 +42,10 @@ class Main {
 		$image = $basic->convertToHTMLEntities($basic->getImage());
 		$serverName = $basic->convertToHTMLEntities($config->getClusterServer());
 		$domain = $config->getDomain();
+		$basePath = $config->getBasePath();
+		$baseURL = $domain.$basePath;
 		$navigation = new Navigation($this->db, $this->auth, $this->role);
-		$urlloader = new URLLoader($this->db, $this->auth, $this->role);
+		$pageID = $navigation->getPageID();
 		$showContentForWeb = !$this->auth->isAppAllowed();
 		
 		require_once("template/index.tpl.php");
@@ -46,6 +55,10 @@ class Main {
 	}
 	
 	private function displaySearchBox() {
+		$config = new Configuration();
+		$domain = $config->getDomain();
+		$basePath = $config->getBasePath();
+		$baseURL = $domain.$basePath;
 		$basic = new Basic($this->db, $this->auth, $this->role);
 		$searchList = array();
 		$modules = $basic->getModules();

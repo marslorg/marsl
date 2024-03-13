@@ -2,7 +2,7 @@
 include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <h2>Daten &auml;ndern:</h2>
-<form method="post" action="index.php?id=<?php echo $location; ?>" class="formTable">
+<form method="post" action="<?php echo $uri; ?>" class="formTable">
 	<table>
 		<tr>
 			<td>Vorname: </td>
@@ -89,7 +89,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <?php endif; ?>
 <?php endif; ?>
 <h2>Passwort &auml;ndern:</h2>
-<form method="post" action="index.php?id=<?php echo $location; ?>" class="formTable">
+<form method="post" action="<?php echo $uri; ?>" class="formTable">
 	<table>
 		<tr>
 			<td>Altes Passwort: </td>
@@ -130,7 +130,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	</table>
 </form>
 <h2>E-Mail-Adressen:</h2>
-<form method="post" action="index.php?id=<?php echo $location; ?>">
+<form method="post" action="<?php echo $uri; ?>">
 	<table class="userdatatable">
 		<tr>
 			<td>E-Mail-Adresse eintragen: </td>
@@ -149,13 +149,13 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<td><?php echo $email['email']; ?></td>
 		<td>
 			<?php if ((!$email['primary'])&&($email['confirmed'])): ?>
-			<a href="index.php?id=<?php echo $location; ?>&amp;primemail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="includes/graphics/ok22.png" alt="Als Hauptadresse festlegen" /></a>
+			<a href="<?php echo $primaryURI; ?>"><img src="includes/graphics/ok22.png" alt="Als Hauptadresse festlegen" /></a>
 			<?php endif; ?>
 			<?php if (!$email['primary']): ?>
-			<a href="index.php?id=<?php echo $location; ?>&amp;delmail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="includes/graphics/delete22.png" alt="L&ouml;schen" /></a>
+			<a href="<?php echo $deleteURI; ?>"><img src="includes/graphics/delete22.png" alt="L&ouml;schen" /></a>
 			<?php endif; ?>
 			<?php if (!$email['confirmed']): ?>
-			<a href="index.php?id=<?php echo $location; ?>&amp;confmail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="includes/graphics/mail22.png" alt="Best&auml;tigungsmail erneut senden" /></a>
+			<a href="<?php echo $confirmURI; ?>"><img src="includes/graphics/mail22.png" alt="Best&auml;tigungsmail erneut senden" /></a>
 			<?php endif; ?>
 		</td>
 	</tr>

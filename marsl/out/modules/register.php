@@ -1,6 +1,7 @@
 <?php
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/navigation.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
 include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
@@ -24,12 +25,15 @@ class Register implements Module {
 		$user = new User($this->db, $this->role);
 		$basic = new Basic($this->db, $this->auth, $this->role);
 		$location = "";
-		if (isset($_GET['id'])) {
-			$location = $_GET['id'];
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
+		if ($pageID > -1) {
+			$location = $pageID;
 		}
 		else {
 			$location = $basic->getHomeLocation();
 		}
+		$uri = $navi->getRelativeURI($location, null, false);
 		$nickname = "";
 		$mail = "";
 		$mail2 = "";
@@ -150,7 +154,7 @@ class Register implements Module {
 		return null;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 	}
 	
 	public function getImage() {
@@ -158,6 +162,14 @@ class Register implements Module {
 	}
 	
 	public function getTitle() {
+		return null;
+	}
+
+	public function getRestfulURIPartFromOldURL() {
+		return null;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
 		return null;
 	}
 }

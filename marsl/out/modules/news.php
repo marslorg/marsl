@@ -10,6 +10,9 @@ include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/../includes/mailer.php");
 include_once(dirname(__FILE__)."/module.php");
 include_once(dirname(__FILE__)."/../includes/web-push-php-6.0.5/vendor/autoload.php");
+include_once(dirname(__FILE__)."/../includes/slugify/vendor/autoload.php");
+
+use Cocur\Slugify\Slugify;
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
@@ -21,6 +24,7 @@ class News implements Module {
 	private $role;
 	private $PAGINATION_DISTANCE = 3;
 	private $config;
+	private $baseLinks = array();
 
 	public function __construct($db, $auth, $role) {
 		$this->db = $db;
@@ -415,7 +419,7 @@ class News implements Module {
 			}
 			else if ($_GET['action']=="news") {
 				$this->doGetActions();
-				$page = 1;
+				$page = $this->getPage();
 				if (isset($_GET['page'])) {
 					$page = $_GET['page'];
 				}
@@ -523,17 +527,21 @@ class News implements Module {
 		$user = new User($this->db, $this->role);
 
 		$dateTime = new DateTime("now", new DateTimeZone($this->config->getTimezone()));
+
+		$navi = new Navigation($this->db, $this->auth, $this->role);
+		$pageID = $navi->getPageID();
 		
 		if ($this->auth->moduleReadAllowed("news", $this->role->getRole())) {
-			if (!isset($_GET['action'])) {
+			if ($this->getAction() == null) {
 				$location = "";
-				if (isset($_GET['id'])) {
-					$location = $_GET['id'];
+				if ($pageID > -1) {
+					$location = $pageID;
 				}
 				else {
 					$location = $basic->getHomeLocation();
 				}
 				$location = $this->db->escapeString($location);
+				$uri = $this->getBaseURI($location);
 				$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $this->db->escapeString($row['maps_to']);
@@ -566,17 +574,18 @@ class News implements Module {
 					$headline = $basic->convertToHTMLEntities($row['headline']);
 					$title = $basic->convertToHTMLEntities($row['title']);
 					$id = $basic->convertToHTMLEntities($row['news']);
-					array_push($news,array('city'=>$city,'headline'=>$headline,'title'=>$title,'id'=>$id,'date'=>$date,'postdate'=>$postdate,'author'=>$authorName,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'teaser'=>$teaser,'text'=>$text));
+					$newsURI = $this->generateLink($location, null, "read", $headline, $title, $id);
+					array_push($news,array('city'=>$city,'headline'=>$headline,'title'=>$title,'id'=>$id, 'newsURI'=>$newsURI, 'date'=>$date,'postdate'=>$postdate,'author'=>$authorName,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'teaser'=>$teaser,'text'=>$text));
 				}
 				require_once("template/news.main.tpl.php");
 			}
-			else if ($_GET['action']=="read") {
-				$location = $this->db->escapeString($_GET['id']);
+			else if ($this->getAction()=="read") {
+				$location = $this->db->escapeString($pageID);
 				$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 				while ($row = $this->db->fetchArray($result)) {
 					$location = $this->db->escapeString($row['maps_to']);
 				}
-				$news = $this->db->escapeString($_GET['show']);
+				$news = $this->db->escapeString($this->getNewsID());
 				$result = $this->db->query("SELECT
 				`date`, `author`, `teaser`, `text`, `city`, `headline`, `title`,
 				`news_picture1`.`url` AS `url1`, `news_picture1`.`photograph` AS `photograph1`,
@@ -585,6 +594,7 @@ class News implements Module {
 				LEFT JOIN `news_picture` AS `news_picture1` ON `news_picture1`.`picture` = `picture1`
 				LEFT JOIN `news_picture` AS `news_picture2` ON `news_picture2`.`picture` = `picture2`
 				WHERE `location`='$location' AND `news`='$news' AND `visible`='1' AND `deleted`='0'");
+
 				while ($row = $this->db->fetchArray($result)) {
 					$dateTime->setTimestamp($row['date']);
 					$date = $dateTime->format("d\.m\.Y");
@@ -612,7 +622,7 @@ class News implements Module {
 					$city = $basic->convertToHTMLEntities($row['city']);
 					$headline = $basic->convertToHTMLEntities($row['headline']);
 					$title = $basic->convertToHTMLEntities($row['title']);
-					$url = $this->config->getDomain()."/index.php?id=".$_GET['id']."&amp;show=".$_GET['show']."&amp;action=read";
+					$url = $this->config->getDomain().$this->config->getBasePath()."/".$this->generateLink($pageID, null, "read", $headline, $title, $this->getNewsID());
 					
 					$modules = $basic->getModules();
 					$moduleTags = array();
@@ -638,10 +648,7 @@ class News implements Module {
     private function getPagination($location) {
         $result = $this->db->query("SELECT COUNT(`visible`) AS rowcount FROM `news` WHERE `visible`='1' AND `deleted`='0' AND `location`='$location'");
         $pages = $this->db->getRowCount($result)/10;
-        $page = 1;
-        if (isset($_GET['page'])) {
-        	$page = $_GET['page'];
-        }
+        $page = $this->getPage();
         $startPage = 1;
         if ($page - $this->PAGINATION_DISTANCE > 1) {
         	$startPage = $page - $this->PAGINATION_DISTANCE;
@@ -703,7 +710,7 @@ class News implements Module {
 						$teaser = str_replace("<br />", "\n", $row['teaser']);
 						$teaser = strip_tags($teaser);
 						$teaser = html_entity_decode($teaser);
-						$uri = "index.php?id=".$row['location']."&show=".$id."&action=read";
+						$uri = $this->generateLink($row['location'], null, "read", $row['headline'], $row['title'], $id);
 						$this->expoPushArticle($uri, $messageTitle);
                         $this->webPushArticle($uri, $messageTitle, $teaser);
                     }
@@ -960,7 +967,8 @@ class News implements Module {
 						$title = $basic->convertToHTMLEntities($row['title']);
 						$newsid = $row['news'];
 						$location = $row['newslocation'];
-						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location));
+						$newsURI = $this->generateLink($location, null, "read", $headline, $title, $newsid); 
+						array_push($news, array('teaser'=>$teaser, 'headline'=>$headline, 'title'=>$title, 'news'=>$newsid, 'location'=>$location, 'newsURI'=>$newsURI));
 					}
 				}
 
@@ -1047,15 +1055,23 @@ class News implements Module {
 		$news = $this->db->escapeString($news);
 		$result = $this->db->query("SELECT `id`, `general`.`tag` AS tagname FROM `general` JOIN `news_tag` ON(`general`.`id`=`news_tag`.`tag`) WHERE `type`='general' AND `news`='$news' ORDER BY `general`.`tag`");
 		while ($row = $this->db->fetchArray($result)) {
-			array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname']));
+			$uri = "";
+			if ($this->config->getEnableOldURIs()) {
+				$uri = "index.php?tag=".$row['id']."&scope=news_".$type;
+			}
+			else {
+				$tagPart = $this->generateTagPart($row['tagname'], $row['id']);
+				$uri = "tag/news_".$type."/".$tagPart;
+			}
+			array_push($ret, array('id'=>$row['id'], 'tag'=>$row['tagname'], 'uri'=>$uri));
 		}
 		
 		return $ret;
 	}
 	
-	public function displayTag($tagID, $type) {
+	public function displayTag() {
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		$tagID = $this->db->escapeString($tagID);
+		$tagID = $this->db->escapeString($this->getTagID());
 		$articles = array();
 		$tagName = "";
 		$result = $this->db->query("SELECT `tag` FROM `general` WHERE `id`='$tagID'");
@@ -1075,7 +1091,8 @@ class News implements Module {
 				$date = $dateTime->format("d\.m\.Y");
 				$location = $row['location'];
 				$locationName = $basic->convertToHTMLEntities($row['name']);
-				array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName));
+				$newsURI = $this->generateLink($location, $locationName, "read", $headline, $title, $news);
+				array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName, 'newsURI'=>$newsURI));
 			}
 		}
 		require_once("template/news.tag.tpl.php");
@@ -1083,11 +1100,13 @@ class News implements Module {
 	
 	public function getImage() {
 		$basic = new Basic($this->db, $this->auth, $this->role);
-		if (isset($_GET['action'])) {
-			if ($_GET['action']=="read") {
+		if ($this->getAction() != null) {
+			if ($this->getAction()=="read") {
 				if ($this->auth->moduleReadAllowed("news", $this->role->getRole())) {
-					$newsID = $this->db->escapeString($_GET['show']);
-					$location = $this->db->escapeString($_GET['id']);
+					$newsID = $this->db->escapeString($this->getNewsID());
+					$navi = new Navigation($this->db, $this->auth, $this->role);
+					$pageID = $navi->getPageID();
+					$location = $this->db->escapeString($pageID);
 					$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
 					while ($row = $this->db->fetchArray($result)) {
 						$location = $this->db->escapeString($row['maps_to']);
@@ -1126,11 +1145,13 @@ class News implements Module {
 	}
 	
 	public function getTitle() {
-		if (isset($_GET['action'])) {
-			if ($_GET['action']=="read") {
+		if ($this->getAction() != null) {
+			if ($this->getAction()=="read") {
 				if ($this->auth->moduleReadAllowed("news", $this->role->getRole())) {
-					$newsID = $this->db->escapeString($_GET['show']);
-					$location = $this->db->escapeString($_GET['id']);
+					$newsID = $this->db->escapeString($this->getNewsID());
+					$navi = new Navigation($this->db, $this->auth, $this->role);
+					$pageID = $navi->getPageID();	
+					$location = $this->db->escapeString($pageID);
 					$headline = "";
 					$title = "";
 					$result = $this->db->query("SELECT `maps_to` FROM `navigation` WHERE `id` = '$location' AND `type`='4'");
@@ -1168,6 +1189,225 @@ class News implements Module {
 			return null;
 		}
 	}
+
+	
+
+	public function getRestfulURIPartFromOldURL() {
+		$uri = "";
+		if (isset($_GET['tag']) && !isset($_GET['id'])) {
+   			$uri = $this->getRestfulURIPartForTag($uri);
+		}
+		else {
+			$uri = $this->getRestfulURIPartForStandardPage($uri);
+		}
+		return $uri;
+	}
+
+	private function getRestfulURIPartForStandardPage($uri) {
+		$action = $this->getAction();
+		if (isset($action)) {
+			$newsID = $this->db->escapeString($this->getNewsID());
+			$newsURIPart = "";
+			$result = $this->db->query("SELECT `headline`, `title` FROM `news` WHERE `news`='$newsID'");
+			$basic = new Basic($this->db, $this->auth, $this->role);
+			while ($row = $this->db->fetchArray($result)) {
+				$headline = $basic->convertToHTMLEntities($row['headline']);
+				$title = $basic->convertToHTMLEntities($row['title']);
+				$newsURIPart = $this->generateNewsPart($headline, $title, $newsID);
+			}
+			$uri = $uri."/".$newsURIPart;
+		}
+
+		$page = $this->getPage();
+		if ($page > 1) {
+				$uri = $uri."/".$page;
+		}
+
+		return $uri;
+	}
+
+    private function getRestfulURIPartForTag($uri) {
+        $scope = $this->getScope();
+		$basic = new Basic($this->db, $this->auth, $this->role);
+        if (isset($scope)) {
+        	$uri = $uri."/".$scope;
+        	$tagID = $this->db->escapeString($this->getTagID());
+        	$explodedScope = explode("_", $scope);
+        	$subScope = $this->db->escapeString($explodedScope[1]);
+        	$tagName = "";
+        	$result = $this->db->query("SELECT `tag` FROM `".$subScope."` WHERE `id`='$tagID'");
+        	while ($row = $this->db->fetchArray($result)) {
+        		$tagName = $basic->convertToHTMLEntities($row['tag']);
+        	}
+         	$tagPart = $this->generateTagPart($tagName, $tagID);
+        	$uri = $uri."/".$tagPart;
+        }
+
+        return $uri;
+    }
+
+    private function generateTagPart($tagName, $tagID) {
+        $slugify = new Slugify();
+        $tagPart = $slugify->slugify($tagName)."-".$tagID;
+
+        return $tagPart;
+    }
+
+	private function generateNewsPart($headline, $title, $newsID) {
+		$slugify = new Slugify();
+		$newsPart = $slugify->slugify($headline."-".$title)."-".$newsID;
+		return $newsPart;
+	}
+
+	private function getTagID() {
+		$tagID = -1;
+
+		if (isset($_GET['tag'])) {
+			$tagID = $_GET['tag'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 2) {
+				$tag = $explodedRequestURI[2];
+				$explodedTag = explode('-', $tag);
+				$explodedTagSlugSize = sizeof($explodedTag);
+				if ($explodedTagSlugSize > 0) {
+					$tagID = $explodedTag[$explodedTagSlugSize-1];
+				}
+			}
+		}
+
+		return $tagID;
+	}
+
+	private function getNewsID() {
+		$newsID = -1;
+		if (isset($_GET['show'])) {
+			$newsID = $_GET['show'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$newsSlug = $explodedRequestURI[1];
+				$explodedNewsSlug = explode('-', $newsSlug);
+				$explodedNewsSlugSize = sizeof($explodedNewsSlug);
+				if ($explodedNewsSlugSize > 1) {
+					$newsID = $explodedNewsSlug[$explodedNewsSlugSize-1];
+				}
+			}
+		}
+		return $newsID;
+	}
+
+	public function getPage() {
+		$page = 1;
+		if (isset($_GET['page'])) {
+			$page = $_GET['page'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$pageSlug = $explodedRequestURI[1];
+				$explodedPageSlug = explode('-', $pageSlug);
+				$explodedPageSlugSize = sizeof($explodedPageSlug);
+				if ($explodedPageSlugSize == 1) {
+					$page = $pageSlug;
+				}
+			}
+		}
+		return $page;
+	}
+
+	private function getAction() {
+		$action = null;
+		if (isset($_GET['action'])) {
+			$action = $_GET['action'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 2) {
+				$action = $explodedRequestURI[2];
+			}
+			else if (sizeof($explodedRequestURI) > 1) {
+				if ($this->getNewsID() != -1) {
+					$action = "read";
+				}
+			}
+		}
+		return $action;
+	}
+
+	private function getScope() {
+		$scope = null;
+		if (isset($_GET['scope'])) {
+			$scope = $_GET['scope'];
+		}
+		else if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$scope = $explodedRequestURI[1];
+			}
+		}
+		return $scope;
+	}
+
+	public function getOldURIPartFromRestfulURL() {
+		$uri = "";
+		$uriType = "";
+
+		if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
+			$requestURI = $_GET['request_uri'];
+			$explodedRequestURI = explode('/', $requestURI);
+			if (sizeof($explodedRequestURI) > 1) {
+				$uriType = $explodedRequestURI[0];
+				if ($uriType != "tag") {
+					$uriType = "standard";
+				}
+			}
+		}
+
+		if ($uriType == "tag") {
+  			$uri = $this->getOldURIPartForTagURL();
+		}
+		else if ($uriType == "standard") {
+			$uri = $this->getOldURIPartForStandardPages($uri);
+		}
+
+		return $uri;
+	}
+
+	private function getOldURIPartForStandardPages($uri) {
+		$uri = "";
+		$newsID = $this->getNewsID();
+		$action = $this->getAction();
+		if (isset($action) && $newsID != -1) {
+			$uri = $uri."&show=".$newsID."&action=".$action;
+		}
+
+		$page = $this->getPage();
+		if ($page > 1) {
+				$uri = $uri."&page=".$page;
+		}
+
+		return $uri;
+	}
+
+    private function getOldURIPartForTagURL()
+    {
+        $uri = "";
+		$scope = $this->getScope();
+        $tagID = $this->getTagID();
+        if (isset($scope) && isset($tagID)) {
+        	$uri = "index.php?tag=".$tagID."&scope=".$scope;
+        }
+
+        return $uri;
+    }
 	
 	private function nofollowOutboundLinks($content) {
 		return preg_replace_callback('~<(a\s[^>]+)>~isU',
@@ -1186,6 +1426,72 @@ class News implements Module {
 					}
 				},
 				$content);
+	}
+
+	private function getBaseURI($location) {
+		$uri = "";
+
+		if (array_key_exists($location, $this->baseLinks)) {
+			$uri = $this->baseLinks[$location];
+		}
+		else {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$uri = $navi->getRelativeURI($location, null, false);
+			$this->baseLinks[$location] = $uri;
+		}
+
+		return $uri;
+	}
+
+	public function generateLink($location, $locationName, $action, $headline, $title, $newsID) {
+        $link = "";
+
+		if (array_key_exists($location, $this->baseLinks)) {
+			$baseLink = $this->baseLinks[$location];
+		}
+		else {
+			$navi = new Navigation($this->db, $this->auth, $this->role);
+			$baseLink = $navi->getRelativeURI($location, $locationName, false);
+			$this->baseLinks[$location] = $baseLink;
+		}
+		$uri = $this->baseLinks[$location];
+		if ($action == "read") {
+			$link = $uri.$this->getRelativeURI($action, $headline, $title, $newsID);
+		}
+
+        return $link;
+    }
+
+	public function getRelativeURI($action, $headline, $title, $id) {
+		$config = new Configuration();
+		$uri = "";
+
+		if ($config->getEnableOldURIs()) {
+			if ($action == "read") {
+				$uri = "&show=".$id."&action=read";
+			}
+		}
+		else {
+			if ($action == "read") {
+				$uri = "/".$this->generateNewsPart($headline, $title, $id);
+			}
+		}
+
+		return $uri;
+	}
+
+	public function getPageURIFormatted($page) {
+		$result = "";
+		if ($page > 1) {
+			$config = new Configuration();
+			if ($config->getEnableOldURIs()) {
+				$result = "&page=".$page;
+			}
+			else {
+				$result = "/".$page;
+			}
+		}
+		return $result;
 	}
 }
 ?>

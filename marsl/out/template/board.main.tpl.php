@@ -16,7 +16,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	<?php foreach ($category['boards'] as $board):?>
 	<tr>
 		<td>
-			<a href="index.php?id=<?php echo $location; ?>&amp;action=threads&amp;board=<?php echo $board['board']; ?>"><?php echo $board['title']; ?></a>
+			<a href="<?php echo $board['threadsURI']; ?>"><?php echo $board['title']; ?></a>
 			<br />
 			<span class="smallfont"><?php echo $board['description']; ?></span>
 		</td>
@@ -24,7 +24,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<td class="center"><?php echo $board['threadcount']; ?></td>
 		<td>
 			<span class="smallfont">
-				<a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;thread=<?php echo $board['thread']; ?>&amp;page=<?php echo $board['page']; ?>#<?php echo $board['post']; ?>"><?php echo $board['threadTitle']; ?></a>,
+				<a href="<?php echo $board['pagePostsURI']; ?>#<?php echo $board['post']; ?>"><?php echo $board['threadTitle']; ?></a>,
 				<?php echo $board['date']; ?>,
 				<?php echo $board['nickname']; ?>
 			</span>

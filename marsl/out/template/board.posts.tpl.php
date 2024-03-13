@@ -4,22 +4,24 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <h4 class="center">
 	<?php for ($i = 0; $i<$pages; $i++): $j = $i+1; ?>
 	<?php if ($j!=$page): ?>
-	<a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;thread=<?php echo $threadID; ?>&amp;page=<?php echo $j; ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
+	<a href="<?php echo $threadURI; ?><?php echo $this->getPageURIFormatted($j); ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
 	<?php endif; ?>
 	<?php endfor; ?>
 	<br />
 	<br />
 	<?php if($isAuthor): ?>
-	<a href="index.php?id=<?php echo $location; ?>&amp;action=answer&amp;thread=<?php echo $threadID; ?>">
+	<a href="<?php echo $answerURI; ?>">
 		Neue Antwort
 	</a>
 	<?php endif; ?>
 </h4>
 <?php if($isOperator||$isGlobalAdmin||$isAdmin): ?>
-<form class="right" method="get" action="index.php">
-	<input type="hidden" name="id" value="<?php echo $location; ?>" />
+<form class="right" method="get" <?php if(!$oldURIsEnabled): ?>action="<?php echo $threadURI; ?>"<?php endif; if($oldURIsEnabled): ?>action="index.php"<?php endif; ?>>
+	<?php if($oldURIsEnabled): ?>
+	<input type="hidden" name="id" value="<?php echo $pageID; ?>" />
 	<input type="hidden" name="thread" value="<?php echo $threadID; ?>">
-	<select name="action">
+	<?php endif; ?>
+	<select name="threadaction">
 		<option value="posts" selected> </option>
 		<?php if($isGlobalAdmin): ?>
 		<option value="globalfix">Als globale Ank&uuml;ndigung</option>
@@ -73,19 +75,21 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<span class="smallfont"><?php echo $post['date']; ?></span>
 		</td>
 		<td class="boardcontent">
-			<?php if($isAuthor): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=answer&amp;thread=<?php echo $threadID; ?>&amp;quote=<?php echo $post['post']; ?>&amp;page=<?php echo $page; ?>">Zitieren</a><?php endif; ?>
-			<?php if($post['editable']): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=edit&amp;post=<?php echo $post['post']; ?>&amp;page=<?php echo $page; ?>">Editieren</a><?php endif; ?>
-			<?php if ($isOperator): ?><a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;do=del&amp;post=<?php echo $post['post']; ?>&amp;thread=<?php echo $threadID; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a><?php endif; ?>
+			<?php if($isAuthor): ?><a href="<?php echo $post['quoteURI']; ?>">Zitieren</a><?php endif; ?>
+			<?php if($post['editable']): ?><a href="<?php echo $post['editURI']; ?>">Editieren</a><?php endif; ?>
+			<?php if ($isOperator): ?><a href="<?php echo $post['deleteURI']; ?>" onclick="return confirm('M&ouml;chtest du den Eintrag wirklich l&ouml;schen?')">L&ouml;schen</a><?php endif; ?>
 		</td>
 	</tr>
 	<?php endforeach; ?>
 </table>
 <br />
 <?php if($isOperator||$isGlobalAdmin||$isAdmin): ?>
-<form class="right" method="get" action="index.php">
-	<input type="hidden" name="id" value="<?php echo $location; ?>" />
-	<input type="hidden" name="thread" value="<?php echo $threadID; ?> ">
-	<select name="action">
+<form class="right" method="get" <?php if(!$oldURIsEnabled): ?>action="<?php echo $threadURI; ?>"<?php endif; if($oldURIsEnabled): ?>action="index.php"<?php endif; ?>>
+	<?php if($oldURIsEnabled): ?>
+	<input type="hidden" name="id" value="<?php echo $pageID; ?>" />
+	<input type="hidden" name="thread" value="<?php echo $threadID; ?>">
+	<?php endif; ?>
+	<select name="threadaction">
 		<option value="posts" selected> </option>
 		<?php if($isGlobalAdmin): ?>
 		<option value="globalfix">Als globale Ank&uuml;ndigung</option>
@@ -107,7 +111,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 <?php endif; ?>
 <h4 class="center">
 	<?php if($isAuthor): ?>
-	<a href="index.php?id=<?php echo $location; ?>&amp;action=answer&amp;thread=<?php echo $threadID; ?>">
+	<a href="<?php echo $answerURI; ?>">
 		Neue Antwort
 	</a>
 	<?php endif; ?>
@@ -115,7 +119,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	<br />
 	<?php for ($i = 0; $i<$pages; $i++): $j = $i+1; ?>
 	<?php if ($j!=$page): ?>
-	<a href="index.php?id=<?php echo $location; ?>&amp;action=posts&amp;thread=<?php echo $threadID; ?>&amp;page=<?php echo $j; ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
+	<a href="<?php echo $threadURI; ?><?php echo $this->getPageURIFormatted($j); ?>"><?php endif; ?><?php echo $j; ?><?php if ($j!=$page): ?></a>
 	<?php endif; ?>
 	<?php endfor; ?>
 </h4>
