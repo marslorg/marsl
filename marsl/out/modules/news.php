@@ -574,7 +574,7 @@ class News implements Module {
 					$headline = $basic->convertToHTMLEntities($row['headline']);
 					$title = $basic->convertToHTMLEntities($row['title']);
 					$id = $basic->convertToHTMLEntities($row['news']);
-					$newsURI = $this->generateLink($location, null, "read", $headline, $title, $id);
+					$newsURI = $this->generateLink($location, null, "read", $row['headline'], $row['title'], $id);
 					array_push($news,array('city'=>$city,'headline'=>$headline,'title'=>$title,'id'=>$id, 'newsURI'=>$newsURI, 'date'=>$date,'postdate'=>$postdate,'author'=>$authorName,'picture1'=>$picture1, 'photograph1'=>$photograph1, 'teaser'=>$teaser,'text'=>$text));
 				}
 				require_once("template/news.main.tpl.php");
