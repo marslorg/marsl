@@ -140,10 +140,10 @@ class Role {
 	public function setModuleRights($role, $module, $read, $write, $extended, $admin) {
 		$role = $this->db->escapeString($role);
 		$module = $this->db->escapeString($module);
-		$read = $this->db->escapeString($read);
-		$write = $this->db->escapeString($write);
-		$extended = $this->db->escapeString($extended);
-		$admin = $this->db->escapeString($admin);
+		$read = $read ? 1 : 0;
+		$write = $write ? 1 : 0;
+		$extended = $extended ? 1 : 0;
+		$admin = $admin ? 1 : 0;
 		if ($this->db->isExisting("SELECT `role` FROM `rights_module` WHERE `role`= '$role' AND `module`='$module' LIMIT 1")) {
 			$this->db->query("UPDATE `rights_module` SET `read` = '$read', `write` = '$write', `extended` = '$extended', `admin` = '$admin' WHERE `role` = '$role' AND `module` = '$module'");
 		}
@@ -158,10 +158,10 @@ class Role {
 	public function setRights($role, $location, $read, $write, $extended, $admin) {
 		$role = $this->db->escapeString($role);
 		$location = $this->db->escapeString($location);
-		$read = $this->db->escapeString($read);
-		$write = $this->db->escapeString($write);
-		$extended = $this->db->escapeString($extended);
-		$admin = $this->db->escapeString($admin);
+		$read = $read ? 1 : 0;
+		$write = $write ? 1 : 0;
+		$extended = $extended ? 1 : 0;
+		$admin = $admin ? 1 : 0;
 		if ($this->db->isExisting("SELECT `role` FROM `rights` WHERE `role`='$role' AND `location`='$location' LIMIT 1")) {
 			$this->db->query("UPDATE `rights` SET `read` = '$read', `write` = '$write', `extended`='$extended', `admin` = '$admin' WHERE `role`='$role' AND `location`='$location'");
 		}

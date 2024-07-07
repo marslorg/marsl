@@ -47,12 +47,7 @@ class DB {
 	* Escapes a given string and returns the clean result.
 	*/
 	public function escapeString($dirt) {
-		if (!$dirt) {
-			return "0";
-		}
-		else {
-			return mysqli_real_escape_string($this->mysqllink, $dirt);
-		}
+		return mysqli_real_escape_string($this->mysqllink, $dirt);
 	}
 
 	/*
