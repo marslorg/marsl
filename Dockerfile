@@ -25,7 +25,6 @@ RUN chmod 777 -R shared
 COPY marsl/dev/docker/nginx-site.conf /etc/nginx/sites-enabled/default
 COPY marsl/dev/docker/nginx-server.conf /etc/nginx/nginx.conf
 COPY marsl/dev/docker/nginx-cloudflare-ips.sh /etc/cron.daily/nginx-cloudflare-ips.sh
-RUN /etc/cron.daily/nginx-cloudflare-ips.sh
 COPY marsl/dev/docker/php.ini /usr/local/etc/php/conf.d/php.ini
 COPY marsl/dev/docker/entrypoint.sh /etc/entrypoint.sh
 
