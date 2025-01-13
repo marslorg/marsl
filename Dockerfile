@@ -28,6 +28,9 @@ COPY marsl/dev/docker/nginx-cloudflare-ips.sh /etc/cron.daily/nginx-cloudflare-i
 COPY marsl/dev/docker/php.ini /usr/local/etc/php/conf.d/php.ini
 COPY marsl/dev/docker/entrypoint.sh /etc/entrypoint.sh
 
+RUN chmod 755 /etc/cron.daily/nginx-cloudflare-ips.sh
+RUN chmod 755 /etc/entrypoint.sh
+
 EXPOSE 80
 
 ENTRYPOINT ["/etc/entrypoint.sh"]
