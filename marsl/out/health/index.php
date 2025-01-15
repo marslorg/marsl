@@ -6,6 +6,7 @@ include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 class Main {
 
     public function display() {
+        $startTimeExecution = microtime(true);
         $result = "";
         if (isset($_GET['diagnostic']) && $_GET['diagnostic'] == "true") {
             header("Cache-Control: no-cache, must-revalidate");
@@ -29,6 +30,9 @@ class Main {
             $resultArray['filesFolderTime'] = $this->getTimeForFolder("files");
             $resultArray['newsFolderTime'] = $this->getTimeForFolder("news");
             $resultArray['sharedFolderTime'] = $this->getTimeForFolder("shared");
+
+            $stopTimeExecution = microtime(true);
+            $resultArray['executionTime'] = $stopTimeExecution - $startTimeExecution;
 
             $jsonMessage = json_encode($resultArray);
             $result = $jsonMessage;
