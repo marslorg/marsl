@@ -25,12 +25,17 @@ class Main {
             $stopTimeDatabaseConnect = microtime(true);
 
             $role = new Role($db);
-		    $auth = new Authentication($db, $role);
+		    
+            $startTimeAuthConstruction = microtime(true);
+            $auth = new Authentication($db, $role);
+            $stopTimeAuthConstruction = microtime(true);
+            
             $basic = new Basic($db, $auth, $role);
 
             $resultArray['serverName'] = $basic->convertToHTMLEntities($config->getClusterServer());
             $resultArray['databaseConnectTime'] = $stopTimeDatabaseConnect - $startTimeDatabaseConnect;
             $resultArray['databaseTime'] = $this->getTimeForDatabase($db);
+            $resultArray['authConstructionTime'] = $stopTimeAuthConstruction - $startTimeAuthConstruction;
             $resultArray['albumsFolderTime'] = $this->getTimeForFolder("albums");
             $resultArray['filesFolderTime'] = $this->getTimeForFolder("files");
             $resultArray['newsFolderTime'] = $this->getTimeForFolder("news");

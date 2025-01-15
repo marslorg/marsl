@@ -19,9 +19,9 @@ class Basic {
 	}
 
 	public function convertToHTMLEntities($dirt) {
-if ($dirt != null) {
-    return htmlentities($dirt, 0, 'UTF-8');
-}
+		if ($dirt != null) {
+			return htmlentities($dirt, 0, 'UTF-8');
+		}
 		else {
 			return $dirt;
 		}
