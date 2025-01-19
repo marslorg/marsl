@@ -17,6 +17,10 @@ class DB {
 			restore_error_handler();
 		}
 	}
+
+	public function getMySQLLink() {
+		return $this->mysqllink;
+	}
 	
 	/*
 	 * Send a mysql query to the database and return the result.
