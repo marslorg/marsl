@@ -33,6 +33,8 @@ class Main {
             $basic = new Basic($db, $auth, $role);
 
             $resultArray['serverName'] = $basic->convertToHTMLEntities($config->getClusterServer());
+            $resultArray['databaseLink'] = $db->getMySQLLink()->thread_id;
+            $resultArray['persistentDatabaseConnections'] = mysqli_get_connection_stats($db->getMySQLLink())['active_persistent_connections'];
             $resultArray['databaseConnectTime'] = $stopTimeDatabaseConnect - $startTimeDatabaseConnect;
             $resultArray['databaseTime'] = $this->getTimeForDatabase($db);
             $resultArray['authConstructionTime'] = $stopTimeAuthConstruction - $startTimeAuthConstruction;
