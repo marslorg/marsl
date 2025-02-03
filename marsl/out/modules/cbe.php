@@ -3,6 +3,7 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../includes/basic.php");
 include_once(dirname(__FILE__)."/../includes/config.inc.php");
 include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/news.php");
 include_once(dirname(__FILE__)."/cbe/location.php");
 include_once(dirname(__FILE__)."/cbe/band.php");
 include_once(dirname(__FILE__)."/../user/auth.php");
@@ -194,6 +195,7 @@ class CBE implements Module {
 		$type = $this->getScope();
 		$config = new Configuration();
 		$dateTime = new DateTime("now", new DateTimeZone($config->getTimezone()));
+		$newsModule = new News($this->db, $this->auth, $this->role);
 
 		if ($type=="cbe_location") {
 			$articles = array();
@@ -212,7 +214,7 @@ class CBE implements Module {
 					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
 					$locationName = $this->basic->convertToHTMLEntities($row['name']);
-					$link = $this->generateRelativeURI($location, $locationName, $news);
+					$link = $newsModule->generateLink($location, $locationName, "read", $headline, $title, $news);
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName, 'link'=>$link));
 				}
 			}
@@ -236,7 +238,7 @@ class CBE implements Module {
 					$date = $dateTime->format("d\.m\.Y");
 					$location = $row['location'];
 					$locationName = $this->basic->convertToHTMLEntities($row['name']);
-					$link = $this->generateRelativeURI($location, $locationName, $news);
+					$link = $newsModule->generateLink($location, $locationName, "read", $headline, $title, $news);
 					array_push($articles, array('news'=>$news, 'headline'=>$headline, 'title'=>$title, 'date'=>$date, 'location'=>$location, 'locationName'=>$locationName, 'link'=>$link));
 				}
 			}
