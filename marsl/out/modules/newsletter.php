@@ -1,140 +1,163 @@
 <?php
+
+namespace marsl\modules;
+
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
-include_once(dirname(__FILE__)."/../includes/dbsocket.php");
-include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../user/auth.php");
-include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/module.php");
+include_once(dirname(__FILE__)."/../autoload.php");
 
-class Newsletter implements Module {
+use marsl\includes\Basic;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+use marsl\user\Authentication;
+use marsl\user\Role;
 
-	private $db;
-	private $auth;
-	private $role;
+class Newsletter implements Module
+{
+    private Authentication $authentication;
+    private Basic $basic;
+    private IRequestParametersService $requestParametersService;
+    private Role $role;
 
-	public function __construct($db, $auth, $role) {
-		$this->db = $db;
-		$this->auth = $auth;
-		$this->role = $role;
-	}
+    public function __construct(
+        Authentication $authentication,
+        Basic $basic,
+        IRequestParametersService $requestParametersService,
+        Role $role
+    ) {
+        $this->authentication = $authentication;
+        $this->basic = $basic;
+        $this->requestParametersService = $requestParametersService;
+        $this->role = $role;
+    }
 
-	/*
-	 * Initiate the module's frontend view.
-	 */
-	public function display() {
-		
-	}
-	
-	/*
-	 * Initiate the module's admin view.
-	 */
-	public function admin() {
-		$authTime = time();
-		$authToken = $this->auth->getToken($authTime);
-		$basic = new Basic($this->db, $this->auth, $this->role);
-		
-		if ($this->auth->moduleAdminAllowed("newsletter", $this->role->getRole()) && $this->auth->moduleExtendedAllowed("newsletter", $this->role->getRole())) {
-		
-			if (!isset($_GET['action'])) {
-				
-				$temporaryKey = $basic->tempFileKey();
-				
-				$allRoles = $this->role->getRoles();
-				
-				$roles = array();
-				
-				foreach($allRoles as $curRole) {
-					array_push($roles, array('role'=>$basic->convertToHTMLEntities($curRole['role']),'name'=>$basic->convertToHTMLEntities($curRole['name'])));
-				}
-				
-				require_once("template/newsletter.tpl.php");
-			}
-		}
-	}
-	
-	/*
-	 * Returns whether the module has a search function.
-	 */
-	public function isSearchable() {
-		
-	}
-	
-	/*
-	 * Returns an array of the module's fulltext searchable types.
-	 */
-	public function getSearchList() {
-		
-	}
-	
-	/*
-	 * Performs a fulltext search on the searchable attributes.
-	 */
-	public function search($query, $type) {
-		
-	}
-	
-	/*
-	 * Returns whether the module has a tag function.
-	 */
-	public function isTaggable() {
-		
-	}
-	
-	/*
-	 * Returns an array of the module's  taggable types.
-	 */
-	public function getTagList() {
-		
-	}
-	
-	/*
-	 * Pushs a tag string to the module.
-	 */
-	public function addTags($tagString, $type, $news) {
-		
-	}
-	
-	/*
-	 * Returns the tag string of the module.
-	 */
-	public function getTagString($type, $news) {
-		
-	}
-	
-	/*
-	 * Returns an array of the tags.
-	 */
-	public function getTags($type, $news) {
-		
-	}
-	
-	/*
-	 * Displays the information of a tag.
-	 */
-	public function displayTag() {
-		
-	}
-	
-	/*
-	 * Returns a page specific image.
-	 */
-	public function getImage() {
-		
-	}
-	
-	/*
-	 *
-	 */
-	public function getTitle() {
-		
-	}
+    /*
+     * Initiate the module's frontend view.
+     */
+    public function display(): void
+    {
+    }
 
-	public function getRestfulURIPartFromOldURL() {
-		return null;
-	}
+    /*
+     * Initiate the module's admin view.
+     */
+    public function admin(): void
+    {
+        $authTime = time();
+        $authToken = $this->authentication->getToken($authTime);
 
-	public function getOldURIPartFromRestfulURL() {
-		return null;
-	}
+        if ($this->authentication->moduleAdminAllowed("newsletter", $this->role->getRole()) && $this->authentication->moduleExtendedAllowed("newsletter", $this->role->getRole())) {
+
+            if ($this->requestParametersService->fromPost()->getStringParameter("action", "") == "") {
+
+                $temporaryKey = $this->basic->tempFileKey();
+
+                $allRoles = $this->role->getRoles();
+
+                $roles = array();
+
+                foreach ($allRoles as $curRole) {
+                    array_push($roles, array('role' => $curRole['role'],'name' => $curRole['name']));
+                }
+
+                require_once(dirname(__FILE__)."/../admin/template/newsletter.tpl.php");
+            }
+        }
+    }
+
+    /*
+     * Returns whether the module has a search function.
+     */
+    public function isSearchable(): bool
+    {
+        return false;
+    }
+
+    /*
+     * Interface method stub.
+     */
+    public function getSearchList(): array
+    {
+        return array();
+    }
+
+    /*
+     * Performs a fulltext search on the searchable attributes.
+     */
+    public function search(string $query, string $type): void
+    {
+
+    }
+
+    /*
+     * Returns whether the module has a tag function.
+     */
+    public function isTaggable(): bool
+    {
+        return false;
+    }
+
+    /*
+     * Interface method stub.
+    */
+    public function getTagList(): array
+    {
+        return array();
+    }
+
+    /*
+     * Pushs a tag string to the module.
+     */
+    public function addTags(string $tagString, string $type, int $news): void
+    {
+
+    }
+
+    /*
+     * Returns the tag string of the module.
+     */
+    public function getTagString(string $type, int $news): string|null
+    {
+        return null;
+    }
+
+    /*
+     * Returns an array of the tags.
+     */
+    public function getTags(string $type, int $news): array
+    {
+        return array();
+    }
+
+    /*
+     * Displays the information of a tag.
+     */
+    public function displayTag(): void
+    {
+
+    }
+
+    /*
+     * Returns a page specific image.
+     */
+    public function getImage(): string|null
+    {
+        return null;
+    }
+
+    /*
+     *
+     */
+    public function getTitle(): string|null
+    {
+        return null;
+    }
+
+    public function getRestfulURIPartFromOldURL(): string|null
+    {
+        return null;
+    }
+
+    public function getOldURIPartFromRestfulURL(): string|null
+    {
+        return null;
+    }
 }
-?>

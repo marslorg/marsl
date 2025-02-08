@@ -1,5 +1,5 @@
 <?php
-include_once (dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <h2>Daten &auml;ndern:</h2>
 <form method="post" action="<?php echo $uri; ?>" class="formTable">
@@ -46,8 +46,8 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<div class="center">
 					<select name="gender">
 						<option value=""> </option>
-						<option value="female" <?php if ($gender=="female"): ?>selected<?php endif; ?>>Weiblich</option>
-						<option value="male" <?php if ($gender=="male"): ?>selected<?php endif; ?>>M&auml;nnlich</option>
+						<option value="female" <?php if ($gender == "female"): ?>selected<?php endif; ?>>Weiblich</option>
+						<option value="male" <?php if ($gender == "male"): ?>selected<?php endif; ?>>M&auml;nnlich</option>
 					</select>
 				</div>
 			</td>
@@ -82,7 +82,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 	Leider ist dein altes Passwort falsch!
 </div>
 <?php endif; ?>
-<?php if ($samePasswords&&$rightPassword): ?>
+<?php if ($samePasswords && $rightPassword): ?>
 <div class="success">
 	Dein Passwort wurde erfolgreich ge&auml;ndert!
 </div>
@@ -138,17 +138,18 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<input type="text" name="email" class="formmail" />
 				<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 				<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-				<button type="submit" name="entermail"> Absenden </button>
+				<button type="submit" name="entermail" value="entermail"> Absenden </button>
 			</td>
 		</tr>
 	</table>
 </form>
 <table class="userdatatable">
 	<?php foreach($emails as $email): ?>
-	<tr <?php if ($email['confirmed']): ?>class="success"<?php endif; if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
+	<tr <?php if ($email['confirmed']): ?>class="success"<?php endif;
+	    if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
 		<td><?php echo $email['email']; ?></td>
 		<td>
-			<?php if ((!$email['primary'])&&($email['confirmed'])): ?>
+			<?php if ((!$email['primary']) && ($email['confirmed'])): ?>
 			<a href="<?php echo $primaryURI; ?>"><img src="includes/graphics/ok22.png" alt="Als Hauptadresse festlegen" /></a>
 			<?php endif; ?>
 			<?php if (!$email['primary']): ?>

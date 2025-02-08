@@ -1,0 +1,14 @@
+parameters:
+	level: 10
+	checkMissingCallableSignature: true
+	paths:
+		- marsl/out
+	excludePaths:
+		analyse:
+		- marsl/out/admin/template
+		- marsl/out/includes/htmlpurifier
+		- marsl/out/includes/shariff
+		- marsl/out/includes/slugify
+		- marsl/out/includes/web-push-php-6.0.5
+		- marsl/out/template
+		- marsl/out/vendor

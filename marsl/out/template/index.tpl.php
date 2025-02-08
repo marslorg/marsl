@@ -1,5 +1,5 @@
-<?php 
-include_once (dirname(__FILE__)."/../includes/errorHandler.php");
+<?php
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <!DOCTYPE HTML>
 <html lang="de">
@@ -14,7 +14,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
 		<link rel="apple-touch-icon" sizes="192x192" href="includes/graphics/icon_192x192.png" />
 		<link rel="android-touch-icon" href="includes/graphics/icon_192x192.png" />
-		<?php if ($image!=null): ?>
+		<?php if ($image != null): ?>
 		<meta property="og:image" content="<?php echo $baseURL; ?>/<?php echo $image; ?>" />
 		<meta property="og:title" content="<?php echo $title; ?>" />
 		<?php endif; ?>
@@ -55,7 +55,7 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			</label>
 			<div class="menu">
 				<ul>
-					<?php $navigation->display(); ?>
+					<?php $this->navigation->display(); ?>
 				</ul>
 			</div>
 			<hr class="naviseparator" />
@@ -63,75 +63,10 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 		<?php endif; ?>
 		<div class="body">
 			<div class="content" <?php if (!$showContentForWeb): ?>style="margin-top: 0px;"<?php endif; ?>>
-				<?php $urlloader->display(); ?>
+				<?php $this->urlLoader->display(); ?>
 			</div>
 			<div class="right_box">
 				<a href="https://www.facebook.com/music2web" target="_blank"><img src="includes/graphics/socialicons/facebook.png" alt="Folge uns auf Facebook" /></a>
-				<div class="right_ads">
-					<!-- Anzeigen:<br />-->
-					<?php
-					$hostname = strtolower(gethostbyaddr($_SERVER['REMOTE_ADDR']));
-					$googlebot = (substr($hostname, -10) == "google.com") || (substr($hostname, -13) == "googlebot.com");
-					?>
-					<?php
-		
-				 	// Konfiguration
-				
-				  	$m_lt_check       = "0";      # Erzeugt beim Wert 1 eine Testausgabe
-				
-				  	$m_lt_res_pre     = "";    # HTML-Code vor der Ausgabe
-				  	$m_lt_res_suf     = "";   # HTML-Code nach der Ausgabe
-				  	$m_lt_res_sep     = "<br />"; # HTML-Code zwichen den Links, falls mehr als ein Link gebucht wurde
-				
-				  	$m_lt_res_charset = "UTF-8";  # Zeichensatz
-				
-				 	// !!! Folgender Code sollte nicht ge�ndert werden !!!
-				
-	  			  	$m_lt_url='http://serv7.buywords.de/mod/linktrade/res.html?v=2&account_id=8003&domain='.$_SERVER['HTTP_HOST'].'&url='.urlencode($_SERVER['REQUEST_URI']).'&qs='.urlencode($_SERVER['QUERY_STRING']).'&ip='.$_SERVER['REMOTE_ADDR'].'&charset='.urlencode($m_lt_res_charset).'&res_check='.$m_lt_check.'&res_pre='.urlencode($m_lt_res_pre).'&res_suf='.urlencode($m_lt_res_suf).'&res_sep='.urlencode($m_lt_res_sep); $m_lt_res='';
-				  
-				  	if(function_exists('curl_init')) {
-				
-				   		$m_lt_handle=curl_init();
-				
-					   	curl_setopt($m_lt_handle,CURLOPT_URL,$m_lt_url);
-				   		curl_setopt($m_lt_handle,CURLOPT_RETURNTRANSFER,1);
-				   		curl_setopt($m_lt_handle,CURLOPT_TIMEOUT,3);
-				   		curl_setopt($m_lt_handle,CURLOPT_CONNECTTIMEOUT,3);
-				
-				   		$m_lt_res=curl_exec($m_lt_handle); curl_close($m_lt_handle);
-				
-				  	}
-				  	elseif(@ini_get('allow_url_fopen')) {
-				
-				   		$m_lt_res=@file_get_contents($m_lt_url);
-				
-				  	}
-				  
-				  	if ($googlebot) {
-						$m_lt_res = str_replace('<a', '<a rel="nofollow"', $m_lt_res);
-				  	}
-				  
-				  	$m_lt_res = str_replace('<a', '<a target="_blank"', $m_lt_res);
-				
-				  	if(strpos($m_lt_res,'<m_lt_code>')) {
-				
-				   		echo trim(str_replace('<m_lt_code>','',$m_lt_res));
-				
-				  	}
-				
-				 	//
-				
-					?>
-					<?php if ($googlebot): ?>
-						<!-- <a href="https://extrem16.de" rel="nofollow" target="_blank">Extrem16</a>--> 
-					<?php endif; ?>
-					<?php if (!$googlebot): ?>					
-						<!-- <a href="https://extrem16.de" target="_blank">Extrem16</a>--> 
-					<?php endif; ?>
-					<?php if ($pageID == "178"): ?>
-						<!-- Einblenden nur auf Homepage -->
-					<?php endif; ?>
-				</div>
 			</div>
 
 			<?php if ($showContentForWeb): ?>

@@ -1,59 +1,75 @@
 <?php
+
+namespace marsl\api;
+
 include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../includes/errorHandler.php");
-include_once(dirname(__FILE__)."/../includes/dbsocket.php");
-include_once(dirname(__FILE__)."/../includes/config.inc.php");
-include_once(dirname(__FILE__)."/../user/auth.php");
-include_once(dirname(__FILE__)."/../user/role.php");
+include_once(dirname(__FILE__)."/../autoload.php");
 
-class Main {
+use marsl\ComponentBuilder;
+use marsl\includes\DB;
+use marsl\includes\Configuration;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+use marsl\user\Authentication;
 
-	private $db;
-	private $auth;
-	private $role;
+class Main
+{
+    private Authentication $authentication;
+    private Configuration $configuration;
+    private DB $db;
+    private IRequestParametersService $requestParametersService;
 
-	public function __construct() {
-		$this->db = new DB();
-		$this->db->connect();
-		$this->role = new Role($this->db);
-		$this->auth = new Authentication($this->db, $this->role);
-	}
-	
-	/*
-	 * Initialize the frontend screen.
-	 */
-	public function display() {
-		$config = new Configuration();
-		$apiBasePath = $config->getBasePath()."/api/";
-		header("Cache-Control: no-cache, must-revalidate");
+    public function __construct(
+        Authentication $authentication,
+        Configuration $configuration,
+        DB $db,
+        IRequestParametersService $requestParametersService,
+    ) {
+        $this->authentication = $authentication;
+        $this->configuration = $configuration;
+        $this->db = $db;
+        $this->requestParametersService = $requestParametersService;
+    }
+
+    /*
+     * Initialize the frontend screen.
+     */
+    public function display(): void
+    {
+        $apiBasePath = $this->configuration->getBasePath()."/api/";
+        header("Cache-Control: no-cache, must-revalidate");
         header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
         header("Access-Control-Allow-Origin: *");
         header("Content-Type: application/json; charset=UTF-8");
         header("Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE");
         header("Access-Control-Max-Age: 3600");
-		header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-        if ($this->auth->isAppAllowed()) {
-			$requestMethod = $_SERVER['REQUEST_METHOD'];
-			$requestUri = $_SERVER['REQUEST_URI'];
-			$requestUri = substr($requestUri, strlen($apiBasePath));
+        if ($this->authentication->isAppAllowed()) {
+            $requestUri = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_URI", "");
+            $requestUri = substr($requestUri, strlen($apiBasePath));
             $requestUri = rtrim($requestUri, "/");
             $requestUri = filter_var($requestUri, FILTER_SANITIZE_URL);
-            $explodedRequestUri = explode('/', $requestUri);
-			$apiVersion = array_shift($explodedRequestUri);
-			$class = array_shift($explodedRequestUri);
-			$method = array_shift($explodedRequestUri);
-			$fileToInclude = dirname(__FILE__)."/controllers/".$apiVersion."/".$class.".php";
-			include_once($fileToInclude);
-			$controller = new $class($this->db, $this->auth, $requestMethod);
-			$controller->$method(...$explodedRequestUri);
+
+            if (is_string($requestUri)) {
+                $explodedRequestUri = explode('/', $requestUri);
+                $apiVersion = array_shift($explodedRequestUri);
+                $class = array_shift($explodedRequestUri);
+                $classPath = "\\marsl\\api\\controllers\\v".$apiVersion."\\".$class;
+                $method = array_shift($explodedRequestUri);
+                $controller = ComponentBuilder::buildDependencies()->make($classPath);
+                $controller->$method(...$explodedRequestUri);
+            } else {
+                http_response_code(400);
+            }
         }
-	
-		$this->db->close();
-		
-	}	
+
+        $this->db->close();
+
+    }
 }
 
-$display = new Main();
-$display->display();
-?>
+$main = ComponentBuilder::buildDependencies()->make('marsl\api\Main');
+
+if ($main instanceof Main) {
+    $main->display();
+}

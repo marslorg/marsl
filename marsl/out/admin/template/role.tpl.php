@@ -17,7 +17,8 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			<td>
 				<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 				<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-				<button type="submit" name="role" value="<?php echo $roleArray['role']; ?>"> Name &auml;ndern </button>
+				<input type="hidden" name="role" value="<?php echo $roleArray['role']; ?>" />
+				<button type="submit" name="action" value="change"> Name &auml;ndern </button>
 			</td>
 			<td><a href="index.php?var=role&amp;action=del&amp;role=<?php echo $roleArray['role']; ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>">Rolle l&ouml;schen</a></td>
 		</tr>

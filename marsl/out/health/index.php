@@ -1,14 +1,39 @@
 <?php
-include_once(dirname(__FILE__)."/../includes/config.inc.php");
-include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../includes/dbsocket.php");
 
-class Main {
+namespace marsl\health;
 
-    public function display() {
+include_once(dirname(__FILE__)."/../autoload.php");
+
+use marsl\ComponentBuilder;
+use marsl\includes\Basic;
+use marsl\includes\DB;
+use marsl\includes\Configuration;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+
+class Main
+{
+    private Basic $basic;
+    private Configuration $configuration;
+    private DB $db;
+    private IRequestParametersService $requestParametersService;
+
+    public function __construct(
+        Basic $basic,
+        Configuration $configuration,
+        DB $db,
+        IRequestParametersService $requestParametersService
+    ) {
+        $this->basic = $basic;
+        $this->configuration = $configuration;
+        $this->db = $db;
+        $this->requestParametersService = $requestParametersService;
+    }
+
+    public function display(): void
+    {
         $startTimeExecution = microtime(true);
         $result = "";
-        if (isset($_GET['diagnostic']) && $_GET['diagnostic'] == "true") {
+        if ($this->requestParametersService->fromGet()->getBoolParameter("diagnostic", false)) {
             header("Cache-Control: no-cache, must-revalidate");
             header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
             header("Access-Control-Allow-Origin: *");
@@ -17,26 +42,23 @@ class Main {
             header("Access-Control-Max-Age: 3600");
             header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-            $config = new Configuration();
-            $db = new DB();
-
             $startTimeDatabaseConnect = microtime(true);
-            $db->connect();
+            $this->db->connect();
             $stopTimeDatabaseConnect = microtime(true);
 
-            $role = new Role($db);
-		    
             $startTimeAuthConstruction = microtime(true);
-            $auth = new Authentication($db, $role);
             $stopTimeAuthConstruction = microtime(true);
-            
-            $basic = new Basic($db, $auth, $role);
 
-            $resultArray['serverName'] = $basic->convertToHTMLEntities($config->getClusterServer());
-            $resultArray['databaseLink'] = $db->getMySQLLink()->thread_id;
-            $resultArray['persistentDatabaseConnections'] = mysqli_get_connection_stats($db->getMySQLLink())['active_persistent_connections'];
+            $resultArray = array();
+
+            $resultArray['serverName'] = $this->basic->convertToHTMLEntities($this->configuration->getClusterServer());
+            $mysqlLink = $this->db->getMySQLLink();
+            if (!is_bool($mysqlLink)) {
+                $resultArray['databaseLink'] = $mysqlLink->thread_id;
+                $resultArray['persistentDatabaseConnections'] = mysqli_get_connection_stats($mysqlLink)['active_persistent_connections'];
+            }
             $resultArray['databaseConnectTime'] = $stopTimeDatabaseConnect - $startTimeDatabaseConnect;
-            $resultArray['databaseTime'] = $this->getTimeForDatabase($db);
+            $resultArray['databaseTime'] = $this->getTimeForDatabase($this->db);
             $resultArray['authConstructionTime'] = $stopTimeAuthConstruction - $startTimeAuthConstruction;
             $resultArray['albumsFolderTime'] = $this->getTimeForFolder("albums");
             $resultArray['filesFolderTime'] = $this->getTimeForFolder("files");
@@ -48,30 +70,33 @@ class Main {
 
             $jsonMessage = json_encode($resultArray);
             $result = $jsonMessage;
-        }
-        else {
+        } else {
             $result = "HEALTHY";
         }
         http_response_code(200);
         echo $result;
-	}
+    }
 
-    private function getTimeForDatabase($db) {
+    private function getTimeForDatabase(DB $db): float
+    {
         $startTimeForDatabase = microtime(true);
         $db->isHealthy();
         $stopTimeForDatabase = microtime(true);
         return $stopTimeForDatabase - $startTimeForDatabase;
     }
 
-    private function getTimeForFolder($folderName) {
+    private function getTimeForFolder(string $folderName): float
+    {
         $startTimeForDatabase = microtime(true);
-        file_exists(dirname(__FILE__)."/../".$folderName."/health");
+        $_ = file_exists(dirname(__FILE__)."/../".$folderName."/health");
         $stopTimeForDatabase = microtime(true);
         return $stopTimeForDatabase - $startTimeForDatabase;
     }
 
 }
 
-$display = new Main();
-$display->display();
-?>
+$main = ComponentBuilder::buildDependencies()->make('marsl\health\Main');
+
+if ($main instanceof Main) {
+    $main->display();
+}
