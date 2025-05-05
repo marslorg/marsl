@@ -1,266 +1,264 @@
 <?php
+
+namespace marsl\modules;
+
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
-include_once(dirname(__FILE__)."/module.php");
-include_once(dirname(__FILE__)."/navigation.php");
-include_once(dirname(__FILE__)."/../user/user.php");
-include_once(dirname(__FILE__)."/../user/auth.php");
-include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../includes/config.inc.php");
+include_once(dirname(__FILE__)."/../autoload.php");
 
-class Login implements Module {
+use marsl\includes\Basic;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+use marsl\user\Authentication;
+use marsl\user\Role;
+use marsl\user\User;
 
-	private $db;
-	private $auth;
-	private $role;
+class Login implements Module
+{
+    private Authentication $authentication;
+    private Basic $basic;
+    private Navigation $navigation;
+    private IRequestParametersService $requestParametersService;
+    private Role $role;
+    private User $user;
 
-	public function __construct($db, $auth, $role) {
-		$this->db = $db;
-		$this->auth = $auth;
-		$this->role = $role;
-	}
-	
-	public function display() {
-		$user = new User($this->db, $this->role);
-		$navi = new Navigation($this->db, $this->auth, $this->role);
-		$pageID = $navi->getPageID();
-		$location = "";
-		if ($pageID > -1) {
-			$location = $pageID;
-		}
-		else {
-			$location = $basic->getHomeLocation();
-		}
+    public function __construct(
+        Authentication $authentication,
+        Basic $basic,
+        Navigation $navigation,
+        IRequestParametersService $requestParametersService,
+        Role $role,
+        User $user
+    ) {
+        $this->authentication = $authentication;
+        $this->basic = $basic;
+        $this->navigation = $navigation;
+        $this->requestParametersService = $requestParametersService;
+        $this->role = $role;
+        $this->user = $user;
+    }
 
-		$uri = $navi->getRelativeURI($location, null, true);
-		$forgotURI = $uri."action=forgot";
+    public function display(): void
+    {
+        $pageID = $this->navigation->getPageID();
+        $location = "";
+        if ($pageID > -1) {
+            $location = $pageID;
+        } else {
+            $location = $this->basic->getHomeLocation();
+        }
 
-		if ($user->isGuest()||$user->isAdmin()) {
-			
-			if ($this->auth->moduleReadAllowed("login", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
-				if (isset($_GET['action'])) {
-					if ($_GET['action']=="forgot") {
-						if (isset($_GET['action2'])) {
-							if ($_GET['action2']=="recover") {
-								$this->recover();
-							}
-							else {
-								$init = true;
-								$success = false;
-								if ($_GET['action2']=="success") {
-									$init = false;
-									$success = true;
-									$topic = $_GET['topic'];
-								}
-								elseif ($_GET['action2']=="failed") {
-									$init = false;
-									$success = false;
-									$topic = $_GET['topic'];
-								}
-								require_once("template/login.forgot.tpl.php");
-							}
-						}
-						else {
-							$init = true;
-							$success = false;
-							if (isset($_GET['action2'])) {
-								if ($_GET['action2']=="success") {
-									$init = false;
-									$success = true;
-									$topic = $_GET['topic'];
-								}
-								elseif ($_GET['action2']=="failed") {
-									$init = false;
-									$success = false;
-									$topic = $_GET['topic'];
-								}
-							}
-							require_once("template/login.forgot.tpl.php");
-						}
-					}
-					else {
-						$wrongpw = "";
-						if (isset($_GET['wrongpw'])) {
-							$wrongpw = $_GET['wrongpw'];
-						}
-						require_once("template/login.tpl.php");
-					}
-				}
-				else {
-					$wrongpw = "";
-					if (isset($_GET['wrongpw'])) {
-						$wrongpw = $_GET['wrongpw'];
-					}
-					require_once("template/login.tpl.php");
-				}
-			}
-			
-		}
-	}
-	
-	public function admin() {
-		echo "Nichts zu tun hier.";
-	}
-	
-	public function isSearchable() {
-		return false;
-	}
-	
-	public function getSearchList() {
-		return null;
-	}
-	
-	public function search($query, $type) {
-		return null;
-	}
-	
-	public function isTaggable() {
-		return false;
-	}
-	
-	public function getTagList() {
-		return null;
-	}
-	
-	public function addTags($tagString, $type, $news) {
-		
-	}
-	
-	public function getTagString($type, $news) {
-		return null;
-	}
-	
-	public function getTags($type, $news) {
-		return null;
-	}
+        $uri = $this->navigation->getRelativeURI($location, null, true);
+        $forgotURI = $uri."action=forgot";
 
-	private function recover() {
-		$navi = new Navigation($this->db, $this->auth, $this->role);
-		$pageID = $navi->getPageID();
-		$location = "";
-		if ($pageID > -1) {
-			$location = $pageID;
-		}
-		else {
-			$location = $basic->getHomeLocation();
-		}
+        if ($this->user->isGuest() || $this->user->isAdmin()) {
+            if ($this->authentication->moduleReadAllowed("login", $this->role->getRole())
+                && $this->authentication->locationReadAllowed($location, $this->role->getRole())) {
+                $action = $this->requestParametersService->fromGet()->getStringParameter("action", "");
+                $action2 = $this->requestParametersService->fromGet()->getStringParameter("action2", "");
+                if ($action != "") {
+                    if ($action == "forgot") {
+                        if ($action2 != "") {
+                            if ($action2 == "recover") {
+                                $this->recover();
+                            } else {
+                                $init = true;
+                                $success = false;
+                                $topic = "";
+                                if ($action2 == "success") {
+                                    $init = false;
+                                    $success = true;
+                                    $topic = $this->requestParametersService->fromGet()->getStringParameter("topic", "");
+                                } elseif ($action2 == "failed") {
+                                    $init = false;
+                                    $success = false;
+                                    $topic = $this->requestParametersService->fromGet()->getStringParameter("topic", "");
+                                }
+                                require_once(dirname(__FILE__)."/../template/login.forgot.tpl.php");
+                            }
+                        } else {
+                            $init = true;
+                            $success = false;
+                            $topic = "";
+                            require_once(dirname(__FILE__)."/../template/login.forgot.tpl.php");
+                        }
+                    } else {
+                        $wrongpw = $this->requestParametersService->fromGet()->getStringParameter("wrongpw", "");
+                        require_once(dirname(__FILE__)."/../template/login.tpl.php");
+                    }
+                } else {
+                    $wrongpw = $this->requestParametersService->fromGet()->getStringParameter("wrongpw", "");
+                    require_once(dirname(__FILE__)."/../template/login.tpl.php");
+                }
+            }
 
-		$baseURI = $navi->getRelativeURI($location, null, true);
-		$baseForgotURI = $baseURI."action=forgot";
-		$baseRecoverURI = $baseForgotURI."&action2=recover";
-		
-		if (isset($_GET['status'])&&$_GET['status']=="success") {
-			$init = false;
-			$success = true;
-			$recover = true;
-			$basic = new Basic($this->db, $this->auth, $this->role);
-			$title = $basic->convertToHTMLEntities($basic->getTitle());
-			require_once("template/recover.tpl.php");
-		}
-		else {
-			if (isset($_GET['subaction'])) {
-				if ($_GET['subaction']=="set") {
-					$time = $_GET['time'];
+        }
+    }
 
-					$config = new Configuration();
+    public function admin(): void
+    {
+        echo "Nichts zu tun hier.";
+    }
 
-					if ($time+172800 >= time()) {
-						$uid = $_GET['uid'];
-						$user = new User($this->db, $this->role);
-						$password = $user->getPassbyID($uid);
-						$auth_code = md5("admin".$uid.$time.$password);
-						$authParameter = $_GET['auth'];
-						if ($auth_code == $authParameter) {
-							$password = $_POST['password'];
-							$password2 = $_POST['password2'];
-							if ($password==$password2) {
-								$user->setPassword($uid, $password);
-								header("Location: ".$baseRecoverURI."&status=success");
-							}
-							else {
-								header("Location: ".$baseRecoverURI."&status=failed&uid=".$uid."&time=".$time."&auth=".$authParameter);
-							}
-						}
-						else {
-							header("Location: ".$baseRecoverURI."&uid=".$uid."&time=".$time."&auth=".$authParameter);
-						}
-					}
-					else {
-						header("Location: ".$baseRecoverURI."&uid=".$uid."&time=".$time."&auth=".$authParameter);
-					}
-						
-				}
-				else {
-					$this->recoverBox();
-				}
-			}
-			else {
-				$this->recoverBox();
-			}
-		}
-	}
-	
-	private function recoverBox() {
-		$navi = new Navigation($this->db, $this->auth, $this->role);
-		$pageID = $navi->getPageID();
-		$location = "";
-		if ($pageID > -1) {
-			$location = $pageID;
-		}
-		else {
-			$location = $basic->getHomeLocation();
-		}
-		
-		$basic = new Basic($this->db, $this->auth, $this->role);
-		$title = $basic->convertToHTMLEntities($basic->getTitle());
-		$time = $_GET['time'];
-		$recover = false;
-		$uid = "";
-		$authParameter = "";
-		$init = true;
-		$success = false;
-		if (isset($_GET['status'])) {
-			if ($_GET['status']=="failed") {
-				$init = false;
-				$success = false;
-			}
-		}
-		if ($time+172800 >= time()) {
-			$uid = $_GET['uid'];
-			$user = new User($this->db, $this->role);
-			$password = $user->getPassbyID($uid);
-			$auth_code = md5("admin".$uid.$time.$password);
-			$authParameter = $_GET['auth'];
-			if ($auth_code == $authParameter) {
-				$recover = true;
-			}
-		}
+    public function isSearchable(): bool
+    {
+        return false;
+    }
 
-		$baseURI = $navi->getRelativeURI($location, null, true);
-		$baseForgotURI = $baseURI."action=forgot";
-		$baseRecoverURI = $baseForgotURI."&action2=recover";
-		$baseRecoverSetURI = $baseRecoverURI."&subaction=set&uid=".$uid."&time=".$time."&auth=".$authParameter;
+    /*
+     * Interface method stub.
+     */
+    public function getSearchList(): array
+    {
+        return array();
+    }
 
-		require_once("template/recover.tpl.php");
-	}
-	
-	public function displayTag() {
-	}
-	
-	public function getImage() {
-		return null;
-	}
-	
-	public function getTitle() {
-		return null;
-	}
+    public function search(string $query, string $type): void
+    {
+    }
 
-	public function getRestfulURIPartFromOldURL() {
-		return null;
-	}
+    public function isTaggable(): bool
+    {
+        return false;
+    }
 
-	public function getOldURIPartFromRestfulURL() {
-		return null;
-	}
+    /*
+     * Interface method stub.
+    */
+    public function getTagList(): array
+    {
+        return array();
+    }
+
+    public function addTags(string $tagString, string $type, int $news): void
+    {
+
+    }
+
+    public function getTagString(string $type, int $news): string|null
+    {
+        return null;
+    }
+
+    public function getTags(string $type, int $news): array
+    {
+        return array();
+    }
+
+    private function recover(): void
+    {
+        $pageID = $this->navigation->getPageID();
+        $location = "";
+        if ($pageID > -1) {
+            $location = $pageID;
+        } else {
+            $location = $this->basic->getHomeLocation();
+        }
+
+        $baseURI = $this->navigation->getRelativeURI($location, null, true);
+        $baseForgotURI = $baseURI."action=forgot";
+        $baseRecoverURI = $baseForgotURI."&action2=recover";
+
+        if ($this->requestParametersService->fromGet()->getStringParameter("status", "") == "success") {
+            $init = false;
+            $success = true;
+            $recover = true;
+            $title = $this->basic->convertToHTMLEntities($this->basic->getTitle());
+            require_once(dirname(__FILE__)."/../template/recover.tpl.php");
+        } else {
+            $subaction = $this->requestParametersService->fromGet()->getStringParameter("subaction", "");
+            if ($subaction != "") {
+                if ($subaction == "set") {
+                    $time = $this->requestParametersService->fromGet()->getIntegerParameter("time");
+                    $authParameter = $this->requestParametersService->fromGet()->getStringParameter("auth");
+                    $uid = $this->requestParametersService->fromGet()->getIntegerParameter("uid");
+
+                    if ($time + 172800 >= time()) {
+                        $password = $this->user->getPassbyID($uid);
+                        $auth_code = md5("admin".$uid.$time.$password);
+                        if ($auth_code == $authParameter) {
+                            $password = $this->requestParametersService->fromPost()->getStringParameter("password");
+                            $password2 = $this->requestParametersService->fromPost()->getStringParameter("password2");
+                            if ($password == $password2) {
+                                $this->user->setPassword($uid, $password);
+                                header("Location: ".$baseRecoverURI."&status=success");
+                            } else {
+                                header("Location: ".$baseRecoverURI."&status=failed&uid=".$uid."&time=".$time."&auth=".$authParameter);
+                            }
+                        } else {
+                            header("Location: ".$baseRecoverURI."&uid=".$uid."&time=".$time."&auth=".$authParameter);
+                        }
+                    } else {
+                        header("Location: ".$baseRecoverURI."&uid=".$uid."&time=".$time."&auth=".$authParameter);
+                    }
+
+                } else {
+                    $this->recoverBox();
+                }
+            } else {
+                $this->recoverBox();
+            }
+        }
+    }
+
+    private function recoverBox(): void
+    {
+        $pageID = $this->navigation->getPageID();
+        $location = "";
+        if ($pageID > -1) {
+            $location = $pageID;
+        } else {
+            $location = $this->basic->getHomeLocation();
+        }
+
+        $title = $this->basic->convertToHTMLEntities($this->basic->getTitle());
+        $time = $this->requestParametersService->fromGet()->getIntegerParameter("time");
+        $recover = false;
+        $uid = "";
+        $authParameter = "";
+        $init = true;
+        $success = false;
+        if ($this->requestParametersService->fromGet()->getStringParameter("status", "") == "failed") {
+            $init = false;
+            $success = false;
+        }
+        if ($time + 172800 >= time()) {
+            $uid = $this->requestParametersService->fromGet()->getIntegerParameter("uid");
+            $password = $this->user->getPassbyID($uid);
+            $auth_code = md5("admin".$uid.$time.$password);
+            $authParameter = $this->requestParametersService->fromGet()->getStringParameter("auth");
+            if ($auth_code == $authParameter) {
+                $recover = true;
+            }
+        }
+
+        $baseURI = $this->navigation->getRelativeURI($location, null, true);
+        $baseForgotURI = $baseURI."action=forgot";
+        $baseRecoverURI = $baseForgotURI."&action2=recover";
+        $baseRecoverSetURI = $baseRecoverURI."&subaction=set&uid=".$uid."&time=".$time."&auth=".$authParameter;
+
+        require_once(dirname(__FILE__)."/../template/recover.tpl.php");
+    }
+
+    public function displayTag(): void
+    {
+    }
+
+    public function getImage(): string|null
+    {
+        return null;
+    }
+
+    public function getTitle(): string|null
+    {
+        return null;
+    }
+
+    public function getRestfulURIPartFromOldURL(): string|null
+    {
+        return null;
+    }
+
+    public function getOldURIPartFromRestfulURL(): string|null
+    {
+        return null;
+    }
 }
-?>

@@ -1,183 +1,194 @@
 <?php
-include_once (dirname(__FILE__)."/../includes/errorHandler.php");
-include_once (dirname(__FILE__)."/../includes/dbsocket.php");
-include_once (dirname(__FILE__)."/../user/user.php");
-include_once (dirname(__FILE__)."/../includes/basic.php");
-include_once (dirname(__FILE__)."/../user/auth.php");
-include_once (dirname(__FILE__)."/../modules/urlloader.php");
-include_once (dirname(__FILE__)."/roleadmin.php");
-include_once (dirname(__FILE__)."/standard.php");
-include_once (dirname(__FILE__)."/modulerights.php");
-include_once (dirname(__FILE__)."/register.php");
-include_once (dirname(__FILE__)."/tags.php");
-include_once(dirname(__FILE__)."/api.php");
-include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/recover.php");
-include_once(dirname(__FILE__)."/../includes/config.inc.php");
 
-class Main {
-	
-	private $var;
+namespace marsl\admin;
 
-	private $db;
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../autoload.php");
 
-	public function __construct() {
-		$this->db = new DB();
-		$this->db->connect();
-	}
-	
-	/*
-	 * Loader for the configuration file and the right timezone.
-	*/
-	public function Main() {
-		header("Cache-Control: no-cache, must-revalidate");
-		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-		$config = new Configuration();
-		date_default_timezone_set($config->getTimezone());
-	}
-	
-	/*
-	 * Main runner for the current admin interface information.
-	 * Loads the modules if necessary.
-	 */
-	public function admin() {
-		$role = new Role($this->db);
-		$user = new User($this->db, $role);
-		$auth = new Authentication($this->db, $role);
-		$roleID = $role->getRole();
-		$basic = new Basic($this->db, $auth, $role);
-		$urlloader = new URLLoader($this->db, $auth, $role);
-		
-		$headAdmin = $user->isHead();
-		$isRoot = $user->isRoot();
-		$isAdmin = $user->isAdmin();
-		
-		$content = "";
-		
-		if ($isAdmin) {
-			
-			if (isset($_GET['var'])) {
-				$this->var = $_GET['var'];
-			}
-			
-			if ($this->var == "logout") {
-				$user->logout($auth);
-				@header("Location: index.php");
-			}
-			else if ($this->var == "module") {
-				if ($basic->getModule($_GET['module'])!=false) {
-					$array = $basic->getModule($_GET['module']);
-					include_once(dirname(__FILE__)."/../modules/".$array['file'].".php");
-					$content = new $array['class']($this->db, $auth, $role);
-				}
-				else {
-					include_once(dirname(__FILE__)."/admin.php");
-					$content = new Administration();
-				}
-			}
-			else if ($this->var == "urlloader") {
-				if ($auth->moduleAdminAllowed("urlloader", $roleID)) {
-					$content = new URLLoader($this->db, $auth, $role);
-				}
-			}
-			else if ($this->var == "standards") {
-				if ($headAdmin) {
-					$content = new Standard($this->db, $auth, $role);
-				}
-			}
-			else if ($this->var == "modulerights") {
-				$content = new ModuleRights($this->db, $auth, $role);
-			}
-			else if ($this->var == "role") {
-				$content = new RoleAdmin($this->db, $auth, $role);
-			}
-			else if ($this->var =="register") {
-				$content = new RegisterUser($this->db, $auth, $role);
-			}
-			else if ($this->var=="tags") {
-				$content = new Tags($this->db, $auth, $role);
-			}
-			else if ($this->var=="api") {
-				$content = new API($this->db, $auth, $role);
-			}
-			else {
-				include_once(dirname(__FILE__)."/admin.php");
-				$content = new Administration();
-			}
-		}
-		
-		$title = $basic->convertToHTMLEntities($basic->getTitle());
-		$modules = $basic->getModules();
+use marsl\ComponentBuilder;
+use marsl\includes\Basic;
+use marsl\includes\DB;
+use marsl\includes\Configuration;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+use marsl\modules\URLLoader;
+use marsl\user\Authentication;
+use marsl\user\Role;
+use marsl\user\User;
 
-		if ($isAdmin) {
-			$userdata = $auth->moduleExtendedAllowed("userdata", $role->getRole());
-			$userID = $user->getID();
-			$config = new Configuration();
-			$clusterServer = $config->getClusterServer();
-			require_once ("template/index.tpl.php");
-		}
-		else if ($user->isGuest()) {
-			if (isset($_GET['var'])) {
-				if ($_GET['var']=="forgot") {
-					if (isset($_GET['action'])) {
-						if ($_GET['action']=="recover") {
-							$recover = new Recover($this->db, $auth, $role);
-							$recover->admin();
-						}
-						else {
-							$init = true;
-							$success = false;
-							if ($_GET['action']=="success") {
-								$init = false;
-								$success = true;
-								$topic = $_GET['topic'];
-							}
-							elseif ($_GET['action']=="failed") {
-								$init = false;
-								$success = false;
-								$topic = $_GET['topic'];
-							}
-							require_once("template/login.forgot.tpl.php");
-						}
-					}
-					else {
-						$init = true;
-						$success = false;
-						if (isset($_GET['action'])) {
-							if ($_GET['action']=="success") {
-								$init = false;
-								$success = true;
-								$topic = $_GET['topic'];
-							}
-							elseif ($_GET['action']=="failed") {
-								$init = false;
-								$success = false;
-								$topic = $_GET['topic'];
-							}
-						}
-						require_once("template/login.forgot.tpl.php");
-					}
-				}
-				else {
-					$wrongpw = "";
-					if (isset($_GET['wrongpw'])) {
-						$wrongpw = $_GET['wrongpw'];
-					}
-					require_once ("template/login.tpl.php");
-				}
-			}
-			else {
-				$wrongpw = "";
-				if (isset($_GET['wrongpw'])) {
-					$wrongpw = $_GET['wrongpw'];
-				}
-				require_once ("template/login.tpl.php");
-			}
-		}
-		$this->db->close();
-	}
+class Main
+{
+    private Administration $administration;
+    private API $api;
+    private Authentication $authentication;
+    private Basic $basic;
+    private Configuration $configuration;
+    private DB $db;
+    private ModuleRights $moduleRights;
+    private Recover $recover;
+    private RegisterUser $registerUser;
+    private IRequestParametersService $requestParametersService;
+    private Role $role;
+    private RoleAdmin $roleAdmin;
+    private Standard $standard;
+    private Tags $tags;
+    private URLLoader $urlLoader;
+    private User $user;
+
+    private string|null $var;
+
+    public function __construct(
+        Administration $administration,
+        API $api,
+        Authentication $authentication,
+        Basic $basic,
+        Configuration $configuration,
+        DB $db,
+        ModuleRights $moduleRights,
+        Recover $recover,
+        RegisterUser $registerUser,
+        IRequestParametersService $requestParametersService,
+        Role $role,
+        RoleAdmin $roleAdmin,
+        Standard $standard,
+        Tags $tags,
+        URLLoader $urlLoader,
+        User $user
+    ) {
+        $this->administration = $administration;
+        $this->api = $api;
+        $this->authentication = $authentication;
+        $this->basic = $basic;
+        $this->configuration = $configuration;
+        $this->db = $db;
+        $this->moduleRights = $moduleRights;
+        $this->recover = $recover;
+        $this->registerUser = $registerUser;
+        $this->requestParametersService = $requestParametersService;
+        $this->role = $role;
+        $this->roleAdmin = $roleAdmin;
+        $this->standard = $standard;
+        $this->tags = $tags;
+        $this->urlLoader = $urlLoader;
+        $this->user = $user;
+
+        $this->var = null;
+    }
+
+    /*
+     * Loader for the configuration file and the right timezone.
+    */
+    public function Main(): void
+    {
+        header("Cache-Control: no-cache, must-revalidate");
+        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+        date_default_timezone_set($this->configuration->getTimezone());
+    }
+
+    /*
+     * Main runner for the current admin interface information.
+     * Loads the modules if necessary.
+     */
+    public function admin(): void
+    {
+        $roleID = $this->role->getRole();
+
+        $headAdmin = $this->user->isHead();
+        $isRoot = $this->user->isRoot();
+        $isAdmin = $this->user->isAdmin();
+
+        $content = "";
+
+        if ($isAdmin) {
+            $this->var = $this->requestParametersService->fromGet()->getStringParameter("var", "");
+
+            if ($this->var == "logout") {
+                $this->user->logout($this->authentication);
+                @header("Location: index.php");
+            } elseif ($this->var == "module") {
+                if ($this->basic->getModule($this->requestParametersService->fromGet()->getStringParameter("module")) != false) {
+                    $array = $this->basic->getModule($this->requestParametersService->fromGet()->getStringParameter("module"));
+                    $classPath = "\\marsl\\modules\\".$array['class'];
+                    $content = ComponentBuilder::buildDependencies()->make($classPath);
+                } else {
+                    $content = $this->administration;
+
+                }
+            } elseif ($this->var == "urlloader") {
+                if ($this->authentication->moduleAdminAllowed("urlloader", $roleID)) {
+                    $content = $this->urlLoader;
+                }
+            } elseif ($this->var == "standards") {
+                if ($headAdmin) {
+                    $content = $this->standard;
+                }
+            } elseif ($this->var == "modulerights") {
+                $content = $this->moduleRights;
+            } elseif ($this->var == "role") {
+                $content = $this->roleAdmin;
+            } elseif ($this->var == "register") {
+                $content = $this->registerUser;
+            } elseif ($this->var == "tags") {
+                $content = $this->tags;
+            } elseif ($this->var == "api") {
+                $content = $this->api;
+            } else {
+                $content = $this->administration;
+
+            }
+        }
+
+        $title = $this->basic->convertToHTMLEntities($this->basic->getTitle());
+        $modules = $this->basic->getModules();
+
+        if ($isAdmin) {
+            $userdata = $this->authentication->moduleExtendedAllowed("userdata", $this->role->getRole());
+            $userID = $this->user->getID();
+            $config = $this->configuration;
+            $clusterServer = $config->getClusterServer();
+            require_once("template/index.tpl.php");
+        } elseif ($this->user->isGuest()) {
+            $var = $this->requestParametersService->fromGet()->getStringParameter("var", "");
+            if ($var != "") {
+                if ($var == "forgot") {
+                    $action = $this->requestParametersService->fromGet()->getStringParameter("action", "");
+                    if ($action != "") {
+                        if ($action == "recover") {
+                            $this->recover->admin();
+                        } else {
+                            $init = true;
+                            $success = false;
+                            if ($action == "success") {
+                                $init = false;
+                                $success = true;
+                                $topic = $this->requestParametersService->fromGet()->getStringParameter("topic");
+                            } elseif ($action == "failed") {
+                                $init = false;
+                                $success = false;
+                                $topic = $this->requestParametersService->fromGet()->getStringParameter("topic");
+                            }
+                            require_once("template/login.forgot.tpl.php");
+                        }
+                    } else {
+                        $init = true;
+                        $success = false;
+                        require_once("template/login.forgot.tpl.php");
+                    }
+                } else {
+                    $wrongpw = $this->requestParametersService->fromGet()->getStringParameter("wrongpw", "");
+                    require_once("template/login.tpl.php");
+                }
+            } else {
+                $wrongpw = $this->requestParametersService->fromGet()->getStringParameter("wrongpw", "");
+                require_once("template/login.tpl.php");
+            }
+        }
+        $this->db->close();
+    }
 }
 
-$main = new Main();
-$main->admin();
-?>
+
+$main = ComponentBuilder::buildDependencies()->make('marsl\admin\Main');
+
+if ($main instanceof Main) {
+    $main->admin();
+}

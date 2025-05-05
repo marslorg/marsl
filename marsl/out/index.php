@@ -1,86 +1,104 @@
 <?php
-include_once(dirname(__FILE__)."/includes/basic.php");
+
+namespace marsl;
+
 include_once(dirname(__FILE__)."/includes/errorHandler.php");
-include_once(dirname(__FILE__)."/modules/navigation.php");
-include_once(dirname(__FILE__)."/modules/urlloader.php");
-include_once(dirname(__FILE__)."/includes/dbsocket.php");
-include_once(dirname(__FILE__)."/includes/config.inc.php");
-include_once(dirname(__FILE__)."/user/auth.php");
-include_once(dirname(__FILE__)."/user/role.php");
+include_once(dirname(__FILE__)."/vendor/autoload.php");
+include_once(dirname(__FILE__)."/autoload.php");
 
-class Main {
+use marsl\includes\Basic;
+use marsl\includes\Configuration;
+use marsl\includes\DB;
+use marsl\modules\Module;
+use marsl\modules\Navigation;
+use marsl\modules\URLLoader;
+use marsl\user\Authentication;
+use marsl\user\Role;
 
-	private $db;
-	private $auth;
+class Main
+{
+    private Authentication $authentication;
+    private Basic $basic;
+    private Configuration $configuration;
+    private DB $db;
+    private Navigation $navigation;
+    private URLLoader $urlLoader;
 
-	public function __construct() {
-		$this->db = new DB();
-		$this->db->connect();
-		$this->role = new Role($this->db);
-		$this->auth = new Authentication($this->db, $this->role);
-	}
-	
-	/*
-	 * Initialize the frontend screen.
-	 */
-	public function display() {
-		header("Cache-Control: no-cache, must-revalidate");
-		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+    public function __construct(
+        Authentication $authentication,
+        Basic $basic,
+        Configuration $configuration,
+        DB $db,
+        Navigation $navigation,
+        URLLoader $urlLoader
+    ) {
+        $this->authentication = $authentication;
+        $this->basic = $basic;
+        $this->configuration = $configuration;
+        $this->db = $db;
+        $this->navigation = $navigation;
+        $this->urlLoader = $urlLoader;
+    }
 
-		$urlloader = new URLLoader($this->db, $this->auth, $this->role);
+    /*
+     * Initialize the frontend screen.
+     */
+    public function display(): void
+    {
+        header("Cache-Control: no-cache, must-revalidate");
+        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 
-		if ($urlloader->shouldRedirect()) {
-			$urlloader->redirect();
-		}
+        if ($this->urlLoader->shouldRedirect()) {
+            $this->urlLoader->redirect();
+        }
 
-		$config = new Configuration();
-		date_default_timezone_set($config->getTimezone());
-		$fbcomments = $config->getFBComments();
-		
-		$basic = new Basic($this->db, $this->auth, $this->role);
-		$title = $basic->convertToHTMLEntities($basic->getTitle());
-		$image = $basic->convertToHTMLEntities($basic->getImage());
-		$serverName = $basic->convertToHTMLEntities($config->getClusterServer());
-		$domain = $config->getDomain();
-		$basePath = $config->getBasePath();
-		$baseURL = $domain.$basePath;
-		$navigation = new Navigation($this->db, $this->auth, $this->role);
-		$pageID = $navigation->getPageID();
-		$showContentForWeb = !$this->auth->isAppAllowed();
-		
-		require_once("template/index.tpl.php");
-		
-		$this->db->close();
-		
-	}
-	
-	private function displaySearchBox() {
-		$config = new Configuration();
-		$domain = $config->getDomain();
-		$basePath = $config->getBasePath();
-		$baseURL = $domain.$basePath;
-		$basic = new Basic($this->db, $this->auth, $this->role);
-		$searchList = array();
-		$modules = $basic->getModules();
-		foreach ($modules as $module) {
-			$file = $module['file'];
-			$class = $module['class'];
-			include_once(dirname(__FILE__)."/modules/".$file.".php");
-			$searchClass = new $class($this->db, $this->auth, $this->role);
-			if ($searchClass->isSearchable()) {
-				$typeArray = $searchClass->getSearchList();
-				foreach ($typeArray as $type) {
-					array_push($searchList, array('class'=>$file, 'type'=>$type['type'], 'text'=>$type['text']));
-				}
-			}
-		}
-		
-	
-		require_once("template/searchbox.tpl.php");
-	}
-	
+        date_default_timezone_set($this->configuration->getTimezone());
+        $fbcomments = $this->configuration->getFBComments();
+
+        $title = $this->basic->convertToHTMLEntities($this->basic->getTitle());
+        $image = $this->basic->convertToHTMLEntities($this->basic->getImage());
+        $serverName = $this->basic->convertToHTMLEntities($this->configuration->getClusterServer());
+        $domain = $this->configuration->getDomain();
+        $basePath = $this->configuration->getBasePath();
+        $baseURL = $domain.$basePath;
+        $pageID = $this->navigation->getPageID();
+        $showContentForWeb = !$this->authentication->isAppAllowed();
+
+        require_once("template/index.tpl.php");
+
+        $this->db->close();
+
+    }
+
+    // Method used in PHP template file.
+    // @phpstan-ignore method.unused
+    private function displaySearchBox(): void
+    {
+        $domain = $this->configuration->getDomain();
+        $basePath = $this->configuration->getBasePath();
+        $baseURL = $domain.$basePath;
+        $searchList = array();
+        $modules = $this->basic->getModules();
+        foreach ($modules as $module) {
+            $file = $module['file'];
+            $classPath = "\marsl\modules\\".$module['class'];
+            $searchClass = ComponentBuilder::buildDependencies()->make($classPath);
+            if (($searchClass instanceof Module) && $searchClass->isSearchable()) {
+                $typeArray = $searchClass->getSearchList();
+                foreach ($typeArray as $type) {
+                    array_push($searchList, array('class' => $file, 'type' => $type['type'], 'text' => $type['text']));
+                }
+            }
+        }
+
+
+        require_once("template/searchbox.tpl.php");
+    }
+
 }
 
-$display = new Main();
-$display->display();
-?>
+$main = ComponentBuilder::buildDependencies()->make('marsl\Main');
+
+if ($main instanceof Main) {
+    $main->display();
+}

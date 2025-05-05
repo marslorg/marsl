@@ -1,5 +1,5 @@
 <?php
-include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 ?>
 <h2><?php echo $name; ?></h2>
 <h3><a href="index.php?var=modulerights">zur&uuml;ck</a></h3>
@@ -25,7 +25,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			<td colspan="5" class="navhead">
 				<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 				<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-				<button type="submit" name="change"> &Auml;ndern </button>
+				<button type="submit" name="change" value="update"> &Auml;ndern </button>
 				<button type="reset"> L&ouml;schen </button>
 			</td>
 		</tr>

@@ -1,5 +1,5 @@
 <?php
-include_once (dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <div class="news">
 	<span class="newstable">
@@ -7,11 +7,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="newsinformation">
 				<h3>Taglist:</h3>
 				<?php foreach($moduleTags as $moduleTag):
-				$tags = $moduleTag['tags'];
-				?>
+				    $tags = $moduleTag['tags'];
+				    ?>
 				<b><?php echo $moduleTag['name']; ?></b><br />
 				<?php foreach($tags as $tag): ?>
-				<a href="<?php echo $tag['uri']; ?>"><?php echo $basic->convertToHTMLEntities($tag['tag']); ?></a><br />
+				<a href="<?php echo $tag['uri']; ?>"><?php echo $this->basic->convertToHTMLEntities($tag['tag']); ?></a><br />
 				<?php endforeach; ?>
 				<br />
 				<?php endforeach; ?>
@@ -24,14 +24,14 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="newscontent">
 				<h3 class="headline"><?php echo $headline; ?></h3>
 				<h2><?php echo $title; ?></h2>
-				<?php if (($picture2=="empty")&&($picture1!="empty")): ?>
+				<?php if (($picture2 == "empty") && ($picture1 != "empty")): ?>
 				<span class="teaserpicture">
 					<img src="news/<?php echo $picture1; ?>" />
 					<?php echo $photograph1; ?>
 				</span>
 				<?php endif; ?>
 				<b><?php echo $city; ?> (<?php echo $authorName; ?>)&nbsp;<img src="includes/graphics/square.gif" />&nbsp;&nbsp;&nbsp;<?php echo $teaser; ?></b><br />
-				<?php if ($picture2!="empty"): ?>
+				<?php if ($picture2 != "empty"): ?>
 				<br />
 				<span class="center">
 					<div class="textpicture">
@@ -46,11 +46,11 @@ include_once (dirname(__FILE__)."/../includes/errorHandler.php");
 				<br /><div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;]" data-theme="standard" data-orientation="horizontal"></div>
 				<b>Taglist:</b><br />
 				<?php foreach($moduleTags as $moduleTag):
-				$tags = $moduleTag['tags'];
-				?>
+				    $tags = $moduleTag['tags'];
+				    ?>
 				<b><?php echo $moduleTag['name']; ?>: </b>
 				<?php foreach($tags as $tag): ?>
-				<a href="<?php echo $tag['uri']; ?>"><?php echo $basic->convertToHTMLEntities($tag['tag']); ?></a> 
+				<a href="<?php echo $tag['uri']; ?>"><?php echo $this->basic->convertToHTMLEntities($tag['tag']); ?></a> 
 				<?php endforeach; ?>
 				<br />
 				<?php endforeach; ?>

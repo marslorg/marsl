@@ -1,5 +1,5 @@
 <?php
-include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -27,14 +27,14 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 				<li>
 					<a class="hide" href="#">Navigation</a>
 					<ul>
-						<?php $urlloader->adminNavi(); ?>
+						<?php $this->urlLoader->adminNavi(); ?>
 					</ul>
 				</li>
 				<li>
 					<a class="hide" href="#">Module</a>
 					<ul>
 						<?php foreach ($modules as $module): ?>
-						<?php if ($auth->moduleAdminAllowed($module['file'], $roleID)): ?>
+						<?php if ($this->authentication->moduleAdminAllowed($module['file'], $roleID)): ?>
 						<li>
 							<a href="index.php?var=module&amp;module=<?php echo $module['file']; ?>">
 							<?php echo $module['name']; ?>

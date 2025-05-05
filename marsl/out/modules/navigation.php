@@ -1,383 +1,416 @@
 <?php
+
+namespace marsl\modules;
+
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
-include_once(dirname(__FILE__)."/../includes/dbsocket.php");
-include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../includes/config.inc.php");
-include_once(dirname(__FILE__)."/../user/auth.php");
-include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/module.php");
 include_once(dirname(__FILE__)."/../includes/slugify/vendor/autoload.php");
+include_once(dirname(__FILE__)."/../autoload.php");
 
 use Cocur\Slugify\Slugify;
+use marsl\includes\Basic;
+use marsl\includes\Configuration;
+use marsl\includes\DB;
+use marsl\includes\PageBase;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+use marsl\user\Authentication;
+use marsl\user\Role;
 
-class Navigation implements Module {
-	
-	private $db;
-	private $auth;
-	private $role;
-	private $basic;
+class Navigation implements Module
+{
+    private Authentication $authentication;
+    private Basic $basic;
+    private Configuration $configuration;
+    private DB $db;
+    private PageBase $pageBase;
+    private IRequestParametersService $requestParametersService;
+    private Role $role;
 
-	public function __construct($db, $auth, $role) {
-		$this->db = $db;
-		$this->auth = $auth;
-		$this->role = $role;
-		$this->basic = new Basic($db, $auth, $role);
-	}
-	
-	/*
-	 * Displays the admin interface for the navigation.
-	 */
-	public function admin() {
-		$curRole = $this->role->getRole();
-		if ($this->auth->moduleAdminAllowed("navigation", $curRole)) {
-			$action = "";
-			if (isset($_GET['action'])) {
-				$action = $_GET['action'];
-			}
-			$this->evalAction($action);
-			
-			if ($action!="role") {
-				$categories = array();
-				$catcontents = array();	
-				$links = array();	
-				$result = $this->db->query("SELECT `id`, `name`, `pos`, `category`, `maps_to`, `type` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
-				while ($row = $this->db->fetchArray($result)) {
-					if ($this->auth->locationAdminAllowed($row['id'], $curRole)) {
-						if (empty($row['maps_to'])) {
-							$roleEditor = $this->auth->locationAdminAllowed($row['id'], $curRole)&&$this->auth->locationExtendedAllowed($row['id'], $curRole)&&$this->auth->locationWriteAllowed($row['id'], $curRole)&&$this->auth->locationReadAllowed($row['id'], $curRole);
-							$name = $this->basic->convertToHTMLEntities($row['name']);
-							if ($row['type'] == 0) {
-								array_push($categories, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
-							}
-							else if ($row['type'] == 1) {
-								array_push($catcontents, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'role' => $roleEditor));
-							}
-							else if ($row['type'] == 2) {
-								array_push($links, array('id' => $row['id'], 'name' => $name, 'pos' => $row['pos'], 'category' => $row['category'], 'role' => $roleEditor));
-							}
-						}
-					}
-				}
-				$authTime = time();
-				$authToken = $this->auth->getToken($authTime);
-				require_once("template/navigation.tpl.php");
-			}
-		}
-	}
-	
-	/*
-	 * Displays the navigation.
-	 */
-	public function display() {
-		if ($this->auth->moduleReadAllowed("navigation", $this->role->getRole())) {
-			$config = new Configuration();
-			$categories = array();
-			$links = array();
-			$result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
-			while ($row = $this->db->fetchArray($result)) {
-				if ($this->auth->locationReadAllowed($row['id'], $this->role->getRole())) {
-					$id = $this->basic->convertToHTMLEntities($row['id']);
-					$name = $this->basic->convertToHTMLEntities($row['name']);
-
-					$link = "";
-
-					if ($config->getEnableOldURIs()) {
-						$link = "index.php?id=".$row['id'];
-					}
-					else {
-						$link = $this->generateRestfulURI($row['id'], $row['name']);
-					}
-					
-					if ($row['type'] == 0 || $row['type'] == 1) {
-						array_push($categories, array('id' => $id, 'name' => $name, 'link' => $link, 'type' => $row['type']));
-					}
-					else if ($row['type'] == 2) {
-						if (!array_key_exists($row['category'], $links)) {
-							$links[$row['category']] = array();
-						}
-						array_push($links[$row['category']], array('id' => $id, 'name' => $name, 'link' => $link));
-					}
-				}
-			}
-
-			require("template/navigation.tpl.php");
-		}
-	}
-	
-	/*
-	 * Executes the given action in the admin interface.
-	 */
-	private function evalAction($action) {
-		if ($this->auth->moduleAdminAllowed("navigation", $this->role->getRole())) {
-			$roleID = $this->role->getRole();
-			if ($action=="addcat") {
-				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-					$this->db->query("INSERT INTO `navigation`(`name`,`type`, `pos`) VALUES('Standard','0','0')");
-					$location = $this->db->lastInsertedID();
-					$this->role->setRights($roleID, $location, '1', '1', '1', '1');
-				}
-			}
-			else if ($action=="addcatcontent") {
-				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-					$this->db->query("INSERT INTO `navigation`(`name`,`type`, `pos`) VALUES('Standard','1','0')");
-					$location = $this->db->lastInsertedID();
-					$this->role->setRights($roleID, $location, '1', '1', '1', '1');
-				}
-			}
-			else if ($action=="addlink") {
-				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-					$this->db->query("INSERT INTO `navigation`(`name`,`type`, `pos`) VALUES('Standard','2','0')");
-					$location = $this->db->lastInsertedID();
-					$this->role->setRights($roleID, $location, '1', '1', '1', '1');
-				}
-			}
-			else if ($action=="change") {
-				if (isset($_POST['id'])) {
-					if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-						$name = $this->db->escapeString($_POST['name']);
-						$pos = $this->db->escapeString($_POST['pos']);
-						$id = $this->db->escapeString($_POST['id']);
-						if ($this->auth->locationAdminAllowed($id, $this->role->getRole())) {
-							if ($_GET['type']==0||$_GET['type']==1) {
-								$this->db->query("UPDATE `navigation` SET `name`='$name', `pos`='$pos' WHERE `id`='$id'");
-							}
-							elseif ($_GET['type']==2) {
-								$catbelong = $this->db->escapeString($_POST['catbelong']);
-								$this->db->query("UPDATE `navigation` SET `name`='$name', `pos`='$pos', `category`='$catbelong' WHERE `id`='$id'");
-							}
-						}
-					}
-				}
-			}
-			else if ($action=="del") {
-				$id = $this->db->escapeString($_GET['id']);
-				if ($this->auth->checkToken($_GET['time'], $_GET['token'])) {
-					if ($this->auth->locationAdminAllowed($id, $this->role->getRole())&&$this->auth->locationExtendedAllowed($id, $this->role->getRole())&&$this->auth->locationWriteAllowed($id, $this->role->getRole())&&$this->auth->locationReadAllowed($id, $this->role->getRole())) {
-						$this->db->query("UPDATE `navigation` SET `type`='3' WHERE `id`='$id'");
-					}
-				}
-			}
-			
-			else if ($action=="role") {
-				$id = $this->db->escapeString($_GET['id']);
-				if ($this->auth->locationAdminAllowed($id, $this->role->getRole())&&$this->auth->locationExtendedAllowed($id, $this->role->getRole())&&$this->auth->locationWriteAllowed($id, $this->role->getRole())&&$this->auth->locationReadAllowed($id, $this->role->getRole())) {
-					$name = $this->basic->convertToHTMLEntities($this->getNamebyID($id));
-					$roles = $this->role->getPossibleRoles($this->role->getRole());
-					if (isset($_POST['change'])) {
-						if ($this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-							foreach ($roles as $roleID) {
-								if ($roleID!=$this->role->getRole()) {
-									$read = isset($_POST[$roleID.'_read']);
-									$write = isset($_POST[$roleID.'_write']);
-									$extended = isset($_POST[$roleID.'_extended']);
-									$admin = isset($_POST[$roleID.'_admin']);
-									$this->role->setRights($roleID, $id, $read, $write, $extended, $admin);
-								}
-							}
-						}
-					}
-					$rights = array();
-					foreach ($roles as $roleID) {
-						if ($roleID!=$this->role->getRole()) {
-							$roleID = $this->db->escapeString($roleID);
-							if ($this->db->isExisting("SELECT `role` FROM `rights` WHERE `role`='$roleID' AND `location`='$id' LIMIT 1")) {
-								$result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
-								while ($row = $this->db->fetchArray($result)) {
-									$roleName = $this->basic->convertToHTMLEntities($this->role->getNamebyID($row['role']));
-									array_push($rights,array('name'=>$roleName,'role'=>$this->basic->convertToHTMLEntities($row['role']),'read'=>$row['read'],'write'=>$row['write'],'extended'=>$row['extended'],'admin'=>$row['admin']));
-								}
-							}
-							else {
-								$roleName = $this->basic->convertToHTMLEntities($this->role->getNamebyID($roleID));
-								array_push($rights,array('name'=>$roleName,'role'=>$this->basic->convertToHTMLEntities($roleID),'read'=>"0",'write'=>"0",'extended'=>"0",'admin'=>"0"));
-							}
-						}
-					}
-					$authTime = time();
-					$authToken = $this->auth->getToken($authTime);
-					require_once("template/navigation.role.tpl.php");
-				}
-			}
-		}
-	}
-	
-	/*
-	 * Gets the name of a link by the given ID.
-	 */
-	public function getNamebyID($id) {
-		$id = $this->db->escapeString($id);
-		$name = "";
-		$result = $this->db->query("SELECT `name` FROM `navigation` WHERE `id`='$id'");
-		while ($row = $this->db->fetchArray($result)) {
-			$name = $row['name'];
-		}
-		return $name;
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function isSearchable() {
-		return false;
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function getSearchList() {
-		return array();
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function search($query, $type) {
-		return null;
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function isTaggable() {
-		return false;
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function getTagList() {
-		return null;
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function addTags($tagString, $type, $news) {
-	}
-	
-	/*
-	 * Interface method stub.
-	*/
-	public function getTagString($type, $news) {
-	}
-	
-	public function getTags($type, $news) {
-		return null;
-	}
-	
-	public function displayTag() {
-	}
-	
-	public function getImage() {
-		return null;
-	}
-	
-	public function getTitle() {
-		return null;
-	}
-
-	public function getRestfulURIPartFromOldURL() {
-		return null;
-	}
-
-	public function getOldURIPartFromRestfulURL() {
-		return null;
-	}
-
-	public function generateRestfulURIByID($id) {
-		list($title, $module) = $this->getModuleAndTitleByID($id);
-		$uri = $this->generateRestfulURI($id, $title);
-		return $uri;
-	}
-
-	public function generateRestfulURI($id, $title) {
-		$slugify = new Slugify();
-		return  $slugify->slugify($title)."-".$id;
-	}
-
-	public function getModuleAndTitleByID($id) {
-		$id = $this->db->escapeString($id);
-        $result = $this->db->query("SELECT `module`, `name` FROM `navigation` WHERE `id`='$id' AND `type` IN ('1','2')");
-        while ($row = $this->db->fetchArray($result)) {
-            $title = $row['name']." - ";
-            $module = $this->db->escapeString($row['module']);
-        }
-
-        return array($title, $module);
+    public function __construct(
+        Authentication $authentication,
+        Basic $basic,
+        Configuration $configuration,
+        DB $db,
+        PageBase $pageBase,
+        IRequestParametersService $requestParametersService,
+        Role $role
+    ) {
+        $this->authentication = $authentication;
+        $this->basic = $basic;
+        $this->configuration = $configuration;
+        $this->db = $db;
+        $this->pageBase = $pageBase;
+        $this->requestParametersService = $requestParametersService;
+        $this->role = $role;
     }
 
-	public function getIDFromRestfulURI() {
-		$id = -1;
+    /*
+     * Displays the admin interface for the navigation.
+     */
+    public function admin(): void
+    {
+        $curRole = $this->role->getRole();
+        if ($this->authentication->moduleAdminAllowed("navigation", $curRole)) {
+            $action = $this->requestParametersService->fromGet()->getStringParameter("action", "");
+            $this->evalAction($action);
 
-		if (isset($_GET['request_uri']) && !empty($_GET['request_uri'])) {
-			$requestURI = $_GET['request_uri'];
-			$explodedRequestURI = explode('/', $requestURI);
-			if (sizeof($explodedRequestURI) > 0) {
-				$pagePart = $explodedRequestURI[0];
-				$explodedPagePart = explode('-', $pagePart);
-				$explodedPagePartSize = sizeof($explodedPagePart);
-				if ($explodedPagePartSize > 0) {
-					$id = $explodedPagePart[$explodedPagePartSize-1];
-				}
-			}
-		}
+            if ($action != "role") {
+                $categories = array();
+                $catcontents = array();
+                $links = array();
+                $result = $this->db->query("SELECT `id`, `name`, `pos`, `category`, `maps_to`, `type` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
+                while ($row = $this->db->fetchArray($result)) {
+                    if (is_string($row['id'])
+                        && is_string($row['name'])
+                        && ($row['maps_to'] == null || is_string($row['maps_to']))
+                        && is_string($row['type'])
+                        && is_string($row['pos'])
+                        && ($row['category'] == null || is_string($row['category']))) {
+                        $id = intval(strval($row['id']));
+                        $type = intval(strval($row['type']));
+                        $pos = intval(strval($row['pos']));
+                        if ($this->authentication->locationAdminAllowed($id, $curRole)) {
+                            if ($row['maps_to'] == null || intval(strval($row['maps_to'])) == 0) {
+                                // PHPStan is wrong.
+                                // @phpstan-ignore booleanAnd.leftAlwaysTrue
+                                $roleEditor = $this->authentication->locationAdminAllowed($id, $curRole)
+                                                && $this->authentication->locationExtendedAllowed($id, $curRole)
+                                                && $this->authentication->locationWriteAllowed($id, $curRole)
+                                                && $this->authentication->locationReadAllowed($id, $curRole);
+                                $name = $this->basic->convertToHTMLEntities($row['name']);
+                                if ($type == 0) {
+                                    array_push($categories, array('id' => $id, 'name' => $name, 'pos' => $pos, 'role' => $roleEditor));
+                                } elseif ($type == 1) {
+                                    array_push($catcontents, array('id' => $id, 'name' => $name, 'pos' => $pos, 'role' => $roleEditor));
+                                } elseif ($type == 2) {
+                                    $category = is_string($row['category']) ? intval(strval($row['category'])) : 0;
+                                    array_push($links, array('id' => $id, 'name' => $name, 'pos' => $pos, 'category' => $category, 'role' => $roleEditor));
+                                }
+                            }
+                        }
+                    }
+                }
+                $authTime = time();
+                $authToken = $this->authentication->getToken($authTime);
+                require_once(dirname(__FILE__)."/../admin/template/navigation.tpl.php");
+            }
+        }
+    }
 
-		return $id;
-	}
+    /*
+     * Displays the navigation.
+     */
+    public function display(): void
+    {
+        if ($this->authentication->moduleReadAllowed("navigation", $this->role->getRole())) {
+            $categories = array();
+            $links = array();
+            $result = $this->db->query("SELECT `id`, `name`, `type`, `category` FROM `navigation` WHERE `type` IN ('0','1','2') ORDER BY `pos`");
+            while ($row = $this->db->fetchArray($result)) {
+                if (is_string($row['id'])
+                        && is_string($row['name'])
+                        && is_string($row['type'])
+                        && ($row['category'] == null || is_string($row['category']))) {
+                    $id = intval(strval($row['id']));
+                    $type = intval(strval($row['type']));
+                    $category = is_string($row['category']) ? intval(strval($row['category'])) : 0;
+                    if ($this->authentication->locationReadAllowed($id, $this->role->getRole())) {
+                        $name = $this->basic->convertToHTMLEntities($row['name']);
 
-	public function getPageID() {
-		$config = new Configuration();
+                        $link = "";
 
-		$id = -1;
-		if (!$config->getEnableOldURIs()) {
-			$id = $this->getIDFromRestfulURI();
-		}
+                        if ($this->configuration->getEnableOldURIs()) {
+                            $link = "index.php?id=".$id;
+                        } else {
+                            $link = $this->generateRestfulURI($id, $row['name']);
+                        }
 
-		if ($id == -1) {
-			if ($config->getEnableOldURIs() && isset($_GET['id'])) {
-				$id = $_GET['id'];
-			}
-			else if ($config->getEnableOldURIs() && !isset($_GET['id']) && isset($_GET['tag'])) {
-				$id = -1;
-			}
-			else {
-				$result = $this->db->query("SELECT `homepage` FROM homepage");
-				while ($row = $this->db->fetchArray($result)) {
-					$id = $row['homepage'];
-				}
-			}
-		}
+                        if ($type == 0 || $type == 1) {
+                            array_push($categories, array('id' => $id, 'name' => $name, 'link' => $link, 'type' => $type));
+                        } elseif ($type == 2) {
+                            if (!array_key_exists($category, $links)) {
+                                $links[$category] = array();
+                            }
+                            array_push($links[$category], array('id' => $id, 'name' => $name, 'link' => $link));
+                        }
+                    }
+                }
+            }
 
-		$id = $this->db->escapeString($id);
+            require(dirname(__FILE__)."/../template/navigation.tpl.php");
+        }
+    }
 
-		return $id;
-	}
+    /*
+     * Executes the given action in the admin interface.
+     */
+    private function evalAction(string $action): void
+    {
+        if ($this->authentication->moduleAdminAllowed("navigation", $this->role->getRole())) {
+            $roleID = $this->role->getRole();
+            if ($action == "addcat") {
+                if ($this->authentication->checkToken(
+                    $this->requestParametersService->fromGet()->getIntegerParameter("time"),
+                    $this->requestParametersService->fromGet()->getStringParameter("token")
+                )) {
+                    $this->db->query("INSERT INTO `navigation`(`name`,`type`, `pos`) VALUES('Standard','0','0')");
+                    $location = (int)$this->db->lastInsertedID();
+                    $this->role->setRights($roleID, $location, true, true, true, true);
+                }
+            } elseif ($action == "addcatcontent") {
+                if ($this->authentication->checkToken(
+                    $this->requestParametersService->fromGet()->getIntegerParameter("time"),
+                    $this->requestParametersService->fromGet()->getStringParameter("token")
+                )) {
+                    $this->db->query("INSERT INTO `navigation`(`name`,`type`, `pos`) VALUES('Standard','1','0')");
+                    $location = (int)$this->db->lastInsertedID();
+                    $this->role->setRights($roleID, $location, true, true, true, true);
+                }
+            } elseif ($action == "addlink") {
+                if ($this->authentication->checkToken(
+                    $this->requestParametersService->fromGet()->getIntegerParameter("time"),
+                    $this->requestParametersService->fromGet()->getStringParameter("token")
+                )) {
+                    $this->db->query("INSERT INTO `navigation`(`name`,`type`, `pos`) VALUES('Standard','2','0')");
+                    $location = (int)$this->db->lastInsertedID();
+                    $this->role->setRights($roleID, $location, true, true, true, true);
+                }
+            } elseif ($action == "change") {
+                $id = $this->requestParametersService->fromPost()->getIntegerParameter("id", -1);
+                if ($id != -1) {
+                    if ($this->authentication->checkToken(
+                        $this->requestParametersService->fromPost()->getIntegerParameter("authTime"),
+                        $this->requestParametersService->fromPost()->getStringParameter("authToken")
+                    )) {
+                        $name = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("name", ""));
+                        $pos = $this->requestParametersService->fromPost()->getIntegerParameter("pos");
+                        if ($this->authentication->locationAdminAllowed($id, $this->role->getRole())) {
+                            $type = $this->requestParametersService->fromGet()->getIntegerParameter("type", -1);
+                            if ($type == 0 || $type == 1) {
+                                $this->db->query("UPDATE `navigation` SET `name`='$name', `pos`='$pos' WHERE `id`='$id'");
+                            } elseif ($type == 2) {
+                                $catbelong = $this->requestParametersService->fromPost()->getIntegerParameter("catbelong");
+                                $this->db->query("UPDATE `navigation` SET `name`='$name', `pos`='$pos', `category`='$catbelong' WHERE `id`='$id'");
+                            }
+                        }
+                    }
+                }
+            } elseif ($action == "del") {
+                $id = $this->requestParametersService->fromGet()->getIntegerParameter("id", -1);
+                if ($this->authentication->checkToken(
+                    $this->requestParametersService->fromGet()->getIntegerParameter("time"),
+                    $this->requestParametersService->fromGet()->getStringParameter("token")
+                )) {
+                    if ($this->authentication->locationAdminAllowed($id, $this->role->getRole())
+                    && $this->authentication->locationExtendedAllowed($id, $this->role->getRole())
+                    && $this->authentication->locationWriteAllowed($id, $this->role->getRole())
+                    && $this->authentication->locationReadAllowed($id, $this->role->getRole())) {
+                        $this->db->query("UPDATE `navigation` SET `type`='3' WHERE `id`='$id'");
+                    }
+                }
+            } elseif ($action == "role") {
+                $id = $this->requestParametersService->fromGet()->getIntegerParameter("id", -1);
+                if ($this->authentication->locationAdminAllowed($id, $this->role->getRole())
+                    && $this->authentication->locationExtendedAllowed($id, $this->role->getRole())
+                    && $this->authentication->locationWriteAllowed($id, $this->role->getRole())
+                    && $this->authentication->locationReadAllowed($id, $this->role->getRole())) {
+                    $name = $this->basic->convertToHTMLEntities($this->getNamebyID($id));
+                    $roles = $this->role->getPossibleRoles($this->role->getRole());
+                    if ($this->requestParametersService->fromPost()->getStringParameter("change", "") != "") {
+                        if ($this->authentication->checkToken(
+                            $this->requestParametersService->fromPost()->getIntegerParameter("authTime"),
+                            $this->requestParametersService->fromPost()->getStringParameter("authToken")
+                        )) {
+                            foreach ($roles as $roleID) {
+                                if ($roleID != $this->role->getRole()) {
+                                    $read = $this->requestParametersService->fromPost()->getBoolParameter($roleID."_read", false);
+                                    $write = $this->requestParametersService->fromPost()->getBoolParameter($roleID."_write", false);
+                                    $extended = $this->requestParametersService->fromPost()->getBoolParameter($roleID."_extended", false);
+                                    $admin = $this->requestParametersService->fromPost()->getBoolParameter($roleID."_admin", false);
+                                    $this->role->setRights($roleID, $id, $read, $write, $extended, $admin);
+                                }
+                            }
+                        }
+                    }
+                    $rights = array();
+                    foreach ($roles as $roleID) {
+                        if ($roleID != $this->role->getRole()) {
+                            if ($this->db->isExisting("SELECT `role` FROM `rights` WHERE `role`='$roleID' AND `location`='$id' LIMIT 1")) {
+                                $result = $this->db->query("SELECT `role`, `read`, `write`, `extended`, `admin` FROM `rights` WHERE `role`='$roleID' AND `location`='$id'");
+                                while ($row = $this->db->fetchArray($result)) {
+                                    if (is_string($row['role'])
+                                        && is_string($row['read'])
+                                        && is_string($row['write'])
+                                        && is_string($row['extended'])
+                                        && is_string($row['admin'])) {
+                                        $role = intval(strval($row['role']));
+                                        $roleName = $this->basic->convertToHTMLEntities($this->role->getNamebyID($role));
+                                        array_push($rights, array('name' => $roleName,'role' => $role,'read' => intval(strval($row['read'])),'write' => intval(strval($row['write'])),'extended' => intval(strval($row['extended'])),'admin' => intval(strval($row['admin']))));
+                                    }
+                                }
+                            } else {
+                                $roleName = $this->basic->convertToHTMLEntities($this->role->getNamebyID($roleID));
+                                array_push($rights, array('name' => $roleName,'role' => $roleID,'read' => "0",'write' => "0",'extended' => "0",'admin' => "0"));
+                            }
+                        }
+                    }
+                    $authTime = time();
+                    $authToken = $this->authentication->getToken($authTime);
+                    require_once(dirname(__FILE__)."/../admin/template/navigation.role.tpl.php");
+                }
+            }
+        }
+    }
 
-	public function getRelativeURI($id, $title, $withParameters) {
-		$config = new Configuration();
-		$uri = "";
+    /*
+     * Gets the name of a link by the given ID.
+     */
+    public function getNamebyID(int $id): string
+    {
+        $name = "";
+        $result = $this->db->query("SELECT `name` FROM `navigation` WHERE `id`='$id'");
+        while ($row = $this->db->fetchArray($result)) {
+            if (is_string($row['name'])) {
+                $name = $row['name'];
+            }
+        }
+        return $name;
+    }
 
-		if ($config->getEnableOldURIs()) {
-			$uri = "index.php?id=".$id;
-			if ($withParameters) {
-				$uri = $uri."&";
-			}
-		}
-		else {
-			if (isset($title) && !empty($title)) {
-				$uri = $this->generateRestfulURI($id, $title);
-			}
-			else {
-				$uri = $this->generateRestfulURIByID($id);
-			}
+    /*
+     * Interface method stub.
+    */
+    public function isSearchable(): bool
+    {
+        return false;
+    }
 
-			if ($withParameters) {
-				$uri = $uri."?";
-			}
-		}
+    /*
+     * Interface method stub.
+     */
+    public function getSearchList(): array
+    {
+        return array();
+    }
 
-		return $uri;
-	}
+    /*
+     * Interface method stub.
+    */
+    public function search(string $query, string $type): void
+    {
+    }
+
+    /*
+     * Interface method stub.
+    */
+    public function isTaggable(): bool
+    {
+        return false;
+    }
+
+    /*
+     * Interface method stub.
+    */
+    public function getTagList(): array
+    {
+        return array();
+    }
+
+    /*
+     * Interface method stub.
+    */
+    public function addTags(string $tagString, string $type, int $news): void
+    {
+    }
+
+    /*
+     * Interface method stub.
+    */
+    public function getTagString(string $type, int $news): string|null
+    {
+        return null;
+    }
+
+    public function getTags(string $type, int $news): array
+    {
+        return array();
+    }
+
+    public function displayTag(): void
+    {
+    }
+
+    public function getImage(): string|null
+    {
+        return null;
+    }
+
+    public function getTitle(): string|null
+    {
+        return null;
+    }
+
+    public function getRestfulURIPartFromOldURL(): string|null
+    {
+        return null;
+    }
+
+    public function getOldURIPartFromRestfulURL(): string|null
+    {
+        return null;
+    }
+
+    public function generateRestfulURIByID(int $id): string
+    {
+        list($title, $module) = $this->getModuleAndTitleByID($id);
+        $uri = $this->generateRestfulURI($id, $title);
+        return $uri;
+    }
+
+    public function generateRestfulURI(int $id, string $title): string
+    {
+        $slugify = new Slugify();
+        return  $slugify->slugify($title)."-".$id;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getModuleAndTitleByID(int $id): array
+    {
+        return $this->pageBase->getModuleAndTitleByID($id);
+    }
+
+    public function getIDFromRestfulURI(): int
+    {
+        return $this->pageBase->getIDFromRestfulURI();
+    }
+
+    public function getPageID(): int
+    {
+        return $this->pageBase->getPageID();
+    }
+
+    public function getRelativeURI(int $id, string|null $title, bool $withParameters): string
+    {
+        $uri = "";
+
+        if ($this->configuration->getEnableOldURIs()) {
+            $uri = "index.php?id=".$id;
+            if ($withParameters) {
+                $uri = $uri."&";
+            }
+        } else {
+            if (isset($title) && !empty($title)) {
+                $uri = $this->generateRestfulURI($id, $title);
+            } else {
+                $uri = $this->generateRestfulURIByID($id);
+            }
+
+            if ($withParameters) {
+                $uri = $uri."?";
+            }
+        }
+
+        return $uri;
+    }
 }
-
-?>

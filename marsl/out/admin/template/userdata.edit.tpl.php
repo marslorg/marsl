@@ -1,18 +1,18 @@
 <?php
-include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 ?>
 <br /><br />
 <?php if(!$updateNickname): ?>
 <span class="content">Der Benutzername existiert schon oder ist k&uuml;rzer als vier Buchstaben.</span><br /><br />
 <?php endif;
-//if(!$updateMail): ?>
+//if(!$updateMail):?>
 <!-- <span class="content">Die E-Mail-Adresse ist ung&uuml;ltig oder schon vergeben.</span><br /><br />-->
 <?php //endif;
 if(!$updateAcronym): ?>
 <span class="content">Das K&uuml;rzel ist bereits vergeben.</span><br /><br />
 <?php endif;
 if(!$samePasswords): ?>
-<span class="content">Leider stimmen die Passw&ouml;rter nicht überein.</span><br /><br />
+<span class="content">Leider stimmen die Passw&ouml;rter nicht ï¿½berein.</span><br /><br />
 <?php endif;
 if(!$rightPassword): ?>
 <span class="content">Leider ist dein altes Passwort falsch.</span><br /><br />
@@ -37,7 +37,7 @@ if(!$safePassword): ?>
 			</tr>
 			<!-- <tr class="standardfont">
 				<td>E-Mail: </td>
-				<td><input type="text" name="email" value="<?php //echo $email; ?>" /></td>
+				<td><input type="text" name="email" value="<?php //echo $email;?>" /></td>
 			</tr>-->
 			<?php if($isMaster): ?>
 			<tr class="standardfont">
@@ -49,7 +49,7 @@ if(!$safePassword): ?>
 				<td>
 					<select name="role">
 						<?php foreach($roles as $roleID): ?>
-						<option value="<?php echo $roleID['role']; ?>" <?php if($roleID['role']==$userRole): ?>selected<?php endif; ?>>
+						<option value="<?php echo $roleID['role']; ?>" <?php if($roleID['role'] == $userRole): ?>selected<?php endif; ?>>
 							<?php echo $roleID['name']; ?>
 						</option>
 						<?php endforeach; ?>
@@ -61,13 +61,13 @@ if(!$safePassword): ?>
 				<td colspan="2">
 					<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 					<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-					<button type="submit" name="change"> Daten &auml;ndern </button>
+					<button type="submit" name="change" value="change"> Daten &auml;ndern </button>
 					<button type="reset"> Zur&uuml;cksetzen </button>
 				</td>
 			</tr>
 		</table>
 	</form>
-	<?php if($userID==$ownID): ?>
+	<?php if($userID == $ownID): ?>
 	<form method="post" action="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>">
 		<table class="userdatatable">
 			<tr class="standardfont">
@@ -86,7 +86,7 @@ if(!$safePassword): ?>
 				<td colspan="2">
 					<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 					<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-					<button type="submit" name="passwordChange"> Passwort &auml;ndern </button>
+					<button type="submit" name="passwordChange" value="passwordChange"> Passwort &auml;ndern </button>
 					<button type="reset"> Zur&uuml;cksetzen </button>
 				</td>
 			</tr>
@@ -101,17 +101,18 @@ if(!$safePassword): ?>
 					<input type="text" name="email" />
 					<input type="hidden" name="authTime" value="<?php echo $authTime; ?>" />
 					<input type="hidden" name="authToken" value="<?php echo $authToken; ?>" />
-					<button type="submit" name="entermail"> Absenden </button>
+					<button type="submit" name="entermail" value="entermail"> Absenden </button>
 				</td>
 			</tr>
 		</table>
 	</form>
 	<table class="userdatatable">
 		<?php foreach($emails as $email): ?>
-		<tr <?php if ($email['confirmed']): ?>class="success"<?php endif; if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
+		<tr <?php if ($email['confirmed']): ?>class="success"<?php endif;
+		    if (!$email['confirmed']): ?>class="caution"<?php endif; ?>>
 			<td><?php echo $email['email']; ?></td>
 			<td>
-				<?php if ((!$email['primary'])&&($email['confirmed'])): ?>
+				<?php if ((!$email['primary']) && ($email['confirmed'])): ?>
 				<a href="index.php?var=module&amp;module=userdata&amp;action=details&amp;user=<?php echo $userID; ?>&amp;primemail=<?php echo urlencode($email['email']); ?>&amp;time=<?php echo $authTime; ?>&amp;token=<?php echo $authToken; ?>"><img src="../includes/graphics/ok22.png" alt="Als Hauptadresse festlegen" /></a>
 				<?php endif; ?>
 				<?php if (!$email['primary']): ?>

@@ -1,26 +1,46 @@
 <?php
-include_once(dirname(__FILE__)."/../includes/errorHandler.php");
-include_once(dirname(__FILE__)."/../includes/dbsocket.php");
-include_once(dirname(__FILE__)."/../includes/config.inc.php");
-include_once(dirname(__FILE__)."/../user/role.php");
 
-class Install {
-	public function startInstall() {
-		$config = new Configuration();
-		date_default_timezone_set($config->getTimezone());
-		$db = new DB();
-		$db->connect();
-		$content = file_get_contents("update.13.07.13.06.sql");
-		$statement = strtok($content, ";");
-		while ($statement) {
-			$db->query($statement);
-			$statement = strtok(";");
-		
-		}
-		$db->close();
-	}
+namespace marsl\install;
+
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../autoload.php");
+
+use marsl\ComponentBuilder;
+use marsl\includes\Configuration;
+use marsl\includes\DB;
+
+class Install
+{
+    private DB $db;
+
+    public function __construct(DB $db)
+    {
+        $this->db = $db;
+    }
+
+    public function startInstall(): void
+    {
+        $config = new Configuration();
+        date_default_timezone_set($config->getTimezone());
+        $content = file_get_contents("update.13.07.13.06.sql");
+
+        if (!$content) {
+            return;
+        }
+
+        $statement = strtok($content, ";");
+
+        while ($statement) {
+            $this->db->query($statement);
+            $statement = strtok(";");
+        }
+
+        $this->db->close();
+    }
 }
 
-$install = new Install();
-$install->startInstall();
-?>
+$install = ComponentBuilder::buildDependencies()->make('marsl\install\Install');
+
+if ($install instanceof Install) {
+    $install->startInstall();
+}

@@ -1,13 +1,14 @@
 <?php
-include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 ?>
 <table class="newstable">
 	<tr>
 		<td class="newsinformation">
-			Korrigiert: <?php if ($corrected): ?><img src="../includes/graphics/ok32.png" /><?php endif; if (!$corrected): ?><img src="../includes/graphics/cancel32.png" /><?php endif; ?><br />
+			Korrigiert: <?php if ($corrected): ?><img src="../includes/graphics/ok32.png" /><?php endif;
+if (!$corrected): ?><img src="../includes/graphics/cancel32.png" /><?php endif; ?><br />
 			Autor: <?php echo $authorName; ?><br />
 			IP: <?php echo $authorIP; ?><br />
-			Kategorie: <?php echo $location; ?><br />
+			Kategorie: <?php echo $locationName; ?><br />
 			Datum: <?php echo $date; ?><br />
 			eingereicht am: <?php echo $postdate; ?><br />
 			<?php if($submitLink): ?>
@@ -21,14 +22,14 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		<td class="news">
 			<h3 class="headline"><?php echo $headline; ?></h3>
 			<h2><?php echo $title; ?></h2>
-			<?php if(($picture2=="empty")&&($picture1!="empty")): ?>
+			<?php if(($picture2 == "empty") && ($picture1 != "empty")): ?>
 			<span class="teaserpicture">
 				<img src="../news/<?php echo $picture1; ?>" />
 				<?php echo $photograph1; ?>
 			</span>
 			<?php endif; ?>
 			<b><?php echo $city; ?>&nbsp;<img src="../includes/graphics/square.gif" />&nbsp;&nbsp;&nbsp;<?php echo $teaser; ?></b><br />
-			<?php if($picture2!="empty"): ?>
+			<?php if($picture2 != "empty"): ?>
 			<br />
 			<span class="center">
 				<div class="textpicture">

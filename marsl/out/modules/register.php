@@ -1,176 +1,208 @@
 <?php
+
+namespace marsl\modules;
+
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
-include_once(dirname(__FILE__)."/module.php");
-include_once(dirname(__FILE__)."/navigation.php");
-include_once(dirname(__FILE__)."/../user/auth.php");
-include_once(dirname(__FILE__)."/../includes/dbsocket.php");
-include_once(dirname(__FILE__)."/../includes/basic.php");
-include_once(dirname(__FILE__)."/../user/user.php");
-include_once(dirname(__FILE__)."/../user/role.php");
-include_once(dirname(__FILE__)."/../includes/basic.php");
+include_once(dirname(__FILE__)."/../autoload.php");
 
-class Register implements Module {
+use marsl\includes\Basic;
+use marsl\includes\DB;
+use marsl\Infrastructure\RequestParameters\Adapters\Drivers\Service\IRequestParametersService;
+use marsl\user\Authentication;
+use marsl\user\Role;
+use marsl\user\User;
 
-	private $db;
-	private $auth;
-	private $role;
+class Register implements Module
+{
+    private Authentication $authentication;
+    private Basic $basic;
+    private DB $db;
+    private Navigation $navigation;
+    private IRequestParametersService $requestParametersService;
+    private Role $role;
+    private User $user;
 
-	public function __construct($db, $auth, $role) {
-		$this->db = $db;
-		$this->auth = $auth;
-		$this->role = $role;
-	}
-	
-	public function display() {
-		$user = new User($this->db, $this->role);
-		$basic = new Basic($this->db, $this->auth, $this->role);
-		$location = "";
-		$navi = new Navigation($this->db, $this->auth, $this->role);
-		$pageID = $navi->getPageID();
-		if ($pageID > -1) {
-			$location = $pageID;
-		}
-		else {
-			$location = $basic->getHomeLocation();
-		}
-		$uri = $navi->getRelativeURI($location, null, false);
-		$nickname = "";
-		$mail = "";
-		$mail2 = "";
-		$success = false;
-		$captcha = false;
-		$mailFailure = false;
-		$passwordFailure = false;
-		$nicknameFailure = false;
-		if ($user->isGuest()||$user->isAdmin()) {
-			if ($this->auth->moduleReadAllowed("register", $this->role->getRole())&&$this->auth->locationReadAllowed($location, $this->role->getRole())) {
-				if ($this->auth->moduleWriteAllowed("register", $this->role->getRole())&&$this->auth->locationWriteAllowed($location, $this->role->getRole())) {
-					if (isset($_POST['action'])) {
-						if ($_POST['action']=="send") {
-							$mail = $this->db->escapeString($_POST['mail']);
-							$mail2 = $this->db->escapeString($_POST['mail2']);
-							if (($mail==$mail2)&&($basic->checkMail($mail))) {
-								$password = $this->db->escapeString($_POST['password']);
-								$password2 = $this->db->escapeString($_POST['password2']);
-								if ($password==$password2) {
-									$nickname = $this->db->escapeString($_POST['nickname']);
-									if ($user->register($nickname, $password, $mail, $this->auth, true)) {
-										$success = true;
-									}
-									else {
-										$nicknameFailure = true;
-									}
-								}
-								else {
-									$passwordFailure = true;
-								}
-							}
-							else {
-								$mailFailure = true;
-							}
-							if (!$success) {
-								$nickname = $basic->convertToHTMLEntities($_POST['nickname']);
-								$mail = $basic->convertToHTMLEntities($_POST['mail']);
-								$mail2 = $basic->convertToHTMLEntities($_POST['mail2']);
-							}
-							else {
-								$nickname = "";
-								$mail = "";
-								$mail2 = "";
-							}
-						}
-					}
-				}
-				require_once("template/register.tpl.php");
-			}
-		}
-	}
-	
-	public function admin() {
-		$basic = new Basic($this->db, $this->auth, $this->role);
-		if ($this->auth->moduleAdminAllowed("register", $this->role->getRole())) {
-			if (isset($_POST['action'])) {
-				if ($_POST['action']=="send"&&$this->auth->checkToken($_POST['authTime'], $_POST['authToken'])) {
-					$newID = $this->db->escapeString($_POST['location']);
-					if ($this->db->isExisting("SELECT `id` FROM `registration_tos` LIMIT 1")) {
-						$this->db->query("UPDATE `registration_tos` SET `id`='$newID'");
-					}
-					else {
-						$this->db->query("INSERT INTO `registration_tos`(`id`) VALUES('$newID')");
-					}
-				}
-			}
-			$id = "";
-			$result = $this->db->query("SELECT `id` FROM `registration_tos`");
-			while ($row = $this->db->fetchArray($result)) {
-				$id = $row['id'];
-			}
-			
-			$links = array();
-			
-			$result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type` IN ('1','2')");
-			while ($row = $this->db->fetchArray($result)) {
-				$guestRole = $this->role->getGuestRole();
-				$location = $row['id'];
-				if ($this->auth->locationReadAllowed($location, $guestRole)) {
-					$name = $basic->convertToHTMLEntities($row['name']);
-					array_push($links, array('id'=>$location, 'name'=>$name));
-				}
-			}
-		}
-		$authTime = time();
-		$authToken = $this->auth->getToken($authTime);
-		require_once("template/register.tos.tpl.php");
-	}
-	
-	public function isSearchable() {
-		return false;
-	}
-	
-	public function getSearchList() {
-		return null;
-	}
-	
-	public function search($query, $type) {
-		return null;
-	}
-	
-	public function isTaggable() {
-		return false;
-	}
-	
-	public function getTagList() {
-		return null;
-	}
-	
-	public function addTags($tagString, $type, $news) {
-		
-	}
-	
-	public function getTagString($type, $news) {
-		return null;
-	}
-	public function getTags($type, $news) {
-		return null;
-	}
-	
-	public function displayTag() {
-	}
-	
-	public function getImage() {
-		return null;
-	}
-	
-	public function getTitle() {
-		return null;
-	}
+    public function __construct(
+        Authentication $authentication,
+        Basic $basic,
+        DB $db,
+        Navigation $navigation,
+        IRequestParametersService $requestParametersService,
+        Role $role,
+        User $user
+    ) {
+        $this->authentication = $authentication;
+        $this->basic = $basic;
+        $this->db = $db;
+        $this->navigation = $navigation;
+        $this->requestParametersService = $requestParametersService;
+        $this->role = $role;
+        $this->user = $user;
+    }
 
-	public function getRestfulURIPartFromOldURL() {
-		return null;
-	}
+    public function display(): void
+    {
+        $location = -1;
+        $pageID = $this->navigation->getPageID();
+        if ($pageID > -1) {
+            $location = $pageID;
+        } else {
+            $location = $this->basic->getHomeLocation();
+        }
+        $uri = $this->navigation->getRelativeURI($location, null, false);
+        $nickname = "";
+        $mail = "";
+        $mail2 = "";
+        $success = false;
+        $captcha = false;
+        $mailFailure = false;
+        $passwordFailure = false;
+        $nicknameFailure = false;
+        if ($this->user->isGuest() || $this->user->isAdmin()) {
+            if ($this->authentication->moduleReadAllowed("register", $this->role->getRole()) && $this->authentication->locationReadAllowed($location, $this->role->getRole())) {
+                if ($this->authentication->moduleWriteAllowed("register", $this->role->getRole()) && $this->authentication->locationWriteAllowed($location, $this->role->getRole())) {
+                    if ($this->requestParametersService->fromPost()->getStringParameter("action", "") == "send") {
+                        $mail = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("mail", ""));
+                        $mail2 = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("mail2", ""));
+                        if (($mail == $mail2) && ($this->basic->checkMail($mail))) {
+                            $password = $this->requestParametersService->fromPost()->getStringParameter("password");
+                            $password2 = $this->requestParametersService->fromPost()->getStringParameter("password2");
+                            if ($password == $password2) {
+                                $nickname = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("nickname"));
+                                if ($this->user->register($nickname, $password, $mail, $this->authentication, true)) {
+                                    $success = true;
+                                } else {
+                                    $nicknameFailure = true;
+                                }
+                            } else {
+                                $passwordFailure = true;
+                            }
+                        } else {
+                            $mailFailure = true;
+                        }
+                        if (!$success) {
+                            $nickname = $this->basic->convertToHTMLEntities($this->requestParametersService->fromPost()->getStringParameter("nickname"));
+                            $mail = $this->basic->convertToHTMLEntities($this->requestParametersService->fromPost()->getStringParameter("mail", ""));
+                            $mail2 = $this->basic->convertToHTMLEntities($this->requestParametersService->fromPost()->getStringParameter("mail2", ""));
+                        } else {
+                            $nickname = "";
+                            $mail = "";
+                            $mail2 = "";
+                        }
+                    }
+                }
+                require_once(dirname(__FILE__)."/../template/register.tpl.php");
+            }
+        }
+    }
 
-	public function getOldURIPartFromRestfulURL() {
-		return null;
-	}
+    public function admin(): void
+    {
+        if ($this->authentication->moduleAdminAllowed("register", $this->role->getRole())) {
+            if ($this->requestParametersService->fromPost()->getStringParameter("action", "") == "send"
+                && $this->authentication->checkToken(
+                    $this->requestParametersService->fromPost()->getIntegerParameter("authTime"),
+                    $this->requestParametersService->fromPost()->getStringParameter("authToken")
+                )) {
+                $newID = $this->requestParametersService->fromPost()->getIntegerParameter("location");
+                if ($this->db->isExisting("SELECT `id` FROM `registration_tos` LIMIT 1")) {
+                    $this->db->query("UPDATE `registration_tos` SET `id`='$newID'");
+                } else {
+                    $this->db->query("INSERT INTO `registration_tos`(`id`) VALUES('$newID')");
+                }
+            }
+            $id = "";
+            $result = $this->db->query("SELECT `id` FROM `registration_tos`");
+            while ($row = $this->db->fetchArray($result)) {
+                $id = $row['id'];
+            }
+
+            $links = array();
+
+            $result = $this->db->query("SELECT `id`, `name` FROM `navigation` WHERE `type` IN ('1','2')");
+            while ($row = $this->db->fetchArray($result)) {
+                if (is_string($row['id'])
+                    && is_string($row['name'])) {
+                    $guestRole = $this->role->getGuestRole();
+                    $location = intval(strval($row['id']));
+                    if ($this->authentication->locationReadAllowed($location, $guestRole)) {
+                        $name = $this->basic->convertToHTMLEntities($row['name']);
+                        array_push($links, array('id' => $location, 'name' => $name));
+                    }
+                }
+            }
+        }
+        $authTime = time();
+        $authToken = $this->authentication->getToken($authTime);
+        require_once(dirname(__FILE__)."/../admin/template/register.tos.tpl.php");
+    }
+
+    public function isSearchable(): bool
+    {
+        return false;
+    }
+
+    /*
+     * Interface method stub.
+     */
+    public function getSearchList(): array
+    {
+        return array();
+    }
+
+    public function search(string $query, string $type): void
+    {
+    }
+
+    public function isTaggable(): bool
+    {
+        return false;
+    }
+
+    /*
+     * Interface method stub.
+    */
+    public function getTagList(): array
+    {
+        return array();
+    }
+
+    public function addTags(string $tagString, string $type, int $news): void
+    {
+
+    }
+
+    public function getTagString(string $type, int $news): string|null
+    {
+        return null;
+    }
+
+    public function getTags(string $type, int $news): array
+    {
+        return array();
+    }
+
+    public function displayTag(): void
+    {
+    }
+
+    public function getImage(): string|null
+    {
+        return null;
+    }
+
+    public function getTitle(): string|null
+    {
+        return null;
+    }
+
+    public function getRestfulURIPartFromOldURL(): string|null
+    {
+        return null;
+    }
+
+    public function getOldURIPartFromRestfulURL(): string|null
+    {
+        return null;
+    }
 }
-?>
