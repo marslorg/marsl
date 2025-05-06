@@ -127,12 +127,14 @@ class PageBase
         // @phpstan-ignore greater.alwaysTrue
         if (sizeof($explodedRequestURI) > 0) {
             $pagePart = $explodedRequestURI[0];
+            if ($pagePart == "tag") {
+                return 0;
+            }
+
             $explodedPagePart = explode('-', $pagePart);
             $explodedPagePartSize = sizeof($explodedPagePart);
 
-            // PHPStan error. See https://github.com/phpstan/phpstan/issues/3995
-            // @phpstan-ignore greater.alwaysTrue
-            if ($explodedPagePartSize > 0) {
+            if ($explodedPagePartSize > 1) {
                 $id = (int)$explodedPagePart[$explodedPagePartSize - 1];
             }
         }
