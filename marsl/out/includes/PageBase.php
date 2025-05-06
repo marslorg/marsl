@@ -93,15 +93,15 @@ class PageBase
 
     public function getPageID(): int
     {
-        $id = 0;
+        $id = -1;
         if (!$this->configuration->getEnableOldURIs()) {
             $id = $this->getIDFromRestfulURI();
         }
 
-        if ($id == 0) {
-            $id = $this->requestParametersService->fromGet()->getIntegerParameter("id", 0);
+        if ($id == -1) {
+            $id = $this->requestParametersService->fromGet()->getIntegerParameter("id", -1);
             $tag = $this->requestParametersService->fromGet()->getIntegerParameter("tag", -1);
-            if (!$this->configuration->getEnableOldURIs() || $id != 0 || $tag == -1) {
+            if (!$this->configuration->getEnableOldURIs() || $id != -1 || $tag == -1) {
                 $result = $this->db->query("SELECT `homepage` FROM homepage");
                 while ($row = $this->db->fetchArray($result)) {
                     if (is_string($row['homepage'])) {
