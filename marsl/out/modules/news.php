@@ -391,8 +391,9 @@ class News implements Module
 
                                     $picture1 = $this->requestParametersService->fromPost()->getIntegerParameter("picture1", $picture1);
 
-                                    $picture2 = $this->requestParametersService->fromPost()->getIntegerParameter("picture2", $picture2);
-                                    if ($picture2 != 0) {
+                                    $picture2Posted = $this->requestParametersService->fromPost()->getIntegerParameter("picture2", 0);
+                                    if ($picture2Posted != 0) {
+                                        $picture2 = $picture2Posted;
                                         $result = $this->db->query("SELECT `url` FROM `news_picture` WHERE `picture`='$picture2'");
                                         while ($row = $this->db->fetchArray($result)) {
                                             if (is_string($row['url'])) {
