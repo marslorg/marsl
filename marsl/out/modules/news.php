@@ -125,7 +125,7 @@ class News implements Module
                     )) {
                         $failed = false;
                         $author = $this->user->getID();
-                        $authorIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR", ""));
+                        $authorIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName(), ""));
                         $headline = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("headline", ""));
                         $title = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("title", ""));
                         $location = $this->requestParametersService->fromPost()->getIntegerParameter("category", -1);
@@ -370,7 +370,7 @@ class News implements Module
                                 )) {
                                     $failed = false;
                                     $author = $this->user->getID();
-                                    $authorIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR", ""));
+                                    $authorIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName(), ""));
                                     $headline = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("headline", ""));
                                     $title = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("title", ""));
                                     $location = $this->requestParametersService->fromPost()->getIntegerParameter("category", 0);
@@ -426,7 +426,7 @@ class News implements Module
                                     }
                                     $moduleTags = $tmpModuleTags;
                                     $admin = $this->user->getID();
-                                    $adminIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR", ""));
+                                    $adminIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName(), ""));
                                     $this->db->query("UPDATE `news` SET `date`='$date', `admin`='$admin', `admin_ip`='$adminIP', `headline`='$headline', `title`='$title', `teaser`='$teaser', `text`='$text', `picture1`='$picture1', `picture2`='$picture2', `location`='$location', `city`='$city', `corrected`='$corrected' WHERE `news`='$id'");
                                     foreach ($moduleTags as $moduleTag) {
 
@@ -833,7 +833,7 @@ class News implements Module
                     $location = intval(strval($row['location']));
                     if ($this->authentication->locationAdminAllowed($location, $this->role->getRole())) {
                         $admin = $this->user->getID();
-                        $adminIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR", ""));
+                        $adminIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName(), ""));
                         $this->db->query("UPDATE `news` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `news`='$id'");
                         if ($this->authentication->locationReadAllowed($location, $this->role->getGuestRole())) {
                             $headline = is_string($row['headline']) ? $row['headline'] : "";

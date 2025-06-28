@@ -26,8 +26,8 @@ function sendErrorMail(int $errno, string $errmsg, string $filename, int $linenu
         $error .= "Adresse: ".strval($_SERVER['REQUEST_URI'])."\n";
     }
     $error .= "\n";
-    if (is_string($_SERVER['REMOTE_ADDR'])) {
-        $error .= "IP: ".strval($_SERVER['REMOTE_ADDR'])."\n";
+    if (is_string($_SERVER[$config->getRemoteIPFieldName()])) {
+        $error .= "IP: ".strval($_SERVER[$config->getRemoteIPFieldName()])."\n";
     }
     $error .= "\n";
     $error .= "GET-Werte:\n";

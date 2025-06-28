@@ -132,7 +132,7 @@ class Gallery
                             }
                             $description = $this->db->escapeString($this->basic->cleanHTML($this->requestParametersService->fromPost()->getStringParameter("description")));
                             $author = $this->user->getID();
-                            $authorIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR"));
+                            $authorIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName()));
                             $postdate = time();
                             $location = $this->requestParametersService->fromPost()->getIntegerParameter("category");
                             if ($this->authentication->locationExtendedAllowed($location, $this->role->getRole())

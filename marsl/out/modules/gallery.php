@@ -343,7 +343,7 @@ class Gallery implements Module
                                         $this->role->getRole()
                                     )) {
                                         $admin = $this->user->getID();
-                                        $adminIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR"));
+                                        $adminIP = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName()));
                                         $this->db->query("UPDATE `album` SET `visible`='1', `admin`='$admin', `admin_ip`='$adminIP' WHERE `album`='$id'");
                                         $this->db->query("UPDATE `picture` SET `visible`='1' WHERE `album`='$id'");
                                     }

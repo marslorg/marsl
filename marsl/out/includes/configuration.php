@@ -17,6 +17,7 @@ class Configuration
      */
     private string $timezone = "Europe/Berlin";
     private bool $enableOldURIs = false;
+    private string $remoteIPFieldName = "REMOTE_ADDR"; // Usually REMOTE_ADDR, if in a Cloudflare environment might be HTTP_CF_CONNECTING_IP
 
     /***
      * Metatags
@@ -65,6 +66,11 @@ class Configuration
      */
     private string $webpushPrivateKey = "";
     private string $webpushPublicKey = "";
+
+    public function getRemoteIPFieldName(): string
+    {
+        return $this->remoteIPFieldName;
+    }
 
     public function getEnableOldURIs(): bool
     {

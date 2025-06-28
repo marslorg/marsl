@@ -253,7 +253,7 @@ class Post
                             $content = $this->db->escapeString($this->basic->cleanStrict($this->requestParametersService->fromPost()->getStringParameter("content", "")));
                             $author = $this->user->getID();
                             $time = time();
-                            $ip = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR", ""));
+                            $ip = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName(), ""));
                             $this->db->query("INSERT INTO `post`(`author`, `thread`, `date`, `operator`, `lastedit`, `content`, `ip`, `deleted`) VALUES('$author','$threadID','$time','0','0','$content','$ip','0')");
                             $postID = $this->db->lastInsertedID();
                             $result = $this->db->query("SELECT `postcount` FROM `thread` WHERE `thread`='$threadID'");

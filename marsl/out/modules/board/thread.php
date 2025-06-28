@@ -591,7 +591,7 @@ class Thread
                         $content = $this->db->escapeString($this->basic->cleanStrict($this->requestParametersService->fromPost()->getStringParameter("content", "")));
                         $author = $this->user->getID();
                         $time = time();
-                        $ip = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter("REMOTE_ADDR", ""));
+                        $ip = $this->db->escapeString($this->requestParametersService->fromServer()->getStringParameter($this->configuration->getRemoteIPFieldName(), ""));
                         $this->db->query("INSERT INTO `thread`(`board`,`postcount`,`type`,`title`,`author`,`viewcount`,`lastpost`) VALUES('$boardID','0','0','$title','$author','0','0')");
                         $threadID = (int)$this->db->lastInsertedID();
                         $result = $this->db->query("SELECT `threadcount` FROM `board` WHERE `board`='$boardID'");
