@@ -13,6 +13,7 @@ RUN docker-php-ext-configure gmp
 RUN docker-php-ext-install gmp
 RUN docker-php-ext-install mysqli
 RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && docker-php-ext-install gd
+RUN pecl install xdebug && docker-php-ext-enable xdebug
 
 WORKDIR /var/www/html
 
@@ -25,7 +26,7 @@ RUN chmod 777 -R shared
 COPY marsl/dev/docker/nginx-site.conf /etc/nginx/sites-enabled/default
 COPY marsl/dev/docker/nginx-server.conf /etc/nginx/nginx.conf
 COPY marsl/dev/docker/nginx-cloudflare-ips.sh /etc/cron.daily/nginx-cloudflare-ips.sh
-COPY marsl/dev/docker/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY marsl/dev/docker/local_php.ini /usr/local/etc/php/conf.d/php.ini
 COPY marsl/dev/docker/entrypoint.sh /etc/entrypoint.sh
 
 RUN chmod 755 /etc/cron.daily/nginx-cloudflare-ips.sh

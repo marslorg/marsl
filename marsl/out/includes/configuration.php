@@ -2,6 +2,9 @@
 
 namespace marsl\includes;
 
+/**
+ * @SuppressWarnings(PHPMD)
+ */
 class Configuration
 {
     /***
@@ -48,6 +51,16 @@ class Configuration
      */
     private string $appKey = "25eb0de4045a79eaa5d44f89bbad19b3";
     private string $secret = "7375bf48dc9de4ee79a519bd7c4a45ac71d5ad8d30e1282f8b50cce132dabbd367d6c210f63a4423b73b8d8186f4d55e10dc2c5cb29dd9975ade3e3046004c3a";
+
+    /***
+     * Statistics Gateway
+     */
+    private string $statisticsGateway = "matomo"; // Allowed values: "matomo", ""
+    private string $statisticsApiProtocol = "http"; // Allowed values: "http", "https"
+    private string $statisticsApiHost = "localhost/matomo/";
+    private int $statisticsApiPort = -1; // Default port for HTTP is 80, for HTTPS is 443, -1 for default port
+    private int $siteId = 1;
+    private string $authToken = "";
 
     /***
      * Last.fm event importer
@@ -115,6 +128,37 @@ class Configuration
     public function getSecret(): string
     {
         return $this->secret;
+    }
+
+
+    public function getStatisticsGateway(): string
+    {
+        return $this->statisticsGateway;
+    }
+
+    public function getStatisticsApiProtocol(): string
+    {
+        return $this->statisticsApiProtocol;
+    }
+
+    public function getStatisticsApiHost(): string
+    {
+        return $this->statisticsApiHost;
+    }
+
+    public function getStatisticsApiPort(): int
+    {
+        return $this->statisticsApiPort;
+    }
+
+    public function getSiteId(): int
+    {
+        return $this->siteId;
+    }
+
+    public function getAuthToken(): string
+    {
+        return $this->authToken;
     }
 
     public function getFBComments(): string

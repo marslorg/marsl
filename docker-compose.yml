@@ -1,0 +1,33 @@
+version: "3.3"
+services:
+  mysql:
+    image: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - ../database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+  music2web:
+    build:
+      dockerfile: ./LocalDockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ../m2wfiles/config.inc.php:/var/www/html/includes/configuration.php
+      - ../m2wfiles/albums:/var/www/html/albums
+      - ../m2wfiles/files:/var/www/html/files
+      - ../m2wfiles/news:/var/www/html/news
+      - ../m2wfiles/shared:/var/www/html/shared
+    depends_on:
+      - "mysql"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  matomo:
+    image: matomo:5.3.2-apache
+    volumes:
+      - ../matomofiles/config:/var/www/html/config
+    ports:
+      - "8080:80"
+    depends_on:
+      - "mysql"

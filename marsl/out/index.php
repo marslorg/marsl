@@ -9,6 +9,7 @@ include_once(dirname(__FILE__)."/autoload.php");
 use marsl\includes\Basic;
 use marsl\includes\Configuration;
 use marsl\includes\DB;
+use marsl\Infrastructure\StatisticsGateway\Adapters\Drivers\Service\IStatisticsGatewayResolver;
 use marsl\modules\Module;
 use marsl\modules\Navigation;
 use marsl\modules\URLLoader;
@@ -22,6 +23,7 @@ class Main
     private Configuration $configuration;
     private DB $db;
     private Navigation $navigation;
+    private IStatisticsGatewayResolver $statisticsGatewayResolver;
     private URLLoader $urlLoader;
 
     public function __construct(
@@ -30,6 +32,7 @@ class Main
         Configuration $configuration,
         DB $db,
         Navigation $navigation,
+        IStatisticsGatewayResolver $statisticsGatewayResolver,
         URLLoader $urlLoader
     ) {
         $this->authentication = $authentication;
@@ -37,6 +40,7 @@ class Main
         $this->configuration = $configuration;
         $this->db = $db;
         $this->navigation = $navigation;
+        $this->statisticsGatewayResolver = $statisticsGatewayResolver;
         $this->urlLoader = $urlLoader;
     }
 
@@ -63,6 +67,11 @@ class Main
         $baseURL = $domain.$basePath;
         $pageID = $this->navigation->getPageID();
         $showContentForWeb = !$this->authentication->isAppAllowed();
+
+        if ($this->configuration->getStatisticsGateway() != "") {
+            $statisticsGatewayService = $this->statisticsGatewayResolver->getStatisticsGatewayService();
+            $statisticsGatewayService->trackPageView($title);
+        }
 
         require_once("template/index.tpl.php");
 

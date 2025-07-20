@@ -5,6 +5,7 @@ parameters:
 		- marsl/out
 	excludePaths:
 		analyse:
+		- marsl/out/modules/news.php
 		- marsl/out/admin/template
 		- marsl/out/includes/htmlpurifier
 		- marsl/out/includes/shariff
@@ -12,3 +13,4 @@ parameters:
 		- marsl/out/includes/web-push-php-6.0.5
 		- marsl/out/template
 		- marsl/out/vendor
+		- marsl/out/Infrastructure/StatisticsGateway/Adapters/Driven/Implementation/Matomo/ThirdParty
