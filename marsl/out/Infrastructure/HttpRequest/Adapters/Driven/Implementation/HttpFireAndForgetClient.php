@@ -22,8 +22,7 @@ class HttpFireAndForgetClient implements IHttpFireAndForgetClient
                 $protocol.$url->getHost()->getValue(),
                 $port,
                 $errorNumber,
-                $errorString,
-                0.1
+                $errorString
             );
         } catch (Exception $e) {
             $socket = null;

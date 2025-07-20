@@ -64,8 +64,8 @@ class MatomoTracker implements ITracker
         $httpPostRequest->addParam(new ParamKey("rec"), new ParamValue("1"));
         $httpPostRequest->addParam(new ParamKey("apiv"), new ParamValue("1"));
         $httpPostRequest->addParam(new ParamKey("action_name"), new ParamValue(urlencode($pageTitle->getValue())));
-        $httpPostRequest->addParam(new ParamKey("url"), new ParamValue(urlencode($url->getValue())));
-        $httpPostRequest->addParam(new ParamKey("urlref"), new ParamValue(urlencode($refererUrl->getValue())));
+        $httpPostRequest->addParam(new ParamKey("url"), new ParamValue($url->getValue()));
+        $httpPostRequest->addParam(new ParamKey("urlref"), new ParamValue($refererUrl->getValue()));
         $httpPostRequest->addParam(new ParamKey("cip"), new ParamValue($ipAddress->getValue()));
         $httpPostRequest->addParam(new ParamKey("pv_id"), new ParamValue(PageViewId::generateNew()->getValue()));
         $httpPostRequest->addParam(new ParamKey("ua"), new ParamValue($userAgent->getValue()));
