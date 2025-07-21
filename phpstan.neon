@@ -13,4 +13,3 @@ parameters:
 		- marsl/out/includes/web-push-php-6.0.5
 		- marsl/out/template
 		- marsl/out/vendor
-		- marsl/out/Infrastructure/StatisticsGateway/Adapters/Driven/Implementation/Matomo/ThirdParty
