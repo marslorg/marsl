@@ -33,11 +33,7 @@ class StatisticsGatewayResolver implements IStatisticsGatewayResolver
             $this->statisticsGatewayResolverProvider->getStatisticsGatewayService(
                 $this->configuration->getStatisticsGateway(),
                 $this->configuration->getSiteId(),
-                new ApiUrl(
-                    $this->configuration->getStatisticsApiHost(),
-                    $this->configuration->getStatisticsApiPort(),
-                    $this->configuration->getStatisticsApiProtocol()
-                ),
+                $this->configuration->getStatisticsBasePath(),
                 $this->configuration->getAuthToken()
             )
         );

@@ -6,12 +6,10 @@ include_once(dirname(__FILE__)."/../../../../../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../../../../../autoload.php");
 
 use marsl\Infrastructure\StatisticsGateway\Ports\Driven\IConfiguration;
+use marsl\Infrastructure\StatisticsGateway\ValueObjects\ApiUrl;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\AuthToken;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\BasePath;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\Domain;
-use marsl\Infrastructure\StatisticsGateway\ValueObjects\Host;
-use marsl\Infrastructure\StatisticsGateway\ValueObjects\Port;
-use marsl\Infrastructure\StatisticsGateway\ValueObjects\Protocol;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\RemoteIpFieldName;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\SiteId;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\StatisticsGateway;
@@ -28,19 +26,9 @@ class Configuration implements IConfiguration
         return new SiteId(1);
     }
 
-    public function getStatisticsApiProtocol(): Protocol
+    public function getStatisticsBasePath(): ApiUrl
     {
-        return new Protocol("http");
-    }
-
-    public function getStatisticsApiHost(): Host
-    {
-        return new Host("localhost");
-    }
-
-    public function getStatisticsApiPort(): Port
-    {
-        return new Port(80);
+        return new ApiUrl("http://localhost/matomo/");
     }
 
     public function getAuthToken(): AuthToken

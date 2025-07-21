@@ -1,4 +1,4 @@
-.\vendor\bin\phpstan analyze --memory-limit=-1 --fail-without-result-cache
+Start-Process -FilePath "vendor\bin\phpstan" -ArgumentList "analyze --memory-limit=-1 --fail-without-result-cache" -Wait -NoNewWindow
 
 if ($LASTEXITCODE -eq 0) {
     docker-compose up -d --build --force-recreate --remove-orphans

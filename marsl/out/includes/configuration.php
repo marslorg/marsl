@@ -56,9 +56,7 @@ class Configuration
      * Statistics Gateway
      */
     private string $statisticsGateway = "matomo"; // Allowed values: "matomo", ""
-    private string $statisticsApiProtocol = "http"; // Allowed values: "http", "https"
-    private string $statisticsApiHost = "localhost/matomo/";
-    private int $statisticsApiPort = -1; // Default port for HTTP is 80, for HTTPS is 443, -1 for default port
+    private string $statisticsBasePath = "http://localhost/matomo/";
     private int $siteId = 1;
     private string $authToken = "";
 
@@ -136,19 +134,9 @@ class Configuration
         return $this->statisticsGateway;
     }
 
-    public function getStatisticsApiProtocol(): string
+    public function getStatisticsBasePath(): string
     {
-        return $this->statisticsApiProtocol;
-    }
-
-    public function getStatisticsApiHost(): string
-    {
-        return $this->statisticsApiHost;
-    }
-
-    public function getStatisticsApiPort(): int
-    {
-        return $this->statisticsApiPort;
+        return $this->statisticsBasePath;
     }
 
     public function getSiteId(): int

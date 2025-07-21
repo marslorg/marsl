@@ -12,7 +12,6 @@ use marsl\Infrastructure\StatisticsGateway\Ports\Driven\ITracker;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\AcceptLanguage;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\ApiUrl;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\AuthToken;
-use marsl\Infrastructure\StatisticsGateway\ValueObjects\BasePath;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\IpAddress;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\PageTitle;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\PageViewId;
@@ -58,7 +57,7 @@ class MatomoTracker implements ITracker
         Url $url,
         UserAgent $userAgent
     ): void {
-        $httpPostRequest = $this->httpRequestService->constructPostRequest($this->apiUrl, new BasePath("matomo.php"));
+        $httpPostRequest = $this->httpRequestService->constructPostRequest(new ApiUrl($this->apiUrl->getValue()."matomo.php"));
         $httpPostRequest->addData(new DataKey("token_auth"), new DataValue($this->authToken->getValue()));
         $httpPostRequest->addParam(new ParamKey("idsite"), new ParamValue((string)$this->siteId->getValue()));
         $httpPostRequest->addParam(new ParamKey("rec"), new ParamValue("1"));

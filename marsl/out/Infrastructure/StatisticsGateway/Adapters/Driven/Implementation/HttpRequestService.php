@@ -8,7 +8,6 @@ include_once(dirname(__FILE__)."/../../../../../autoload.php");
 use marsl\Infrastructure\StatisticsGateway\Ports\Driven\IHttpPostRequest;
 use marsl\Infrastructure\StatisticsGateway\Ports\Driven\IHttpRequestService;
 use marsl\Infrastructure\StatisticsGateway\ValueObjects\ApiUrl;
-use marsl\Infrastructure\StatisticsGateway\ValueObjects\BasePath;
 
 class HttpRequestService implements IHttpRequestService
 {
@@ -19,10 +18,10 @@ class HttpRequestService implements IHttpRequestService
         $this->httpRequestService = $httpRequestService;
     }
 
-    public function constructPostRequest(ApiUrl $apiUrl, BasePath $basePath): IHttpPostRequest
+    public function constructPostRequest(ApiUrl $apiUrl): IHttpPostRequest
     {
         return new HttpPostRequest(
-            $this->httpRequestService->constructPostRequest($apiUrl->getProtocol()->getValue(), $apiUrl->getHost()->getValue(), $apiUrl->getPort()->getValue(), $basePath->getValue())
+            $this->httpRequestService->constructPostRequest($apiUrl->getValue())
         );
     }
 }

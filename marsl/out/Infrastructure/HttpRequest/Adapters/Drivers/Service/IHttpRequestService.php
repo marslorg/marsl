@@ -7,5 +7,5 @@ include_once(dirname(__FILE__)."/../../../../../autoload.php");
 
 interface IHttpRequestService
 {
-    public function constructPostRequest(string $protocol, string $host, int $port, string $basePath): IHttpPostRequest;
+    public function constructPostRequest(string $url): IHttpPostRequest;
 }
