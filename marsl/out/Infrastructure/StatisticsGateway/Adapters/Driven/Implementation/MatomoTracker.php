@@ -5,7 +5,6 @@ namespace marsl\Infrastructure\StatisticsGateway\Adapters\Driven\Implementation;
 include_once(dirname(__FILE__)."/../../../../../includes/errorHandler.php");
 include_once(dirname(__FILE__)."/../../../../../vendor/autoload.php");
 include_once(dirname(__FILE__)."/../../../../../autoload.php");
-include_once(dirname(__FILE__)."/Matomo/ThirdParty/InternalMatomoTracker.php");
 
 use marsl\Infrastructure\StatisticsGateway\Ports\Driven\IHttpRequestService;
 use marsl\Infrastructure\StatisticsGateway\Ports\Driven\ITracker;

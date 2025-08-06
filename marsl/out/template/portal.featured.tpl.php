@@ -1,5 +1,5 @@
 <?php
-include_once (dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <script type="text/javascript">
 $(document).ready(function(){  
@@ -32,8 +32,8 @@ $(document).ready(function(){
 </script>
 <div id="featured" >  
 	<ul class="ui-tabs-nav">
-		<?php $i = 0; 
-		foreach($news as $article): $i++; ?>
+		<?php $i = 0;
+foreach($news as $article): $i++; ?>
 		<li class="ui-tabs-nav-item" id="nav-fragment-<?php echo $i; ?>">
 			<a href="#fragment-<?php echo $i; ?>">
 				<span><b><?php echo $article['headline']; ?>: <?php echo $article['title']; ?></b><br /><?php echo $article['date']; ?></span>
@@ -41,8 +41,8 @@ $(document).ready(function(){
 		</li>
 		<?php endforeach; ?>
 	</ul>
-	<?php $i= 0;
-	foreach ($news as $article): $i++; ?>
+	<?php $i = 0;
+foreach ($news as $article): $i++; ?>
 	<div id="fragment-<?php echo $i; ?>" class="ui-tabs-panel" onmouseover="this.style.cursor = 'pointer'" onclick="window.location = '<?php echo $article['newsURI']; ?>'">
 		<img src="news/<?php echo $article['picture']; ?>" />
 		<div class="info">
@@ -60,3 +60,4 @@ $(document).ready(function(){
 	</div>
 	<?php endforeach; ?>  
 </div>  
+<p class="center"><a href="https://www.instagram.com/music2web" target="_blank">Folgt uns auf Instagram</a> | <a href="https://www.facebook.com/music2web" target="_blank">Folgt uns auf Facebook</a></p>

@@ -1,24 +1,32 @@
 <?php
-include_once (dirname(__FILE__)."/../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
 <div class="center">
-<p><strong>Fotos: <?php echo $photograph; ?></strong></p>
+	<p><strong>Fotos: <?php echo $photograph; ?></strong></p>
+	<p class="center"><a href="https://www.instagram.com/music2web" target="_blank">Folgt uns auf Instagram</a> | <a href="https://www.facebook.com/music2web" target="_blank">Folgt uns auf Facebook</a></p>
 	<div class="gallerydetails" itemscope itemtype="http://schema.org/ImageGallery">
 		<?php
-		$i = 0;
-		$j = 0;
-		foreach ($pictures as $picture): $i++; $j++; ?>
+        $i = 0;
+$j = 0;
+foreach ($pictures as $picture): $i++;
+    $j++; ?>
 		<figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
 			<a href="<?php echo $picture['picture']; ?>" itemprop="contentUrl" data-size="<?php echo $picture['width']; ?>x<?php echo $picture['height']; ?>">
-				<img src="<?php echo $picture['thumb']; ?>" itemprop="thumbnail" alt="<?php echo $picture['subtitle']; ?> Foto: <?php echo $photograph; ?>" <?php // if(isset($_GET['autostart'])&&($j==1)): ?>id="first-thumb"<?php // endif; ?>>
+				<img src="<?php echo $picture['thumb']; ?>" itemprop="thumbnail" alt="<?php echo $picture['subtitle']; ?> Foto: <?php echo $photograph; ?>" <?php // if(isset($_GET['autostart'])&&($j==1)):?>id="first-thumb"<?php // endif;?>>
 			</a>
-			<figcaption itemprop="caption description"><?php echo $picture['subtitle']; ?> Foto: <?php echo $photograph; ?></figcaption>
+			<figcaption itemprop="caption description">
+				<?php if ($picture['subtitle'] == ""): ?>
+				<a href="https://www.instagram.com/music2web" target="_blank">Folgt uns auf Instagram</a> | <a href="https://www.facebook.com/music2web" target="_blank">Folgt uns auf Facebook</a><br />
+				<?php endif; ?>
+				<?php echo $picture['subtitle']; ?> Foto: <?php echo $photograph; ?>
+			</figcaption>
 		</figure>
-		<?php if ($i==3): $i=0; ?>
+		<?php if ($i == 3): $i = 0; ?>
 		<!--<br />-->
 		<?php endif; ?>
 		<?php endforeach; ?>
 	</div>
+	<p class="center"><a href="https://www.instagram.com/music2web" target="_blank">Folgt uns auf Instagram</a> | <a href="https://www.facebook.com/music2web" target="_blank">Folgt uns auf Facebook</a></p>
 </div>
 <!-- Photoswipe start -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">

@@ -31,6 +31,7 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 				</span>
 				<?php endif; ?>
 				<b><?php echo $city; ?> (<?php echo $authorName; ?>)&nbsp;<img src="includes/graphics/square.gif" />&nbsp;&nbsp;&nbsp;<?php echo $teaser; ?></b><br />
+				<p class="center"><a href="https://www.instagram.com/music2web" target="_blank">Folgt uns auf Instagram</a> | <a href="https://www.facebook.com/music2web" target="_blank">Folgt uns auf Facebook</a></p>
 				<?php if ($picture2 != "empty"): ?>
 				<br />
 				<span class="center">
@@ -41,6 +42,7 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 				</span>
 				<?php endif; ?>
 				<br /><?php echo $text; ?>
+				<p class="center"><a href="https://www.instagram.com/music2web" target="_blank">Folgt uns auf Instagram</a> | <a href="https://www.facebook.com/music2web" target="_blank">Folgt uns auf Facebook</a></p>
 			</div>
 			<div class="newsinformationmobile">
 				<br /><div class="shariff" data-backend-url="includes/shariff" data-url="<?php echo $url; ?>" data-services="[&quot;facebook&quot;]" data-theme="standard" data-orientation="horizontal"></div>
