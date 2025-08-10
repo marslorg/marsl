@@ -30,7 +30,7 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 		<link rel="stylesheet" href="styles/style.css?v=34" type="text/css" />
 		<link rel="stylesheet" href="styles/menu.css?v=6" type="text/css" />
 		<link rel="stylesheet" href="styles/portal.css" type="text/css" />
-		<link rel="stylesheet" href="styles/mobile.css?v=18" type="text/css" media="all and (max-width: 1023px)" />
+		<link rel="stylesheet" href="styles/mobile.css?v=19" type="text/css" media="all and (max-width: 1023px)" />
 		<link rel="stylesheet" href="includes/jscripts/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" />
 		<link rel="stylesheet" href="includes/shariff/shariff.complete.css" type="text/css" />
 		<link rel="stylesheet" href="includes/jscripts/photoswipe/photoswipe.css" type="text/css" />
@@ -69,10 +69,10 @@ include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 			<div class="footer">
 				<a href="https://www.music2web.de/jobs-469">Jobs</a> | <a href="https://www.music2web.de/kontakt-407">Kontakt</a> | <a href="https://www.music2web.de/datenschutz-738">Datenschutzerkl&auml;rung</a> | <a href="https://www.music2web.de/impressum-186">Impressum</a>
 				<div class="center">
-					<a href="https://www.instagram.com/music2web" target="_blank"><img src="includes/graphics/socialicons/instagram.png" height="40px" alt="Folgt uns auf Instagram" /></a>
-					<a href="https://www.facebook.com/music2web" target="_blank"><img src="includes/graphics/socialicons/facebook.png" height="40px" alt="Folgt uns auf Facebook" /></a>
-					<a href="https://apps.apple.com/de/app/music2web-de/id1570808940" target="_blank"><img src="includes/graphics/app/apple.svg" height="40px" alt="Laden im App Store" /></a>
-					<a href="https://play.google.com/store/apps/details?id=de.music2web.www&gl=DE" target="_blank"><img src="includes/graphics/app/google.png" height="40px" alt="Jetzt bei Google" /></a>
+					<a href="https://www.instagram.com/music2web" target="_blank"><img src="includes/graphics/socialicons/instagram.png" height="40px" alt="Folgt uns auf Instagram" class="footericons" /></a>
+					<a href="https://apps.apple.com/de/app/music2web-de/id1570808940" target="_blank"><img src="includes/graphics/app/apple.svg" height="40px" alt="Laden im App Store" class="footericons" /></a>
+					<a href="https://play.google.com/store/apps/details?id=de.music2web.www&gl=DE" target="_blank"><img src="includes/graphics/app/google.png" height="40px" alt="Jetzt bei Google" class="footericons" /></a>
+					<a href="https://www.facebook.com/music2web" target="_blank"><img src="includes/graphics/socialicons/facebook.png" height="40px" alt="Folgt uns auf Facebook" class="footericons" /></a>
 				</div>
 			</div>
 			<div id="footer-permission">
