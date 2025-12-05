@@ -186,20 +186,18 @@ class Authentication
      */
     private function findAuthenticationParameters(): array
     {
+        $requestMethod = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_METHOD", "");
         $phpAuthUser = $this->requestParametersService->fromServer()->getStringParameter("PHP_AUTH_USER", "");
         $phpAuthPw = $this->requestParametersService->fromServer()->getStringParameter("PHP_AUTH_PW", "");
-        $requestMethod = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_METHOD", "");
         $userAgent = $this->requestParametersService->fromServer()->getStringParameter("HTTP_USER_AGENT", "");
 
         if ($phpAuthUser == ""
             && $phpAuthPw == ""
-            && $requestMethod == ""
             && str_starts_with($userAgent, "music2webapp")) {
             $explodedUserAgent = explode(';', $userAgent);
             if (count($explodedUserAgent) >= 3) {
                 $phpAuthUser = trim($explodedUserAgent[1]);
                 $phpAuthPw = trim($explodedUserAgent[2]);
-                $requestMethod = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_METHOD", "");
             }
         }
 
