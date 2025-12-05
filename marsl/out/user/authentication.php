@@ -49,16 +49,17 @@ class Authentication
                 $write = boolval(strval($moduleRow['write']));
                 $extended = boolval(strval($moduleRow['extended']));
                 $admin = boolval(strval($moduleRow['admin']));
+
+                $curModuleRights[$roleID][$module]['read'] = $read;
+                $curModuleRights[$roleID][$module]['write'] = $write;
+                $curModuleRights[$roleID][$module]['extended'] = $extended;
+                $curModuleRights[$roleID][$module]['admin'] = $admin;
+
                 if (array_key_exists($roleID, $curModuleRights) && array_key_exists($module, $curModuleRights[$roleID])) {
                     $curModuleRights[$roleID][$module]['read'] = $curModuleRights[$roleID][$module]['read'] || $read;
                     $curModuleRights[$roleID][$module]['write'] = $curModuleRights[$roleID][$module]['write'] || $write;
                     $curModuleRights[$roleID][$module]['extended'] = $curModuleRights[$roleID][$module]['extended'] || $extended;
                     $curModuleRights[$roleID][$module]['admin'] = $curModuleRights[$roleID][$module]['admin'] || $admin;
-                } else {
-                    $curModuleRights[$roleID][$module]['read'] = $read;
-                    $curModuleRights[$roleID][$module]['write'] = $write;
-                    $curModuleRights[$roleID][$module]['extended'] = $extended;
-                    $curModuleRights[$roleID][$module]['admin'] = $admin;
                 }
             }
         }
@@ -150,9 +151,7 @@ class Authentication
     {
         $appIsAuthenticated = false;
 
-        $phpAuthUser = $this->requestParametersService->fromServer()->getStringParameter("PHP_AUTH_USER", "");
-        $phpAuthPw = $this->requestParametersService->fromServer()->getStringParameter("PHP_AUTH_PW", "");
-        $requestMethod = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_METHOD", "");
+        list($phpAuthUser, $phpAuthPw, $requestMethod) = $this->findAuthenticationParameters();
 
         if ($phpAuthUser != "") {
             if ($phpAuthPw != "") {
@@ -180,6 +179,31 @@ class Authentication
         }
 
         return $appIsAuthenticated;
+    }
+
+    /**
+     * @return array{0: string, 1: string, 2: string}
+     */
+    private function findAuthenticationParameters(): array
+    {
+        $phpAuthUser = $this->requestParametersService->fromServer()->getStringParameter("PHP_AUTH_USER", "");
+        $phpAuthPw = $this->requestParametersService->fromServer()->getStringParameter("PHP_AUTH_PW", "");
+        $requestMethod = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_METHOD", "");
+        $userAgent = $this->requestParametersService->fromServer()->getStringParameter("HTTP_USER_AGENT", "");
+
+        if ($phpAuthUser == ""
+            && $phpAuthPw == ""
+            && $requestMethod == ""
+            && str_starts_with($userAgent, "music2webapp")) {
+            $explodedUserAgent = explode(';', $userAgent);
+            if (count($explodedUserAgent) >= 3) {
+                $phpAuthUser = trim($explodedUserAgent[1]);
+                $phpAuthPw = trim($explodedUserAgent[2]);
+                $requestMethod = $this->requestParametersService->fromServer()->getStringParameter("REQUEST_METHOD", "");
+            }
+        }
+
+        return array($phpAuthUser, $phpAuthPw, $requestMethod);
     }
 
     /*

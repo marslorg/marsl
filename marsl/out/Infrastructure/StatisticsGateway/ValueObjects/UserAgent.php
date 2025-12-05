@@ -17,5 +17,9 @@ class UserAgent extends StringValueObject
     public function __construct(string $value)
     {
         $this->value = $value;
+
+        if (str_starts_with($value, "music2webapp")) {
+            $this->value = "music2webapp";
+        }
     }
 }
