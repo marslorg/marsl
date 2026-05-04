@@ -61,7 +61,7 @@ class UserBase
         $this->userIDsByName = array();
         $this->session = "";
         $session = $this->requestParametersService->fromCookie()->getStringParameter("sessionid", "");
-        if ($this->db->isExisting("SELECT `sessionid` FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
+        if ($session != "" && $this->db->isExisting("SELECT `sessionid` FROM `user` WHERE `sessionid`='$session' LIMIT 1")) {
             $lastseen = time();
             $this->db->query("UPDATE `user` SET `lastseen` = '$lastseen' WHERE `sessionid` = '$session'");
             $this->session = $session;
@@ -69,7 +69,6 @@ class UserBase
 
         $this->userID = -1;
         $this->userIDSet = false;
-
     }
 
     /*

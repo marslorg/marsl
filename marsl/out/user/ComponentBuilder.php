@@ -12,9 +12,10 @@ class ComponentBuilder
 {
     public static function buildDependencies(Injector $injector): Injector
     {
-        $injector->share('\marsl\user\Role');
         $injector->share('\marsl\user\Authentication');
         $injector->share('\marsl\user\AuthenticationBase');
+        $injector->share('\marsl\user\Role');
+        $injector->share('\marsl\user\UserBase');
 
         return $injector;
     }
