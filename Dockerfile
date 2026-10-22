@@ -1,4 +1,4 @@
-FROM php:8.1.33-fpm
+FROM php:8.2.35-fpm
 
 RUN apt-get update --fix-missing
 RUN apt-get install -y curl
