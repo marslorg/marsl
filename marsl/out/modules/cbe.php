@@ -179,19 +179,22 @@ class CBE implements Module
         if ($type == "band") {
             $result = $this->db->query("SELECT `band`.`tag` AS tagname FROM `band` JOIN `news_tag` ON(`band`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_band' AND `news`='$news' ORDER BY `band`.`tag`");
             while ($row = $this->db->fetchArray($result)) {
-                array_push($retString, $row['tagname']);
+                if (is_string($row['tagname'])) {
+                    array_push($retString, strval($row['tagname']));
+                }
             }
         }
 
         if ($type == "location") {
             $result = $this->db->query("SELECT `location`.`tag` AS tagname FROM `location` JOIN `news_tag` ON(`location`.`id`=`news_tag`.`tag`) WHERE `type`='cbe_location' AND `news`='$news' ORDER BY `location`.`tag`");
             while ($row = $this->db->fetchArray($result)) {
-                array_push($retString, $row['tagname']);
+                if (is_string($row['tagname'])) {
+                    array_push($retString, strval($row['tagname']));
+                }
             }
         }
 
         return implode(";", $retString);
-
     }
 
     /**

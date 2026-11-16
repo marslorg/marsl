@@ -79,7 +79,7 @@ class Menu
     }
 
     /**
-     * @return array<int, array<array<string, mixed>>>
+     * @return array<int, array<int, array<int<0, max>|string, array<string, int|string>|int|string>>>
      */
     private function getNavigationStructure(): array
     {

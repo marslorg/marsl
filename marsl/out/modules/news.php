@@ -668,8 +668,8 @@ class News implements Module
                         if (is_string($row['photograph']) && $row['photograph'] != "") {
                             $photograph1 = "<br />Foto: ".$this->basic->convertToHTMLEntities($row['photograph']);
                         }
-                        $teaser = $this->nofollowOutboundLinks(is_string($row['teaser']) ? $row['teaser'] : "");
-                        $text = $this->nofollowOutboundLinks(is_string($row['text']) ? $row['text'] : "");
+                        $teaser = $this->cleanUpContent(is_string($row['teaser']) ? $row['teaser'] : "");
+                        $text = $this->cleanUpContent(is_string($row['text']) ? $row['text'] : "");
                         $city = $this->basic->convertToHTMLEntities(is_string($row['city']) ? $row['city'] : "");
                         $headline = $this->basic->convertToHTMLEntities(is_string($row['headline']) ? $row['headline'] : "");
                         $title = $this->basic->convertToHTMLEntities(is_string($row['title']) ? $row['title'] : "");
@@ -731,8 +731,8 @@ class News implements Module
                         if (is_string($row['photograph2']) && $row['photograph2'] != "") {
                             $photograph2 = " Foto: ".$this->basic->convertToHTMLEntities($row['photograph2']);
                         }
-                        $teaser = $this->nofollowOutboundLinks(is_string($row['teaser']) ? $row['teaser'] : "");
-                        $text = $this->nofollowOutboundLinks(is_string($row['text']) ? $row['text'] : "");
+                        $teaser = $this->cleanUpContent(is_string($row['teaser']) ? $row['teaser'] : "");
+                        $text = $this->cleanUpContent(is_string($row['text']) ? $row['text'] : "");
                         $city = $this->basic->convertToHTMLEntities(is_string($row['city']) ? $row['city'] : "");
                         $headline = $this->basic->convertToHTMLEntities(is_string($row['headline']) ? $row['headline'] : "");
                         $title = $this->basic->convertToHTMLEntities(is_string($row['title']) ? $row['title'] : "");
@@ -1575,6 +1575,18 @@ class News implements Module
         }
 
         return $uri;
+    }
+
+    private function cleanUpContent(string $content): string|null
+    {
+        return $this->removeVisibleSocialMediaPlaceholder(
+            $this->nofollowOutboundLinks($content)
+        );
+    }
+
+    private function removeVisibleSocialMediaPlaceholder(string $content): string
+    {
+        return str_replace('[SocialLink]', '', $content);
     }
 
     private function nofollowOutboundLinks(string $content): string|null

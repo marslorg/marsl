@@ -2,17 +2,12 @@
     "packages": [
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.13",
-            "version_normalized": "2.1.13.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "e55e03e6d4ac49cd1240907e5b08e5cd378572a9"
-            },
+            "version": "2.3.4",
+            "version_normalized": "2.3.4.0",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e55e03e6d4ac49cd1240907e5b08e5cd378572a9",
-                "reference": "e55e03e6d4ac49cd1240907e5b08e5cd378572a9",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f20ce6f3c82556cfcfc086b152445a12d1d64fff",
+                "reference": "f20ce6f3c82556cfcfc086b152445a12d1d64fff",
                 "shasum": ""
             },
             "require": {
@@ -21,7 +16,7 @@
             "conflict": {
                 "phpstan/phpstan-shim": "*"
             },
-            "time": "2025-04-27T12:28:25+00:00",
+            "time": "2026-10-28T22:38:53+00:00",
             "bin": [
                 "phpstan",
                 "phpstan.phar"
@@ -36,6 +31,17 @@
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ondřej Mirtes"
+                },
+                {
+                    "name": "Markus Staab"
+                },
+                {
+                    "name": "Vincent Langlet"
+                }
             ],
             "description": "PHPStan - PHP Static Analysis Tool",
             "keywords": [

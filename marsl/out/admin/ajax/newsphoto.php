@@ -52,44 +52,41 @@ class NewsPhoto
                     $picinfo = @getimagesize($fileLink);
 
                     if (!$picinfo) {
+                        unlink($fileLink);
+                        $result = array('type' => "error", 'code' => "1", 'text' => "Not a picture.");
+                        echo json_encode($result);
                         throw new Exception();
                     }
 
-                    if (getimagesize($fileLink)) {
-                        $width = $picinfo[0];
-                        $height = $picinfo[1];
-                        $fileName = $this->db->escapeString($fileName);
-                        $photograph = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("photograph", ""));
-                        if ($this->requestParametersService->fromPost()->getStringParameter("type", "") == "teaser") {
-                            if (($width > 200) || ($height > 200)) {
-                                $this->thumb($fileLink, $fileLink, 200, 200, true);
-                            }
-                            $this->db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$fileName', '$photograph')");
+                    $width = $picinfo[0];
+                    $height = $picinfo[1];
+                    $fileName = $this->db->escapeString($fileName);
+                    $photograph = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("photograph", ""));
+                    if ($this->requestParametersService->fromPost()->getStringParameter("type", "") == "teaser") {
+                        if (($width > 200) || ($height > 200)) {
+                            $this->thumb($fileLink, $fileLink, 200, 200, true);
+                        }
+                        $this->db->query("INSERT INTO `news_picture`(`url`, `photograph`) VALUES('$fileName', '$photograph')");
+                        $pictureID = $this->db->lastInsertedID();
+                        $result = array('type' => "success", 'id' => $pictureID, 'file' => $fileName);
+                        echo json_encode($result);
+                    }
+
+                    if ($this->requestParametersService->fromPost()->getStringParameter("type", "") == "text") {
+                        $subtitle = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("subtitle", ""));
+                        if (($width > 1280) || ($height > 1280)) {
+                            $this->thumb($fileLink, $fileLink, 1280, 1280, true);
+                        }
+                        if (($width < 640) || ($height < 320)) {
+                            unlink($fileLink);
+                            $result = array('type' => "error", 'code' => "2", 'text' => "The size of the photo is not correct.");
+                            echo json_encode($result);
+                        } else {
+                            $this->db->query("INSERT INTO `news_picture`(`url`, `photograph`,`subtitle`) VALUES('$fileName', '$photograph','$subtitle')");
                             $pictureID = $this->db->lastInsertedID();
                             $result = array('type' => "success", 'id' => $pictureID, 'file' => $fileName);
                             echo json_encode($result);
                         }
-
-                        if ($this->requestParametersService->fromPost()->getStringParameter("type", "") == "text") {
-                            $subtitle = $this->db->escapeString($this->requestParametersService->fromPost()->getStringParameter("subtitle", ""));
-                            if (($width > 1280) || ($height > 1280)) {
-                                $this->thumb($fileLink, $fileLink, 1280, 1280, true);
-                            }
-                            if (($width < 640) || ($height < 320)) {
-                                unlink($fileLink);
-                                $result = array('type' => "error", 'code' => "2", 'text' => "The size of the photo is not correct.");
-                                echo json_encode($result);
-                            } else {
-                                $this->db->query("INSERT INTO `news_picture`(`url`, `photograph`,`subtitle`) VALUES('$fileName', '$photograph','$subtitle')");
-                                $pictureID = $this->db->lastInsertedID();
-                                $result = array('type' => "success", 'id' => $pictureID, 'file' => $fileName);
-                                echo json_encode($result);
-                            }
-                        }
-                    } else {
-                        unlink($fileLink);
-                        $result = array('type' => "error", 'code' => "1", 'text' => "Not a picture.");
-                        echo json_encode($result);
                     }
 
                 } else {

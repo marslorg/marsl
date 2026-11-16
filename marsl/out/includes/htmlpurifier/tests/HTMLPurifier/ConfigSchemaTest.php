@@ -5,24 +5,27 @@ class HTMLPurifier_ConfigSchemaTest extends HTMLPurifier_Harness
 
     protected $schema;
 
-    public function setup() {
+    public function setup()
+    {
         $this->schema = new HTMLPurifier_ConfigSchema();
     }
 
-    function test_define() {
+    public function test_define()
+    {
         $this->schema->add('Car.Seats', 5, 'int', false);
 
         $this->assertIdentical($this->schema->defaults['Car.Seats'], 5);
-        $this->assertIdentical($this->schema->info['Car.Seats']->type, HTMLPurifier_VarParser::INT);
+        $this->assertIdentical($this->schema->info['Car.Seats']->type, HTMLPurifier_VarParser::C_INT);
 
         $this->schema->add('Car.Age', null, 'int', true);
 
         $this->assertIdentical($this->schema->defaults['Car.Age'], null);
-        $this->assertIdentical($this->schema->info['Car.Age']->type, HTMLPurifier_VarParser::INT);
+        $this->assertIdentical($this->schema->info['Car.Age']->type, HTMLPurifier_VarParser::C_INT);
 
     }
 
-    function test_defineAllowedValues() {
+    public function test_defineAllowedValues()
+    {
         $this->schema->add('QuantumNumber.Spin', 0.5, 'float', false);
         $this->schema->add('QuantumNumber.Current', 's', 'string', false);
         $this->schema->add('QuantumNumber.Difficulty', null, 'string', true);
@@ -32,7 +35,7 @@ class HTMLPurifier_ConfigSchemaTest extends HTMLPurifier_Harness
         );
 
         $this->assertIdentical($this->schema->defaults['QuantumNumber.Difficulty'], null);
-        $this->assertIdentical($this->schema->info['QuantumNumber.Difficulty']->type, HTMLPurifier_VarParser::STRING);
+        $this->assertIdentical($this->schema->info['QuantumNumber.Difficulty']->type, HTMLPurifier_VarParser::C_STRING);
         $this->assertIdentical($this->schema->info['QuantumNumber.Difficulty']->allow_null, true);
         $this->assertIdentical($this->schema->info['QuantumNumber.Difficulty']->allowed,
             array(
@@ -44,7 +47,8 @@ class HTMLPurifier_ConfigSchemaTest extends HTMLPurifier_Harness
 
     }
 
-    function test_defineValueAliases() {
+    public function test_defineValueAliases()
+    {
         $this->schema->add('Abbrev.HTH', 'Happy to Help', 'string', false);
         $this->schema->addAllowedValues(
             'Abbrev.HTH', array(
@@ -66,7 +70,7 @@ class HTMLPurifier_ConfigSchemaTest extends HTMLPurifier_Harness
         );
 
         $this->assertIdentical($this->schema->defaults['Abbrev.HTH'], 'Happy to Help');
-        $this->assertIdentical($this->schema->info['Abbrev.HTH']->type, HTMLPurifier_VarParser::STRING);
+        $this->assertIdentical($this->schema->info['Abbrev.HTH']->type, HTMLPurifier_VarParser::C_STRING);
         $this->assertIdentical($this->schema->info['Abbrev.HTH']->allowed,
             array(
                 'Happy to Help' => true,
@@ -84,7 +88,8 @@ class HTMLPurifier_ConfigSchemaTest extends HTMLPurifier_Harness
 
     }
 
-    function testAlias() {
+    public function testAlias()
+    {
         $this->schema->add('Home.Rug', 3, 'int', false);
         $this->schema->addAlias('Home.Carpet', 'Home.Rug');
 

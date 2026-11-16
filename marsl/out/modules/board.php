@@ -188,7 +188,23 @@ class Board implements Module
                                 $boardURIPart = $this->boardBase->getBoardURIPart($board, $title);
                                 $threadsURI = $uri.$boardURIPart;
                                 $pagePostsURI = $uri.$this->thread->getThreadURIPart($thread, $threadTitle, $page);
-                                array_push($categories[$category]['boards'], array('board' => $board, 'title' => $title, 'description' => $description, 'threadcount' => $threadcount, 'postcount' => $postcount, 'thread' => $thread, 'threadTitle' => $threadTitle, 'threadsURI' => $threadsURI, 'page' => $page, 'post' => $post, 'pagePostsURI' => $pagePostsURI, 'date' => $postTime, 'user' => $postAuthor, 'nickname' => $authorName, 'operators' => $operators));
+                                $categories[$category]['boards'][] = array(
+                                    'board' => $board,
+                                    'title' => $title,
+                                    'description' => $description,
+                                    'threadcount' => $threadcount,
+                                    'postcount' => $postcount,
+                                    'thread' => $thread,
+                                    'threadTitle' => $threadTitle,
+                                    'threadsURI' => $threadsURI,
+                                    'page' => $page,
+                                    'post' => $post,
+                                    'pagePostsURI' => $pagePostsURI,
+                                    'date' => $postTime,
+                                    'user' => $postAuthor,
+                                    'nickname' => $authorName,
+                                    'operators' => $operators
+                                );
                             }
                         }
                     }

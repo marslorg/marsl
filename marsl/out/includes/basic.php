@@ -51,11 +51,22 @@ class Basic
 
         // PHPStan checks HTMLPurifier PHPDoc comments wrongly.
         // @phpstan-ignore method.nonObject
+        $def->addElement(
+            'social',
+            'Inline',
+            'Flow',
+            'Common',
+            array(
+                'service' => 'Enum#spotify',
+                'url' => 'URI'
+            )
+        );
+
+        // PHPStan checks HTMLPurifier PHPDoc comments wrongly.
+        // @phpstan-ignore method.nonObject
         $def->addAttribute('a', 'target', 'Enum#_blank,_self,_target,_top');
         $purifier = new HTMLPurifier($config);
 
-        // PHPStan checks HTMLPurifier PHPDoc comments wrongly.
-        // @phpstan-ignore return.type
         return $purifier->purify($dirt);
     }
 
@@ -77,8 +88,6 @@ class Basic
         $config->set('HTML.Nofollow', true);
         $purifier = new HTMLPurifier($config);
 
-        // PHPStan checks HTMLPurifier PHPDoc comments wrongly.
-        // @phpstan-ignore return.type
         return $purifier->purify($dirt);
     }
 
@@ -273,8 +282,6 @@ class Basic
 
     private function getHTMLPurifierConfigDefault(): HTMLPurifier_Config
     {
-        // PHPStan checks HTMLPurifier PHPDoc comments wrongly.
-        // @phpstan-ignore return.type
         return HTMLPurifier_Config::createDefault();
     }
 }

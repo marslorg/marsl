@@ -21,6 +21,7 @@ RUN chmod 777 -R albums
 RUN chmod 777 -R files
 RUN chmod 777 -R news
 RUN chmod 777 -R shared
+RUN chmod 777 -R includes/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer
 
 COPY marsl/dev/docker/nginx-site.conf /etc/nginx/sites-enabled/default
 COPY marsl/dev/docker/nginx-server.conf /etc/nginx/nginx.conf

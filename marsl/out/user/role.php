@@ -268,12 +268,12 @@ class Role
             while ($row = $this->db->fetchArray($result)) {
                 if (is_string($row['role'])
                     && is_string($row['name'])) {
-                    $row['role'] = intval(strval($row['role']));
-                    array_push($this->roles, $row);
+                    $resultingArray['role'] = intval(strval($row['role']));
+                    $resultingArray['name'] = strval($row['name']);
+                    array_push($this->roles, $resultingArray);
                 }
             }
         }
-        // @phpstan-ignore return.type
         return $this->roles;
     }
 

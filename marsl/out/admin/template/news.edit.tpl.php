@@ -1,5 +1,5 @@
 <?php
-include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
+include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 ?>
 <!-- TinyMCE -->
 <script type="text/javascript" src="../includes/jscripts/tinymce/tinymce.min.js"></script>
@@ -19,6 +19,9 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		// Example content CSS (should be your site CSS)
 		content_css : "css/content.css",
 
+		custom_elements : "social",
+		extended_valid_elements : "social[service|url]",
+
 		// Style formats
 		style_formats : [
 			{title : 'Bold text', inline : 'b'},
@@ -33,6 +36,52 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 		templates: [
 			{title: 'Linkbox', description: 'Fügt eine Linkbox rechts im Text mit einem soliden Rand ein.', content: '<table style="float: right; margin: 10px; border-width: 1px; border-style: solid; width: 250px;" border="0"><tbody><tr><td></a></td></tr></tbody></table>'}
 		],
+
+        toolbar: 'insert_spotify',
+
+        setup: function (editor) {
+            editor.ui.registry.addButton('insert_spotify', {
+                text: 'Spotify',
+                icon: 'embed', // Uses TinyMCE's built-in embed icon
+                onAction: function () {
+                    // Opens the popup input box
+                    editor.windowManager.open({
+                        title: 'Insert Spotify Player',
+                        body: {
+                            type: 'panel',
+                            items: [
+                                {
+                                    type: 'input',
+                                    name: 'spotifyUrl',
+                                    label: 'Spotify Link (Track, Album, or Playlist)',
+                                    placeholder: 'https://spotify.com...'
+                                }
+                            ]
+                        },
+                        buttons: [
+                            { type: 'cancel', text: 'Cancel' },
+                            { type: 'submit', text: 'Insert', primary: true }
+                        ],
+                        onSubmit: function (api) {
+                            const data = api.getData();
+                            let rawUrl = data.spotifyUrl.trim();
+
+                            if (!rawUrl) {
+                                editor.windowManager.alert('Please paste a valid Spotify link.');
+                                return;
+                            }
+
+                            // Build the standard Spotify responsive iFrame template
+                            const iframeTemplate = `<social service="spotify" url="${rawUrl}">[SocialLink]</social>`;
+
+                            // Insert into the editor and close the input modal
+                            editor.insertContent(iframeTemplate);
+                            api.close();
+                        }
+                    });
+                }
+            });
+        },
 
 		image_title: true,
 		automatic_uploads: true,
@@ -193,7 +242,7 @@ include_once (dirname(__FILE__)."/../../includes/errorHandler.php");
 			<td>
 				<select name="category">
 					<?php foreach($locations as $location): ?>
-					<option value="<?php echo $location['location']; ?>" <?php if ($location['location']==$category): ?>selected<?php endif; ?>>
+					<option value="<?php echo $location['location']; ?>" <?php if ($location['location'] == $category): ?>selected<?php endif; ?>>
 						<?php echo $location['name']; ?>
 					</option>
 					<?php endforeach; ?>

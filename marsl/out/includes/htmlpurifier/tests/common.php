@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/../vendor/autoload.php';
+
 if (!defined('HTMLPurifierTest')) {
     echo "Invalid entry point\n";
     exit;
@@ -7,7 +9,8 @@ if (!defined('HTMLPurifierTest')) {
 
 // setup our own autoload, checking for HTMLPurifier library if spl_autoload_register
 // is not allowed
-function __autoload($class) {
+function test_autoload($class)
+{
     if (!function_exists('spl_autoload_register')) {
         if (HTMLPurifier_Bootstrap::autoload($class)) return true;
         if (HTMLPurifierExtras::autoload($class)) return true;
@@ -16,7 +19,7 @@ function __autoload($class) {
     return true;
 }
 if (function_exists('spl_autoload_register')) {
-    spl_autoload_register('__autoload');
+    spl_autoload_register('test_autoload');
 }
 
 // default settings (protect against register_globals)
@@ -26,8 +29,6 @@ $GLOBALS['HTMLPurifierTest']['PHPT'] = true; // do PHPT tests
 $GLOBALS['HTMLPurifierTest']['PH5P'] = class_exists('DOMDocument');
 
 // default library settings
-$simpletest_location = 'simpletest/'; // reasonable guess
-$csstidy_location = false;
 $versions_to_test = array();
 $php  = 'php';
 $phpv = 'phpv';
@@ -37,20 +38,6 @@ if (file_exists('../conf/test-settings.php')) include '../conf/test-settings.php
 elseif (file_exists('../test-settings.php')) include '../test-settings.php';
 else {
     throw new Exception('Please create a test-settings.php file by copying test-settings.sample.php and configuring accordingly');
-}
-
-// load SimpleTest
-require_once $simpletest_location . 'unit_tester.php';
-require_once $simpletest_location . 'reporter.php';
-require_once $simpletest_location . 'mock_objects.php';
-require_once $simpletest_location . 'xml.php';
-require_once $simpletest_location . 'remote.php';
-
-// load CSS Tidy
-if ($csstidy_location !== false) {
-    $old = error_reporting(E_ALL);
-    require $csstidy_location . 'class.csstidy.php';
-    error_reporting($old);
 }
 
 // load PEAR to include path
@@ -85,7 +72,8 @@ require 'path2class.func.php';
  * @param $aliases
  *
  */
-function htmlpurifier_parse_args(&$AC, $aliases) {
+function htmlpurifier_parse_args(&$AC, $aliases)
+{
     if (empty($_GET) && !empty($_SERVER['argv'])) {
         array_shift($_SERVER['argv']);
         $o = false;
@@ -143,7 +131,8 @@ function htmlpurifier_parse_args(&$AC, $aliases) {
  * @param $o Argument name
  * @param $v Argument value
  */
-function htmlpurifier_args(&$AC, $aliases, $o, $v) {
+function htmlpurifier_args(&$AC, $aliases, $o, $v)
+{
     if (isset($aliases[$o])) $o = $aliases[$o];
     if (!isset($AC[$o])) return;
     if (is_string($AC[$o])) $AC[$o] = $v;
@@ -154,7 +143,8 @@ function htmlpurifier_args(&$AC, $aliases, $o, $v) {
 /**
  * Adds a test-class; we use file extension to determine which class to use.
  */
-function htmlpurifier_add_test($test, $test_file, $only_phpt = false) {
+function htmlpurifier_add_test($test, $test_file, $only_phpt = false)
+{
     switch (strrchr($test_file, ".")) {
         case '.phpt':
             return $test->add(new PHPT_Controller_SimpleTest($test_file));
@@ -173,14 +163,39 @@ function htmlpurifier_add_test($test, $test_file, $only_phpt = false) {
 /**
  * Debugging function that prints tokens in a user-friendly manner.
  */
-function printTokens($tokens, $index = null) {
+function printTokens($tokens, $index = null)
+{
     $string = '<pre>';
     $generator = new HTMLPurifier_Generator(HTMLPurifier_Config::createDefault(), new HTMLPurifier_Context);
     foreach ($tokens as $i => $token) {
-        if ($index === $i) $string .= '[<strong>';
-        $string .= "<sup>$i</sup>";
-        $string .= $generator->escape($generator->generateFromToken($token));
-        if ($index === $i) $string .= '</strong>]';
+        $string .= printToken($generator, $token, $i, $index == $i);
+    }
+    $string .= '</pre>';
+    echo $string;
+}
+
+function printToken($generator, $token, $i, $isCursor)
+{
+    $string = "";
+    if ($isCursor) $string .= '[<strong>';
+    $string .= "<sup>$i</sup>";
+    $string .= $generator->escape($generator->generateFromToken($token));
+    if ($isCursor) $string .= '</strong>]';
+    return $string;
+}
+
+function printZipper($zipper, $token)
+{
+    $string = '<pre>';
+    $generator = new HTMLPurifier_Generator(HTMLPurifier_Config::createDefault(), new HTMLPurifier_Context);
+    foreach ($zipper->front as $i => $t) {
+        $string .= printToken($generator, $t, $i, false);
+    }
+    if ($token !== NULL) {
+        $string .= printToken($generator, $token, "", true);
+    }
+    for ($i = count($zipper->back)-1; $i >= 0; $i--) {
+        $string .= printToken($generator, $zipper->back[$i], $i, false);
     }
     $string .= '</pre>';
     echo $string;
@@ -189,13 +204,16 @@ function printTokens($tokens, $index = null) {
 /**
  * Convenient "insta-fail" test-case to add if any outside things fail
  */
-class FailedTest extends UnitTestCase {
+class FailedTest extends UnitTestCase
+{
     protected $msg, $details;
-    public function __construct($msg, $details = null) {
+    public function __construct($msg, $details = null)
+    {
         $this->msg = $msg;
         $this->details = $details;
     }
-    public function test() {
+    public function test()
+    {
         $this->fail($this->msg);
         if ($this->details) $this->reporter->paintFormattedMessage($this->details);
     }
@@ -204,7 +222,8 @@ class FailedTest extends UnitTestCase {
 /**
  * Flushes all caches, and fatally errors out if there's a problem.
  */
-function htmlpurifier_flush($php, $reporter) {
+function htmlpurifier_flush($php, $reporter)
+{
     exec($php . ' ../maintenance/flush.php ' . $php . ' 2>&1', $out, $status);
     if ($status) {
         $test = new FailedTest(
@@ -219,7 +238,8 @@ function htmlpurifier_flush($php, $reporter) {
 /**
  * Dumps error queue, useful if there has been a fatal error.
  */
-function htmlpurifier_dump_error_queue() {
+function htmlpurifier_dump_error_queue()
+{
     $context = SimpleTest::getContext();
     $queue = $context->get('SimpleErrorQueue');
     while (($error = $queue->extract()) !== false) {

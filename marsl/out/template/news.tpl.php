@@ -1,6 +1,7 @@
 <?php
 include_once(dirname(__FILE__)."/../includes/errorHandler.php");
 ?>
+<script type="text/javascript" src="../modules/news/news.js"></script>
 <div class="news">
 	<span class="newstable">
 		<div class="newsrow">

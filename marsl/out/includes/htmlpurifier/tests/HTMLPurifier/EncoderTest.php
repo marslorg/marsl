@@ -5,21 +5,25 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
 
     protected $_entity_lookup;
 
-    function setUp() {
+    public function setUp()
+    {
         $this->_entity_lookup = HTMLPurifier_EntityLookup::instance();
         parent::setUp();
     }
 
-    function assertCleanUTF8($string, $expect = null) {
+    public function assertCleanUTF8($string, $expect = null)
+    {
         if ($expect === null) $expect = $string;
         $this->assertIdentical(HTMLPurifier_Encoder::cleanUTF8($string), $expect, 'iconv: %s');
         $this->assertIdentical(HTMLPurifier_Encoder::cleanUTF8($string, true), $expect, 'PHP: %s');
     }
 
-    function test_cleanUTF8() {
+    public function test_cleanUTF8()
+    {
         $this->assertCleanUTF8('Normal string.');
         $this->assertCleanUTF8("Test\tAllowed\nControl\rCharacters");
         $this->assertCleanUTF8("null byte: \0", 'null byte: ');
+        $this->assertCleanUTF8("あ（い）う（え）お\0", "あ（い）う（え）お"); // test for issue #122
         $this->assertCleanUTF8("\1\2\3\4\5\6\7", '');
         $this->assertCleanUTF8("\x7F", ''); // one byte invalid SGML char
         $this->assertCleanUTF8("\xC2\x80", ''); // two byte invalid SGML
@@ -29,7 +33,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         $this->assertCleanUTF8("\xED\xB0\x80", '');
     }
 
-    function test_convertToUTF8_noConvert() {
+    public function test_convertToUTF8_noConvert()
+    {
         // UTF-8 means that we don't touch it
         $this->assertIdentical(
             HTMLPurifier_Encoder::convertToUTF8("\xF6", $this->config, $this->context),
@@ -38,7 +43,9 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertToUTF8_spuriousEncoding() {
+    public function test_convertToUTF8_spuriousEncoding()
+    {
+        if (!HTMLPurifier_Encoder::iconvAvailable()) return;
         $this->config->set('Core.Encoding', 'utf99');
         $this->expectError('Invalid encoding utf99');
         $this->assertIdentical(
@@ -47,7 +54,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertToUTF8_iso8859_1() {
+    public function test_convertToUTF8_iso8859_1()
+    {
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->assertIdentical(
             HTMLPurifier_Encoder::convertToUTF8("\xF6", $this->config, $this->context),
@@ -55,7 +63,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertToUTF8_withoutIconv() {
+    public function test_convertToUTF8_withoutIconv()
+    {
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->config->set('Test.ForceNoIconv', true);
         $this->assertIdentical(
@@ -65,11 +74,13 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
 
     }
 
-    function getZhongWen() {
+    public function getZhongWen()
+    {
         return "\xE4\xB8\xAD\xE6\x96\x87 (Chinese)";
     }
 
-    function test_convertFromUTF8_utf8() {
+    public function test_convertFromUTF8_utf8()
+    {
         // UTF-8 means that we don't touch it
         $this->assertIdentical(
             HTMLPurifier_Encoder::convertFromUTF8("\xC3\xB6", $this->config, $this->context),
@@ -77,7 +88,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertFromUTF8_iso8859_1() {
+    public function test_convertFromUTF8_iso8859_1()
+    {
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->assertIdentical(
             HTMLPurifier_Encoder::convertFromUTF8("\xC3\xB6", $this->config, $this->context),
@@ -86,8 +98,9 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertFromUTF8_iconvNoChars() {
-        if (!function_exists('iconv')) return;
+    public function test_convertFromUTF8_iconvNoChars()
+    {
+        if (!HTMLPurifier_Encoder::iconvAvailable()) return;
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->assertIdentical(
             HTMLPurifier_Encoder::convertFromUTF8($this->getZhongWen(), $this->config, $this->context),
@@ -95,7 +108,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertFromUTF8_phpNormal() {
+    public function test_convertFromUTF8_phpNormal()
+    {
         // Plain PHP implementation has slightly different behavior
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->config->set('Test.ForceNoIconv', true);
@@ -106,7 +120,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertFromUTF8_phpNoChars() {
+    public function test_convertFromUTF8_phpNoChars()
+    {
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->config->set('Test.ForceNoIconv', true);
         $this->assertIdentical(
@@ -115,7 +130,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertFromUTF8_withProtection() {
+    public function test_convertFromUTF8_withProtection()
+    {
         // Preserve the characters!
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->config->set('Core.EscapeNonASCIICharacters', true);
@@ -125,7 +141,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertFromUTF8_withProtectionButUtf8() {
+    public function test_convertFromUTF8_withProtectionButUtf8()
+    {
         // Preserve the characters!
         $this->config->set('Core.EscapeNonASCIICharacters', true);
         $this->assertIdentical(
@@ -134,8 +151,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_convertToASCIIDumbLossless() {
-
+    public function test_convertToASCIIDumbLossless()
+    {
         // Uppercase thorn letter
         $this->assertIdentical(
             HTMLPurifier_Encoder::convertToASCIIDumbLossless("\xC3\x9Eorn"),
@@ -155,7 +172,8 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
 
     }
 
-    function assertASCIISupportCheck($enc, $ret) {
+    public function assertASCIISupportCheck($enc, $ret)
+    {
         $test = HTMLPurifier_Encoder::testEncodingSupportsASCII($enc, true);
         if ($test === false) return;
         $this->assertIdentical(
@@ -168,15 +186,19 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function test_testEncodingSupportsASCII() {
-        $this->assertASCIISupportCheck('Shift_JIS', array("\xC2\xA5" => '\\', "\xE2\x80\xBE" => '~'));
-        $this->assertASCIISupportCheck('JOHAB', array("\xE2\x82\xA9" => '\\'));
+    public function test_testEncodingSupportsASCII()
+    {
+        if (HTMLPurifier_Encoder::iconvAvailable()) {
+            $this->assertASCIISupportCheck('Shift_JIS', array("\xC2\xA5" => '\\', "\xE2\x80\xBE" => '~'));
+            $this->assertASCIISupportCheck('JOHAB', array("\xE2\x82\xA9" => '\\'));
+        }
         $this->assertASCIISupportCheck('ISO-8859-1', array());
         $this->assertASCIISupportCheck('dontexist', array()); // canary
     }
 
-    function testShiftJIS() {
-        if (!function_exists('iconv')) return;
+    public function testShiftJIS()
+    {
+        if (!HTMLPurifier_Encoder::iconvAvailable()) return;
         $this->config->set('Core.Encoding', 'Shift_JIS');
         // This actually looks like a Yen, but we're going to treat it differently
         $this->assertIdentical(
@@ -189,8 +211,9 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function testIconvTruncateBug() {
-        if (!function_exists('iconv')) return;
+    public function testIconvTruncateBug()
+    {
+        if (!HTMLPurifier_Encoder::iconvAvailable()) return;
         if (HTMLPurifier_Encoder::testIconvTruncateBug() !== HTMLPurifier_Encoder::ICONV_TRUNCATES) return;
         $this->config->set('Core.Encoding', 'ISO-8859-1');
         $this->assertIdentical(
@@ -199,8 +222,9 @@ class HTMLPurifier_EncoderTest extends HTMLPurifier_Harness
         );
     }
 
-    function testIconvChunking() {
-        if (!function_exists('iconv')) return;
+    public function testIconvChunking()
+    {
+        if (!HTMLPurifier_Encoder::iconvAvailable()) return;
         if (HTMLPurifier_Encoder::testIconvTruncateBug() !== HTMLPurifier_Encoder::ICONV_TRUNCATES) return;
         $this->assertIdentical(HTMLPurifier_Encoder::iconv('utf-8', 'iso-8859-1//IGNORE', "a\xF3\xA0\x80\xA0b", 4), 'ab');
         $this->assertIdentical(HTMLPurifier_Encoder::iconv('utf-8', 'iso-8859-1//IGNORE', "aa\xE4\xB8\xADb", 4), 'aab');
