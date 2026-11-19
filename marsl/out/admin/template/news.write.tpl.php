@@ -18,6 +18,7 @@ include_once(dirname(__FILE__)."/../../includes/errorHandler.php");
 
 		// Example content CSS (should be your site CSS)
 		content_css : "css/content.css",
+        content_style: "social { background-color: #e00000; color: #ffffff; padding: 2px; display: inline-block; }",
 
         custom_elements : "social",
 		extended_valid_elements : "social[service|url]",

@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setConsentCookie() {
-    const maxAge = 60 * 60 * 24 * 365 * 10;
+    const maxAge = 60 * 60 * 24 * 365;
     document.cookie = `${COOKIE_NAME}=1; path=/; max-age=${maxAge}; SameSite=Lax`;
   }
 
@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       backgroundColor: "#f4f4f4",
       border: "1px solid #e0e0e0",
       borderRadius: "8px",
-      fontFamily: "sans-serif",
+      fontFamily: "Verdana, Arial, Helvetica, Sans-Serif",
       fontSize: "13px",
       color: "#000000",
     });
